@@ -1,0 +1,33 @@
+Email from Nick Kosa on 4/1/2013:
+
+Thanks for the reply, Peter. I have compiled the current substrate/non-substrate amino acid sequences into a spreadsheet to hopefully make things easier. I have separated the carrier proteins into “substrate” and “non-substrate” tabs.
+
+Each tab contains the list of substrate carrier proteins with corresponding sequences, and if the protein was originally part of a larger synthase I also included the original full sequence. Some proteins were used in a truncated form, and one as the full synthase. The protein actually used to test activity with PaAcpH is highlighted in dark green. I previously referred to “PaAcpH” generically as AcpH, but I need to become more specific about discussing AcpH varieties.
+
+Since some of these sequences get quite long, I have additionally marked the site of phosphopantetheine attachment (a conserved serine) in bold red. I also provided the flanking regions of the active site serine in either direction (N and C-terminus) up to 20 amino acids total, in the presumption that these regions would more than likely be more important than distal sites in AcpH/carrier protein recognition (as is the case with the PPTase we use in attaching the phosphopantetheine).
+
+Also, we will work on rudimentary kinetics for these substrates, as well as implementing a new binding assay. These should help our task down the line of ranking these qualitative results.
+
+
+Peter Frazier's response on 4/3/2013:
+
+I have one question, related to what we called "enzyme 1" and "enzyme 2" in the discussions I had with Mike, Mike & Nathan:
+
+Is it true that PaAcpH is "enzyme 2" from our discussions, and that all of these peptides in Nick's spreadsheet (in both the Substrates and Non-Substrates worksheets) act as substrates for "enzyme 1"?
+
+
+Nick's response on 4/3/2013:
+
+I wasn’t there for the discussion you all had, so I don’t know which enzyme specifically they were using for enzyme 1 and 2. However, I imagine they referred to the PPTase as enzyme 1 since it adds the phosphopantetheine label, and PaAcpH as “enzyme 2” because it removes the phosphopantetheine label from the carrier protein substrate.
+
+All the intact proteins listed work with enzyme 1 (PPTase, specifically Sfp from Bacillus subtilis), whereas only the confirmed substrate tab works with enzyme 2 (PaAcpH, from Pseudomonas aeruginosa).
+
+Additionally, the 2005 Walsh paper “Genetically encoded short peptide tag…” I sent previously has a few peptides that work with Sfp and AcpS PPTases. I should have included those in the excel spreadsheet, in retrospect.
+
+
+
+Peter's response on 4/3/2013:
+
+Wonderful.  Thank you Nick.  This answers my question.
+
+I'll make sure we get those additional peptides pulled out of the Walsh paper before we run our analysis.
