@@ -1,7 +1,7 @@
-NB.predict <- function(newdata, theta, prior.positive = 10**(-4))
+NB_predict <- function(newdata, theta, prior.positive = 10**(-4))
 {
 #================================================================================
-#Function: NB.predict
+#Function: NB_predict
 #
 #--------------------------------------------------------------------------------
 #Description:
@@ -11,13 +11,13 @@ NB.predict <- function(newdata, theta, prior.positive = 10**(-4))
 #Input arguments:
 #    newdata
 #            A data frame whose rows correspond to peptides and columns to featu-
-#            -res. The last three columns are the outcome values(whether each pe-
-#            -ptide works with enzyme 1, 2a and 2b).
+#            -res. There shall be no outcome values.
 #    theta
 #            Likelihood parameters. A list returned by the funciton getTheta.
 #    prior.positive
 #            Prior distribution Pr(Y=1) where Y is the outcome value. The default 
 #            10^-4. Considering all peptides with length 11
+#
 #--------------------------------------------------------------------------------
 #Return objects:
 #    predict
@@ -27,19 +27,19 @@ NB.predict <- function(newdata, theta, prior.positive = 10**(-4))
     theta_1 <- theta$theta_1
     nData <- dim(newdata)[1]
     #K: number of features
-    K <- dim(newdata)[2] - 3
+    K <- dim(newdata)[2] 
     predict <- rep(0, nData)
     for(n in 1:nData) {
-        feature <- newdata[n,1:K]
+        feature <- as.numeric(newdata[n,])
         likelihood_1 <- 1
         likelihood_0 <- 1
         for(i in 1:K) {
             if(!is.na(feature[i])){
-                likelihood_1 <- theta_1[i,feature[i]]*likelihood_1
-                likelihood_0 <- theta_0[i,feature[i]]*likelihood_0
+                likelihood_1 <- theta_1[feature[i],i]*likelihood_1
+                likelihood_0 <- theta_0[feature[i],i]*likelihood_0
             }
         }
-        predict[n] = likelihood_1*prior.positive/(likelihood_0*(1-prior.positive)
+        predict[n] <- likelihood_1*prior.positive/(likelihood_0*(1-prior.positive)
             + likelihood_1*prior.positive)
     }
     return(predict)

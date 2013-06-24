@@ -1,4 +1,4 @@
-getFeatures <- function(data.org, class, nL, nR)
+getFeatures <- function(data.org, AAclass, nL, nR)
 {
 #================================================================================
 #Function: getFeatures
@@ -20,46 +20,57 @@ getFeatures <- function(data.org, class, nL, nR)
 #             class it belongs to
 #    nL
 #             Number of amino acids at the left of the serine that will be featu-
-#             -res.
+#             res.
 #    nR
 #             Number of amino acids at the right of the serine that will be feat-
-#             -ures.
+#             ures.
 #
-#---------------------------------------------------------------------------------
+#--------------------------------------------------------------------------------
 #Return objects:
 #    feature
-#             A list containing an integer nVal and a data frame feature.data.
-#        nVal
-#             Number of values each feature can take.
-#        feature.data
-#             A data frame whose rows correspond to peptides and columns to featu-
-#             -res. The last three columns are the outcome values(whether each pe-
+#             A data frame whose rows correspond to peptides and columns to featu
+#             -res. The last three columns are the outcome values(whether each pe
 #             -ptide works with enzyme 1, 2a and 2b).
 #
-#---------------------------------------------------------------------------------
-    nVal <- max(class)
-    feature.data <- matrix(NA, nrow=dim(data.org)[1], ncol=nL+nR+3)
+#--------------------------------------------------------------------------------
+    #nVal: number of values each feature can take
+    nVal <- max(AAclass)
+    #nOUTCOME: number of outcome values
+    nOUTCOME <- dim(data.org)[2]-2
+    feature <- matrix(NA, nrow=dim(data.org)[1], ncol=nL+nR+nOUTCOME)
     for (r in 1:dim(data.org)[1]) {
         sequence <- unlist(strsplit(data.org[r, 'nterm'],''))
         l.seq  <- length(sequence)
         l <- min(nL,l.seq)
         for (i in 1:l) {
-		feature.data[r,nL+1-i] <- AAclass[1,sequence[l.seq+1-i]]
+		feature[r,nL+1-i] <- AAclass[1,sequence[l.seq+1-i]]
 	  }
         sequence <- unlist(strsplit(data.org[r, 'cterm'],''))
         l.seq  <- length(sequence)
         c <- min(nR,l.seq)
         for (i in 1:c) {
-		feature.data[r,nL+i] <- AAclass[1,sequence[i]]
+		feature[r,nL+i] <- AAclass[1,sequence[i]]
 	  }
-        feature.data[r,nL+nR+1] <- data.org[r,'sfp']
-        feature.data[r,nL+nR+2] <- data.org[r,'PaAcpH']
-        feature.data[r,nL+nR+3] <- data.org[r,'Enzyme_2b']
+        if( nOUTCOME != 0) {
+            for (i in 1:nOUTCOME) {
+                feature[r,nL+nR+i] <- data.org[r,i]
+            }
+        }
+    }    
+    #outcome.names : name of outcome values
+    outcome.names <- c()
+    if(nOUTCOME != 0) {
+        outcome.names <- colnames(data.org)[1:nOUTCOME]
     }
-    feature.data <- as.data.frame(feature.data)
-    colnames(feature.data) <- c(paste('L',nL:1,sep=""),paste('R',1:nR,sep=""),
-           'sfp','PaAcpH','Enzyme_2b')
-    feature <- list(nVal = nVal, feature.data = feature.data)
+    feature <- as.data.frame(feature)
+    if(nOUTCOME != 0){
+        colnames(feature) <- c(paste('L',nL:1,sep=""),
+            paste('R',1:nR,sep=""), outcome.names)
+    }
+    else {
+        colnames(feature) <- c(paste('L',nL:1,sep=""), 
+            paste('R',1:nR,sep=""))
+    }
     return( feature )
 }
       
