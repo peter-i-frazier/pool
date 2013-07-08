@@ -10,13 +10,13 @@ NB_predict <- function(newdata, theta, prior.positive = 10**(-4))
 #--------------------------------------------------------------------------------
 #Input arguments:
 #    newdata
-#            A data frame whose rows correspond to peptides and columns to featu-
-#            -res. There shall be no outcome values.
+#            A data frame whose rows correspond to peptides and columns to 
+#            features. THERE SHALL BE NO OUTCOME VALUES.
 #    theta
-#            Likelihood parameters. A list returned by the funciton getTheta.
+#            Likelihood parameters. A list returned by the function getTheta.
 #    prior.positive
 #            Prior distribution Pr(Y=1) where Y is the outcome value. The default 
-#            10^-4. Considering all peptides with length 11
+#            10^-4. 
 #
 #--------------------------------------------------------------------------------
 #Return objects:
