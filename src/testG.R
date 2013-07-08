@@ -18,7 +18,7 @@ X.0 <- data[9:13,]
 	theta.0 <- theta.1
 	Y <- sampleY(theta.1, theta.0, W, Z)
 	# Burn in step
-	for (t in 1:5000) {
+	for (t in 1:3000) {
 		theta.comb <- sampleTheta(W,Y)
 		theta.1 <- theta.comb$t1
 		theta.0 <- theta.comb$t0
@@ -57,9 +57,20 @@ X.0 <- data[9:13,]
 	}
 	theta.1.ave <- theta.1.ave/500
 	theta.0.ave <- theta.0.ave/500
-		prob.hit <- getProb(X, theta.1.ave, theta.0.ave)
-		prob.nothit <- getProb(X.0, theta.1.ave, theta.0.ave)
+		# prob.hit <- getProb(X, theta.1.ave, theta.0.ave)
+		# prob.nothit <- getProb(X.0, theta.1.ave, theta.0.ave)
 	
+	#Sample step 2
+	theta.1.ave1 <- matrix(0,nrow=dim(theta.1)[1], ncol=dim(theta.1)[2])
+	theta.0.ave1 <- theta.1.ave1
+	output <- list(Y=Y, W=W, X=X, Z=Z, t1=theta.1, t0=theta.0)
+	for (t in 1:500) {
+		output <- gibbsIter(output$Y, output$W, output$X, output$Z)
+		theta.1.ave1 <- theta.1.ave1 + output$t1
+		theta.0.ave1 <- theta.0.ave1 + output$t0
+	}
+	theta.1.ave1 <- theta.1.ave1/500
+	theta.0.ave1 <- theta.0.ave1/500
 
 	# theta.ave.11 <- theta.1
 	# theta.ave.00 <- theta.0
