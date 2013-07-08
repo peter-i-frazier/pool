@@ -1,0 +1,127 @@
+\documentclass[12pt]{article}
+\usepackage{amsmath,amssymb,mathtools}
+\usepackage{setspace}
+\usepackage[margin=1in]{geometry}
+\usepackage{algorithmic}
+\newcommand{\zap}[1]{ }
+\newcommand{\R}{\mathbb{R}}
+\newcommand{\data}{\text{training data}}
+%\doublespacing
+
+\title{Gibbs Sampler}
+\date{\today}
+\author{(initial draft by Peter Frazier)} % authors TBD. Rough draft written by Peter Frazier
+\author{Jialei Wang \and
+Peter I. Frazier
+}
+\date{\today}
+
+
+\begin{document}
+\maketitle
+\section{Gibbs Sampler}
+In this section, we consider classification problems in which nature only gives us positive labels.  This occurs in bioinformatics because our data comes from phage display, a combinatorial chemistry experiment using split pool, or from organisms evolved via natural selection.  It occurs in other applications as well, e.g., in the arxiv, where we only observe the papers that a user looked at, and not the larger set of papers in which a user is interested.
+
+To address this problem, we propose a probabilistic model, and then propose a Gibbs sampler to do inference within the context of this probabilistic model.
+\subsection{the Model}
+Sample a peptide pool $W_1, \ldots, W_M$ i.i.d. from the peptide library with some known distribution $F_W$, and M is fixed. Then we observe peptides $X_1, \ldots, X_N$. Because $Y(X_n,1)=1 \, \forall n \in \{1,\ldots,N\}$, we can treat $X_1,\ldots,X_N$ as being drawn independently with replacement from $\{W_m: Y(W_m,1)=1\}$. $Y(W_m,1)$ is drawn from Bernoulli distribution with parameter $f(\theta,W_m)$, where $\theta \sim F_{\theta}$ and $f$ is some known function.
+\subsection{Gibbs Sampler}
+First we define some variables:
+\begin{itemize}
+    \item
+    $Y_m=Y(W_m,1)$
+    \item
+    $(X_n)_{n=1}^N$ are tested peptides and clearly $Y(X_n,1)=1$.
+    \item
+    $Z_n$ is index of $W_m$ that was chosen to make $X_n$.
+\end{itemize}
+The conditional distributions for this model are
+\begin{enumerate}
+    \item
+    $\theta | (Y_m)_{m=1}^M, (W_m)_{m=1}^M, (X_n)_{n=1}^N, M, (Z_n)_{n=1}^N$ is sampling from the posterior distribution estimated in \eqref{eq:theta_estimate}.
+    \item
+    \begin{equation*}
+    Y_m | \theta, (W_m)_{m=1}^M, (X_n)_{n=1}^N, M, (Z_n)_{n=1}^N =
+    \begin{dcases}
+    1 & \text{if $Z_n=m$ , } \\
+    \text{sample from \eqref{eq:prob_Y_orig} given $\theta, W_m$} & \text{o/w.}
+    \end{dcases}
+    \end{equation*}
+    \item
+    \begin{equation*}
+    W_m | (Y_m)_{m=1}^M, \theta, (X_n)_{n=1}^N, M, (Z_n)_{n=1}^N =
+    \begin{dcases}
+    X_n & \text{if $Z_n=m$ , } \\
+    \text{sample from \eqref{eq:NB1} or \eqref{eq:NB0} given $\theta, Y_m$} & \text{o/w.}
+    \end{dcases}
+    \end{equation*}
+    \item
+    $Z_n | (Y_m)_{m=1}^M, \theta, (W_m)_{m=1}^M, (X_n)_{n=1}^N, M$ is chosen uniformly among $\{m:W_m=X_n\}$.
+\end{enumerate}
+Initialization: we fix M and set $Z_n=n$. Then 
+\begin{equation*}
+W_m =
+\begin{dcases}
+X_n & \text{if $Z_n=m$ , } \\
+\text{sample from $F_W$} & \text{o/w.}
+\end{dcases}
+\end{equation*}
+Then draw $\theta$ from prior distribution and set $(Y_m)_{m=1}^M$ according to step 2 above.
+\subsection{Algorithm}
+\begin{algorithmic}[1]
+\REQUIRE inputs $M$, $(X_n)_{n=1}^N$ and prior parameter of Dirichlet distribution $\boldsymbol \alpha= \left(\alpha(1),\ldots,\alpha(6)\right)$
+\FOR{$n=1$ to $N$} 
+\STATE $Z_n \leftarrow n$ 
+\ENDFOR
+\FOR{$m=1$ to $M$} 
+\IF{$Z_n=m$}
+\STATE $W_m \leftarrow X_n$
+\STATE $Y_m \leftarrow 1$
+\ELSE
+\STATE $W_m \leftarrow$ sample from $F_W$
+\STATE $Y_m \leftarrow$ sample from \eqref{eq:prob_Y_orig} given $\theta, W_m$
+\ENDIF
+\ENDFOR
+\LOOP
+\STATE $\theta \leftarrow$ sample from the posterior distribution in \eqref{eq:theta_estimate} given $ (Y_m)_{m=1}^M, (W_m)_{m=1}^M, (X_n)_{n=1}^N, M, (Z_n)_{n=1}^N$ 
+%\STATE $Y_m \leftarrow \begin{dcases} 1 & \text{if $Z_n=m$ , } \\ \text{sample from \eqref{eq:prob_Y_orig} given $\theta, W_m$} & \text{o/w.} \end{dcases}$ given $\theta, (W_m)_{m=1}^M, (X_n)_{n=1}^N, M, (Z_n)_{n=1}^N $
+%\STATE $W_m = \begin{dcases} X_n & \text{if $Z_n=m$ , } \\ \text{sample from \eqref{eq:NB1} or \eqref{eq:NB0} given $\theta, Y_m$} & \text{o/w.} \end{dcases}$ given $(Y_m)_{m=1}^M, \theta, (X_n)_{n=1}^N, M, (Z_n)_{n=1}^N$
+\FOR{$m=1$ to $M$}
+\IF{$m=(Z_n)_{n=1}^N$}
+\STATE $Y_m \leftarrow 1$
+\ELSE
+\STATE $Y_m \leftarrow$ sample from posterior distribution in \eqref{eq:theta_estimate} given $\theta, (W_m)_{m=1}^M, (X_n)_{n=1}^N, M, (Z_n)_{n=1}^N$ 
+\ENDIF
+\ENDFOR
+\FOR{$m=1$ to $M$}
+\IF{$m=(Z_n)_{n=1}^N$}
+\STATE $W_m \leftarrow X_n$
+\ELSE
+\STATE $W_m \leftarrow$ sample from \eqref{eq:NB1} or \eqref{eq:NB0} given $\theta, Y_m$ 
+\ENDIF
+\ENDFOR
+\FOR{$n=1$ to N}
+\STATE $Z_n \leftarrow$ sample from $\{m:W_m=X_n\}$ uniformly
+\ENDFOR
+\ENDLOOP
+
+%\STATE $(Z_n)_{n=1}^N \leftarrow n$, $(W_m)_{m=1}^M \leftarrow \begin{dcases} X_n & \text{if $Z_n=m$ , } \\ \text{sample from $F_W$} & \text{o/w.} \end{dcases}$, $\theta \sim Dirichlet (\boldsymbol \alpha)$, \\$(Y_m)_{m=1}^M \leftarrow  \begin{dcases} 1 & \text{if $Z_n=m$ , } \\ \text{sample from \eqref{eq:prob_Y_orig} given $\theta, W_m$} & \text{o/w.} \end{dcases}$ 
+%\LOOP
+%
+%\ENDLOOP
+\end{algorithmic}
+
+\subsection{Proposed Data to test the algorithm}
+
+To test the algorithm, let's use simulated data to start.  Then, we can use some standard data sets (the UCI machine learning repository).  Then, in addition to testing on chemistry applications, we may be able to do this in the context of the arxiv:
+
+\begin{itemize}
+\item Consider the set of users whose number of papers viewed exceeds a threshold.
+\item Take the set of papers at which that the user looked (obtained via the mysql database on whale) as our list of hits.  Take the (much larger) set of papers that were available for viewing as our list of items in the pool from which the hits were drawn.  Use features obtained from the Lucene index (Xiaoting can show us how).
+\item As a test, we can do an offline experiment where we take papers from a time period not in our training set, and predict for each paper whether the user will be interested or not.  Then we can look at the number of times we correctly predicted a hit.  This will underestimate the number of true hits.  To do this test more precisely, we can take the list of papers on which we do our testing from the ``new'' or ``recent'' pages that we know that the user visited.  This information is also available in the mysql database.   
+\item In the offline experiment, we could compare to the method that counts every item not viewed by the user as a negative, and uses standard naive bayes classification.  We could also try to improve this baseline, e.g., by using a different prior.  We need to look in the literature to find what other techniques people might use.
+\end{itemize}
+
+We may be able to do a more sophisticated model where we incorporate the probability that a paper was seen.
+
+\end{document}
