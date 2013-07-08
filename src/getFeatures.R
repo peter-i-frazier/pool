@@ -10,27 +10,26 @@ getFeatures <- function(data.org, AAclass, nL, nR)
 #--------------------------------------------------------------------------------
 #Input arguments:
 #    data.org
-#             A matrix whose rows correspond to peptides. The matrix has five co-
-#             -lumns. The first 3 shows whether each peptide works with enzyme 1, 
-#             2a and 2b. The 3rd column contains amino-acids at the left of the 
-#             serine and the 4th contains those at right.
-#
+#             A matrix whose rows correspond to peptides. The matrix has n+2 
+#             columns. The first n show whether each peptide works with n
+#             different enzymes. The last two columns contain amino-acids at the
+#             left of the serene('nterms') and right('cterms').
 #    class
 #             A matrix specifying the mapping between each amino-acids and the 
 #             class it belongs to
 #    nL
-#             Number of amino acids at the left of the serine that will be featu-
-#             res.
+#             Number of amino acids at the left of the serene that will be 
+#             features.
 #    nR
-#             Number of amino acids at the right of the serine that will be feat-
-#             ures.
+#             Number of amino acids at the right of the serene that will be 
+#             features.
 #
 #--------------------------------------------------------------------------------
 #Return objects:
 #    feature
-#             A data frame whose rows correspond to peptides and columns to featu
-#             -res. The last three columns are the outcome values(whether each pe
-#             -ptide works with enzyme 1, 2a and 2b).
+#             A data frame whose rows correspond to peptides and columns to 
+#             features. The last columns are the outcome values(whether each 
+#             peptide works with enzyme 1, 2a and 2b).
 #
 #--------------------------------------------------------------------------------
     #nVal: number of values each feature can take
