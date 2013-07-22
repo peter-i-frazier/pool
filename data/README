@@ -1,3 +1,9 @@
+ybbr_candidate_alanine_scan.txt: this is an alanine scan based on ybbr11, in
+which we go one position at a time through ybbr11 and replace it with an
+alanine.  The idea is to see which positions have an important effect on
+function and which don't.  Positions at which an alanine was already present
+don't have anything replaced.
+
 Email from Nick Kosa on 4/1/2013:
 
 Thanks for the reply, Peter. I have compiled the current substrate/non-substrate amino acid sequences into a spreadsheet to hopefully make things easier. I have separated the carrier proteins into “substrate” and “non-substrate” tabs.
@@ -31,3 +37,5 @@ Peter's response on 4/3/2013:
 Wonderful.  Thank you Nick.  This answers my question.
 
 I'll make sure we get those additional peptides pulled out of the Walsh paper before we run our analysis.
+
+
