@@ -56,6 +56,10 @@ getTheta <- function(train, nVal)
         alpha_1 <- count_1 + rep(abs(col-(K+1)/2)**0.5,nVal)
         theta_1 <- cbind(theta_1, alpha_1/sum(alpha_1))
 	}
+	theta_0 <- as.data.frame(theta_0)
+    colnames(theta_0) <- colnames(train_0)
+    theta_1 <- as.data.frame(theta_1)
+    colnames(theta_1) <- colnames(train_1)
     theta = list(theta_0 = theta_0, theta_1 = theta_1)
 	return (theta)
 }

@@ -1,4 +1,4 @@
-getFeatures <- function(data.org, AAclass, nL, nR)
+getFeatures <- function(data.org, classlist, nL, nR)
 {
 #================================================================================
 #Function: getFeatures
@@ -14,9 +14,9 @@ getFeatures <- function(data.org, AAclass, nL, nR)
 #             columns. The first n show whether each peptide works with n
 #             different enzymes. The last two columns contain amino-acids at the
 #             left of the serene('nterms') and right('cterms').
-#    class
+#    classlist
 #             A matrix specifying the mapping between each amino-acids and the 
-#             class it belongs to
+#             class it belongs to.
 #    nL
 #             Number of amino acids at the left of the serene that will be 
 #             features.
@@ -33,7 +33,7 @@ getFeatures <- function(data.org, AAclass, nL, nR)
 #
 #--------------------------------------------------------------------------------
     #nVal: number of values each feature can take
-    nVal <- max(AAclass)
+    nVal <- length(unique(as.numeric(classlist)))
     #nOUTCOME: number of outcome values
     nOUTCOME <- dim(data.org)[2]-2
     feature <- matrix(NA, nrow=dim(data.org)[1], ncol=nL+nR+nOUTCOME)

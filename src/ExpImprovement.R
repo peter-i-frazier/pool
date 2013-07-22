@@ -1,8 +1,8 @@
-ExpImprovement <- function(train, newdata, nrep, nVal, best.length = 11,
+ExpImprovement <- function(train, newdata, classlist, nRep = 100, best.length = 11,
  prior.positive = 10**-4)
 {
 #================================================================================
-#Function: ProbImprovement
+#Function: ExpImprovement
 #
 #--------------------------------------------------------------------------------
 #Description:
@@ -19,10 +19,11 @@ ExpImprovement <- function(train, newdata, nrep, nVal, best.length = 11,
 #    newdata:
 #            A data matrix whose rows correspond to peptides and columns to 
 #            features. There shall be no outcome values.
-#    nrep:
+#    classlist
+#             A matrix specifying the mapping between each amino-acids and the 
+#             class it belongs to.
+#    nRep:
 #            Number of simulation replications.
-#    nVal:
-#            Number of values each feature can take.
 #    best.length
 #            Current shortest length of peptides working with both enzymes.
 #    prior.positive
@@ -31,11 +32,15 @@ ExpImprovement <- function(train, newdata, nrep, nVal, best.length = 11,
 #
 #--------------------------------------------------------------------------------
 #Return objects:
-#    exp.improve
-#            The desired probability.                 
+#	 exp_reduc:
+#        A list which contains:
+#    improve
+#            The desired expectation of reduction in length.
+#    CI                 
+#            The 95% percent confidence interval of exp.improve
 #
 #--------------------------------------------------------------------------------
-    nData <- dim(newdata)[1]
+	nData <- dim(newdata)[1]
     #prob.hit: A binary vector. prob.hit[i] is the probability the ith peptide in 
 	#          newdata is a hit(according to simulated posterior theta).
     prob.hit <- rep(0, nData)
@@ -55,17 +60,18 @@ ExpImprovement <- function(train, newdata, nrep, nVal, best.length = 11,
 	reduction <- pmax(0,best.length - peptide.length)
     #max.reduction: A vector. max.reduction[i] = is the maximum reduction in the 
 	#               length among all peptides in newdata in the ith simulation.
-    max.reduction <- rep(0, nrep)
-	alpha <- Dirichlet_Parameters(train, nVal)
-    for(i in 1:nrep) {        
-        theta <- getTheta_MC(alpha = alpha, nVal = nVal)
+    max.reduction <- rep(0, nRep)
+	alpha <- Dirichlet_Parameter(train, classlist)
+    for(i in 1:nRep) {        
+        theta <- getTheta_MC(alpha = alpha, classlist = classlist)
 		prob.hit <- NB_predict(newdata, theta, prior.positive = prior.positive)
         #Simulate is.hit according to prob.hit
 		is.hit <- rbern(nData, prob.hit)
-		reduction <- reduction*is.hit
-		max.reduction[i] <- max(is.hit)
+		max.reduction[i] <- max(reduction*is.hit)
     }
-    exp.improve <- mean(max.reduction)
-    return(exp.improve)   
+    improve <- mean(max.reduction)
+	CI <- c(improve-sd(max.reduction)*qnorm(0.975)/sqrt(nRep), improve+sd(max.reduction)*qnorm(0.975)/sqrt(nRep))
+	exp_reduc <- list("improve" = improve, "CI" = CI) 
+    return(exp_reduc)   
 }
     

@@ -1,4 +1,4 @@
-Dirichlet_Parameter <- function(train, nVal) 
+Dirichlet_Parameter <- function(train, classlist) 
 {
 #===============================================================================
 #Function: Dirichlet_Parameter
@@ -16,8 +16,10 @@ Dirichlet_Parameter <- function(train, nVal)
 #    train
 #             A data matrix. Each row corresponds to a peptide and each column 
 #             corresponds to a feature. The last column contain outcome values.
-#    nVal
-#             Number of values each feature can take.
+#    classlist
+#             A matrix specifying the mapping between each amino-acids and the 
+#             class it belongs to.
+#
 #-------------------------------------------------------------------------------
 #Return objects:
 #    alpha
@@ -28,7 +30,9 @@ Dirichlet_Parameter <- function(train, nVal)
 #             contains the alpha parameter of a feature.
 #
 #-------------------------------------------------------------------------------
-    # K: number of features
+    #nVal: number of values a feature can take
+	nVal <- length(unique(as.numeric(classlist)))
+	# K: number of features
     K <- dim(train)[2] - 1
     outcome.value = train[,K+1]
     # divide training data by outcome value

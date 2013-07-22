@@ -1,8 +1,8 @@
-NB_peptideSim <- function(train = NA, theta = NA, outcome_name = NA, nVal, nPep, 
-isHit = 1, minL = 1, maxL = 3, minR = 3, maxR = 9 )
+NB_peptideSim <- function(train = NA, theta = NA, outcome_name = NA, 
+ classlist, nPep, isHit = 1, minL = 1, maxL = 3, minR = 3, maxR = 9 )
 {
 #================================================================================
-#Function: NB_predict
+#Function: NB_peptideSim
 #
 #--------------------------------------------------------------------------------
 #Description:
@@ -30,10 +30,11 @@ isHit = 1, minL = 1, maxL = 3, minR = 3, maxR = 9 )
 #             x. 
 #    The user may either specify train or theta, or neither. If both are 
 #    specified, TRAIN is ignored. If neither is specified, peptides will be
-#    outcome
+#    outcome_name
 #             Name of the outcome value.  
-#    nVal
-#             Number of values each feature can take.
+#    classlist
+#             A matrix specifying the mapping between each amino-acids and the 
+#             class it belongs to.
 #    nPep
 #             Number of peptides to be generated.
 #    isHit
@@ -49,10 +50,11 @@ isHit = 1, minL = 1, maxL = 3, minR = 3, maxR = 9 )
 #            correspond to nterms(amino acids at the left of the serene)and 
 #            cterms(amino-acids at the right of the serene).
 #--------------------------------------------------------------------------------
+nVal <- length(unique(as.numeric(classlist)))
 peptides <- matrix("",nrow = nPep, ncol = 3)
 if(missing(theta) && !missing(train)){
 	#Get alpha parameter from training data
-    alpha <- Dirichlet_Parameter(train,nVal)
+    alpha <- Dirichlet_Parameter(train,classlist)
 }
 for(j in 1:nPep) {
     #Draw the left & right lengths at random from the uniform distribution\
@@ -61,7 +63,7 @@ for(j in 1:nPep) {
 	if(!(missing(theta) && missing(train))) {
 	    if(missing(theta)){
 			#Simulate theta according to alpha parameter
-			theta <- getTheta_MC(alpha = alpha, nVal = nVal)	
+			theta <- getTheta_MC(alpha = alpha, classlist = classlist)	
 	    }
         if(isHit) {
 	        param <- theta$theta_1 }
@@ -76,7 +78,7 @@ for(j in 1:nPep) {
 		else {
 			s_class <-  rdist(c(1:nVal), param[,paste('L',i,sep="")])
 		}
-        s_class_list <- colnames(class)[class == s_class]
+        s_class_list <- colnames(classlist)[classlist == s_class]
         s_amino_acid <- s_class_list[ceiling(length(s_class_list)*runif(1))]
         peptides[j,2] <- paste(peptides[j,2], s_amino_acid, sep="")
 		}
@@ -87,7 +89,7 @@ for(j in 1:nPep) {
 		else {
 			s_class <-  rdist(c(1:nVal), param[,paste('R',i,sep="")])
 		}
-        s_class_list <- colnames(class)[class == s_class]
+        s_class_list <- colnames(classlist)[classlist == s_class]
         s_amino_acid <- s_class_list[ceiling(length(s_class_list)*runif(1))]
         peptides[j,3] <- paste(peptides[j,3], s_amino_acid, sep="")
     }    
