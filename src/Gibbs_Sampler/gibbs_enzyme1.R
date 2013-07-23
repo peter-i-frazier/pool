@@ -3,7 +3,7 @@ source('gibbs_util.R')
 source('../Naive_Bayes/Naive_Bayes.R')
 #=================================================================================
 #Specify Paths and working directory
-dataFile <- '../../data/binaryData_v2.csv'
+dataFile <- '../../data/binaryData_v3.csv'
 classFile <- '../../data/Reduced_AA_Alphabet.csv'
 
 #get data 
