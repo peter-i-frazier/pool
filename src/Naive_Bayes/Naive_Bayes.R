@@ -170,7 +170,7 @@ Dirichlet_Parameter <- function(train, nVal)
 
 
 ##==============================================================================
-etTheta_MC <- function(train = NA, alpha = NA, nVal) 
+getTheta_MC <- function(train = NA, alpha = NA, nVal) 
 {
 #===============================================================================
 #Function: getTheta.MC
