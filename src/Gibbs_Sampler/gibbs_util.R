@@ -168,7 +168,7 @@ gibbsSampler <- function(train.data, test.data, AAclass, M, burnin.step, record.
 	Y <- sampleY(theta.1, theta.0, W, Z)
 	# Burn in step
 	for (t in 1:burnin.step) {
-		theta.comb <- sampleTheta(W,Y)
+		theta.comb <- sampleTheta(W, Y, AAclass)
 		theta.1 <- theta.comb$theta_1
 		theta.0 <- theta.comb$theta_0
 		Y <- sampleY(theta.1, theta.0, W, Z)
@@ -182,7 +182,7 @@ gibbsSampler <- function(train.data, test.data, AAclass, M, burnin.step, record.
 		prob <- rep(0, dim(test.data)[1])
 	}
 	for (t in 1:record.step) {
-		theta.comb <- sampleTheta(W,Y)
+		theta.comb <- sampleTheta(W, Y, AAclass)
 		theta.1 <- theta.comb$theta_1
 		theta.0 <- theta.comb$theta_0
 		Y <- sampleY(theta.1, theta.0, W, Z)

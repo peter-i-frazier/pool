@@ -284,3 +284,4 @@ NB_predict <- function(newdata, theta, prior.positive = 10**(-4))
     }
     return(predict)
 }
+
