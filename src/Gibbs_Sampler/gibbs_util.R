@@ -115,42 +115,72 @@ sampleZ <- function(W, data) {
 
 getProb <- function(X, theta.1, theta.0) {
 		P <- 1e-4
-		K <- dim(X)[2]
-		prob <- rep(0,dim(X)[1])
-		for (i in 1:dim(X)[1]) {
-			x <- X[i,]
+		if (is.null(dim(X))) {
+			K <- length(X)
 			prod.1 <- 1
 			prod.0 <- 1
 			for (j in 1:K) {
-				prod.1 <- prod.1 * theta.1[x[j],j]
-				prod.0 <- prod.0 * theta.0[x[j],j]
+				prod.1 <- prod.1 * theta.1[X[j],j]
+				prod.0 <- prod.0 * theta.0[X[j],j]
 			}
-			prob[i] <- P * prod.1/ (P * prod.1 + (1.-P) * prod.0)
+			prob <- P * prod.1/ (P * prod.1 + (1.-P) * prod.0)
+			return (prob)
+		} else {
+			K <- dim(X)[2]
+			R <- dim(X)[1]
+			prob <- rep(0,R)
+			for (i in 1:R) {
+				x <- X[i,]
+				prod.1 <- 1
+				prod.0 <- 1
+				for (j in 1:K) {
+					prod.1 <- prod.1 * theta.1[x[j],j]
+					prod.0 <- prod.0 * theta.0[x[j],j]
+				}
+				prob[i] <- P * prod.1/ (P * prod.1 + (1.-P) * prod.0)
+			}
+			return (prob)
 		}
-		return (prob)
 }
 
-gibbsIter <- function(Y, W, X, Z, itr=1) {
-	if (itr == 1) {
+gibbsSampler <- function(train.data, test.data, M=500, burnin.step=5000, record.step=500) {
+	# Initialization
+	X <- train.data
+	N <- dim(X)[1]
+	C <- dim(X)[2]
+	Z <- c(1:N)
+	W <- X
+	for (i in 1:(M-N)) {
+		W <- rbind(W, ceiling(6 * runif(C)))
+	}
+	theta.1 <- matrix(1/6,nrow=6,ncol=C)
+	theta.0 <- theta.1
+	Y <- sampleY(theta.1, theta.0, W, Z)
+	# Burn in step
+	for (t in 1:burnin.step) {
 		theta.comb <- sampleTheta(W,Y)
 		theta.1 <- theta.comb$t1
 		theta.0 <- theta.comb$t0
 		Y <- sampleY(theta.1, theta.0, W, Z)
 		W <- sampleW(Y, theta.1, theta.0, X, Z)
 		Z <- sampleZ(W, X)
-		result <- list(Y=Y, W=W, X=X, Z=Z, t1=theta.1, t0=theta.0)
-		return (result)
 	}
-	else {
-		for (n in 1:itr) {
-			theta.comb <- sampleTheta(W,Y)
-			theta.1 <- theta.comb$t1
-			theta.0 <- theta.comb$t0
-			Y <- sampleY(theta.1, theta.0, W, Z)
-			W <- sampleW(Y, theta.1, theta.0, X, Z)
-			Z <- sampleZ(W, X)
-		}
-		result <- list(Y=Y, W=W, X=X, Z=Z, t1=theta.1, t0=theta.0)
-		return (result)
+	# Record step
+	if (is.null(dim(test.data))) {
+		prob <- 0
+	} else {
+		prob <- rep(0, dim(test.data)[1])
 	}
+	for (t in 1:record.step) {
+		theta.comb <- sampleTheta(W,Y)
+		theta.1 <- theta.comb$t1
+		theta.0 <- theta.comb$t0
+		Y <- sampleY(theta.1, theta.0, W, Z)
+		W <- sampleW(Y, theta.1, theta.0, X, Z)
+		Z <- sampleZ(W, X)
+		prob <- prob + getProb(test.data, theta.1, theta.0)
+	}
+	prob <- prob/record.step
+	return (prob)
 }
+
