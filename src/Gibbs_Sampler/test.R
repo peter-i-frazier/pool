@@ -1,6 +1,6 @@
 rm(list=ls())
 source('gibbs_util.R')
-source('../Naive_Bayes/Naive_Bayes.R')
+source('../Naive_Bayes/getFeatures.R')
 ## set parameters
 C <- 38
 Ntrain <- 50

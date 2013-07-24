@@ -1,6 +1,6 @@
 rm(list=ls())
 source('gibbs_util.R')
-source('../Naive_Bayes/Naive_Bayes.R')
+source('../Naive_Bayes/getFeatures.R')
 #=================================================================================
 #Specify Paths and working directory
 dataFile <- '../../data/binaryData_v2.csv'
