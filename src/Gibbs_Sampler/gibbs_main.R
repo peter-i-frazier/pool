@@ -19,7 +19,7 @@ nVal <- max(AAclass[1,])
 No.testcases <- 500
 Size.library <- 500
 burnin.step <- 4000
-record.step <- 4000
+record.step <- 500
 #=================================================================================
 ## For AcpH
 outcome <- 'AcpH'
