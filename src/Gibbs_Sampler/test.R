@@ -1,4 +1,6 @@
 rm(list=ls())
+source('gibbs_util.R')
+source('../Naive_Bayes/Naive_Bayes.R')
 ## set parameters
 C <- 38
 Ntrain <- 100
@@ -29,8 +31,6 @@ for (r in 1:Ntest) {
 }
 
 ##### test code
-source('gibbs_util.R')
-source('../Naive_Bayes/Naive_Bayes.R')
 dataFile <- '../../data/binaryData_v2.csv'
 classFile <- '../../data/Reduced_AA_Alphabet.csv'
 
