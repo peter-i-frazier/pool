@@ -78,7 +78,8 @@ nothit.X <- X.train[Y.train==0,]
 # some constant
 	train.data <- hit.X
 	test.data <- ceiling(matrix(nVal*runif(No.testcases * dim(hit.X)[2]), ncol=dim(hit.X)[2]))
-	
+	M <- Size.library
+
 	N <- dim(train.data)[1]
 	C <- dim(train.data)[2]
 	# Initialization
