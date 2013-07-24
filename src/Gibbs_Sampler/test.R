@@ -3,7 +3,7 @@ source('gibbs_util.R')
 source('../Naive_Bayes/Naive_Bayes.R')
 ## set parameters
 C <- 38
-Ntrain <- 100
+Ntrain <- 50
 Ntest <- 100
 ## create artificial theta for hit and nothit
 alpha.hit <- runif(8) * 20
@@ -42,7 +42,7 @@ nR <- 19
 trainData <- getFeatures(data.org,AAclass,nL,nR)
 nVal <- max(AAclass[1,])
 No.testcases <- 1000
-Size.library <- 500
+Size.library <- 300
 burnin.step <- 3000
 record.step <- 500
 X.train <- as.matrix(trainData[,c(1:(nL+nR))])
