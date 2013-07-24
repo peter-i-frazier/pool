@@ -1,0 +1,72 @@
+rm(list=ls())
+source('gibbs_util.R')
+source('../Naive_Bayes/Naive_Bayes.R')
+#=================================================================================
+#Specify Paths and working directory
+dataFile <- '../../data/binaryData.csv'
+classFile <- '../../data/Reduced_AA_Alphabet.csv'
+
+#get data 
+data.org <- data.frame(read.csv(dataFile, header = T, as.is = T, sep = ","))
+AAclass <- read.csv(classFile, header=T, as.is = T, sep=",")
+
+#=================================================================================
+#Set parameters
+nL <- 19
+nR <- 19
+trainData <- getFeatures(data.org,AAclass,nL,nR)
+No.testcases <- 500
+Size.library <- 300
+burnin.step <- 5000
+record.step <- 5000
+#=================================================================================
+## For AcpH
+outcome <- 'PaAcpH'
+X.train <- as.matrix(trainData[,c(1:(nL+nR))])
+Y.train <- trainData[,outcome]
+hit.X <- X.train[Y.train==1,]
+nothit.X <- X.train[Y.train==0,]
+
+# # leave one out cross validation
+# prob.hit <- c()
+# N <- dim(hit.X)[1]
+# for (n in 1:N) {
+# 	print (n)
+# 	# Initialization
+# 	train <- hit.X
+# 	test <- train[n,]
+# 	train <- train[-n,]
+# 	prob.1 <- gibbsSampler(train, test, AAclass, Size.library, burnin.step, record.step)
+# 	prob.hit <- c(prob.hit, prob.1)
+# }
+# take in all the data and predict prob not hit
+prob.0 <- gibbsSampler(hit.X, nothit.X, AAclass, Size.library, burnin.step, record.step)
+
+# write.csv(prob.hit,'../result/prob_hit_AcpH.csv')
+# write.csv(prob.0,'../result/prob_nothit_AcpH.csv')
+
+# #=================================================================================
+# ## For sfp
+# outcome <- 'sfp'
+# X.train <- as.matrix(trainData[,c(1:(nL+nR))])
+# Y.train <- trainData[,outcome]
+# hit.X <- X.train[Y.train==1,]
+
+# # leave one out cross validation
+# prob.hit <- c()
+# N <- dim(hit.X)[1]
+# for (n in 1:N) {
+# 	print (n)
+# 	# Initialization
+# 	train <- hit.X
+# 	test <- train[n,]
+# 	train <- train[-n,]
+# 	prob.1 <- gibbsSampler(train, test, AAclass, Size.library, burnin.step, record.step)
+# 	prob.hit <- c(prob.hit, prob.1)
+# }
+# # Test random peptides' prob being hit
+# test <- ceiling(matrix(max(AAclass[1,])*runif(No.testcases * dim(hit.X)[2]), ncol=dim(hit.X)[2]))
+# prob.0 <- gibbsSampler(hit.X, test, AAclass, Size.library, burnin.step, record.step)
+
+# write.csv(prob.hit,'../result/prob_hit_sfp.csv')
+# write.csv(prob.0,'../result/prob_random_nothit_sfp.csv')
