@@ -17,8 +17,8 @@ nR <- 19
 trainData <- getFeatures(data.org,AAclass,nL,nR)
 No.testcases <- 500
 Size.library <- 500
-burnin.step <- 5
-record.step <- 1
+burnin.step <- 5000
+record.step <- 5000
 #=================================================================================
 ## For AcpH
 outcome <- 'PaAcpH'
