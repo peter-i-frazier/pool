@@ -17,34 +17,35 @@ library(MCMCpack)
 #--------------------------------------------------------------------------------
 source('../Naive_Bayes/Naive_Bayes.R')
 
-# getTheta <- function(train) {
-# 	K <- dim(train)[2]
-# 	R <- dim(train)[1]
-# 	theta <- c()
-# 	for (col in 1:K) {
-# 		count <- rep(0,6)
-# 		for (r in 1:R) {
-# 			count[train[r,col]] <- count[train[r,col]] + 1
-# 			alpha <- count + rep(abs(col-12.5)**0.5,6)
-# 		}
-# 			theta <- cbind(theta, c(rdirichlet(1,alpha)))
-# 	}
-# 	return (theta)
-# }
-# sampleTheta <- function(W,Y) {
-# 	train.1 <- W[Y==1,]
-# 	train.0 <- W[Y==0,]
-# 	theta.1 <- getTheta(train.1)
-# 	theta.0 <- getTheta(train.0)
-# 	theta.comb <- list(t1=theta.1, t0=theta.0)
-# 	return (theta.comb)
-# }
-
-sampleTheta <- function(W,Y, AAclass) {
-	alpha <- Dirichlet_Parameter(cbind(W,Y),AAclass)
-	theta.comb <- getTheta_MC(cbind(W,Y), alpha, AAclass)
+getTheta <- function(train, R) {
+	K <- dim(train)[2]
+	N <- dim(train)[1]
+	theta <- c()
+	for (col in 1:K) {
+		count <- rep(0,R)
+		distance <- abs(col - (K+1)/2)
+		for (r in 1:N) {
+			count[train[r,col]] <- count[train[r,col]] + 1
+			alpha <- count + rep(distance**0.5,R)
+		}
+			theta <- cbind(theta, c(rdirichlet(1,alpha)))
+	}
+	return (theta)
+}
+sampleTheta <- function(W,Y, R) {
+	train.1 <- W[Y==1,]
+	train.0 <- W[Y==0,]
+	theta.1 <- getTheta(train.1, R)
+	theta.0 <- getTheta(train.0, R)
+	theta.comb <- list(theta_1=theta.1, theta_0=theta.0)
 	return (theta.comb)
 }
+
+# sampleTheta <- function(W,Y, AAclass) {
+# 	alpha <- Dirichlet_Parameter(cbind(W,Y),AAclass)
+# 	theta.comb <- getTheta_MC(cbind(W,Y), alpha, AAclass)
+# 	return (theta.comb)
+# }
 
 sampleY <- function(theta.1, theta.0, W, Z) {
 	P <- 1e-4
@@ -168,7 +169,7 @@ gibbsSampler <- function(train.data, test.data, AAclass, M, burnin.step, record.
 	Y <- sampleY(theta.1, theta.0, W, Z)
 	# Burn in step
 	for (t in 1:burnin.step) {
-		theta.comb <- sampleTheta(W, Y, AAclass)
+		theta.comb <- sampleTheta(W, Y, R)
 		theta.1 <- theta.comb$theta_1
 		theta.0 <- theta.comb$theta_0
 		Y <- sampleY(theta.1, theta.0, W, Z)

@@ -135,7 +135,11 @@ Dirichlet_Parameter <- function(train, classlist)
     outcome.value = train[,K+1]
     # divide training data by outcome value
     train_0 <- train[outcome.value == 0, 1:K]
-    train_1 <- train[outcome.value == 1, 1:K]   
+    train_1 <- train[outcome.value == 1, 1:K] 
+    print ('train_0')
+    print (train_0)
+    print ('train_1')
+    print (train_1)  
         
     R_1 <- dim(train_1)[1]
     alpha_1 <- c()
@@ -212,20 +216,29 @@ getTheta_MC <- function(train = NA, alpha = NA, classlist)
 #
 #-------------------------------------------------------------------------------
     nVal <- length(unique(as.numeric(classlist)))
+    print (nVal)
     if(missing(alpha)){
        alpha <- Dirichlet_Parameter(train, nVal)
     }
     alpha_0 <- alpha$alpha_0
+    print ('alpha_0')
+    print (alpha_0)
     alpha_1 <- alpha$alpha_1
+    print (alpha_1)
     K <- dim(alpha_1)[2]
+    print ('K')
+    print (K)
     theta_0 <- c()
     theta_1 <- c()
 
     for (col in 1:K) {
-        gamma.rdn <- rgamma(nVal, shape = alpha_0[,col])    
+        gamma.rdn <- rgamma(nVal, shape = alpha_0[,col])   
+        # print ('rdn')
+        # print (gamma.rdn) 
         theta_0 <- cbind(theta_0, gamma.rdn/sum(gamma.rdn))
             
-        gamma.rdn <- rgamma(nVal, shape = alpha_1[,col])    
+        gamma.rdn <- rgamma(nVal, shape = alpha_1[,col]) 
+        # print (gamma.rdn)   
         theta_1 <- cbind(theta_1, gamma.rdn/sum(gamma.rdn))         
     }
     theta_0 <- as.data.frame(theta_0)
