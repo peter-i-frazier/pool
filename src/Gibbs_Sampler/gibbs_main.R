@@ -3,7 +3,7 @@ source('gibbs_util.R')
 source('../Naive_Bayes/Naive_Bayes.R')
 #=================================================================================
 #Specify Paths and working directory
-dataFile <- '../../data/binaryData.csv'
+dataFile <- '../../data/binaryData_v2.csv'
 classFile <- '../../data/Reduced_AA_Alphabet.csv'
 
 #get data 
@@ -15,13 +15,14 @@ AAclass <- read.csv(classFile, header=T, as.is = T, sep=",")
 nL <- 19
 nR <- 19
 trainData <- getFeatures(data.org,AAclass,nL,nR)
+nVal <- max(AAclass[1,])
 No.testcases <- 500
-Size.library <- 300
-burnin.step <- 5000
-record.step <- 5000
+Size.library <- 500
+burnin.step <- 4000
+record.step <- 4000
 #=================================================================================
 ## For AcpH
-outcome <- 'PaAcpH'
+outcome <- 'AcpH'
 X.train <- as.matrix(trainData[,c(1:(nL+nR))])
 Y.train <- trainData[,outcome]
 hit.X <- X.train[Y.train==1,]
@@ -40,7 +41,7 @@ nothit.X <- X.train[Y.train==0,]
 # 	prob.hit <- c(prob.hit, prob.1)
 # }
 # take in all the data and predict prob not hit
-prob.0 <- gibbsSampler(hit.X, nothit.X, AAclass, Size.library, burnin.step, record.step)
+prob.0 <- gibbsSampler(hit.X, nothit.X, nVal, Size.library, burnin.step, record.step)
 
 # write.csv(prob.hit,'../result/prob_hit_AcpH.csv')
 # write.csv(prob.0,'../result/prob_nothit_AcpH.csv')

@@ -17,26 +17,28 @@ library(MCMCpack)
 #--------------------------------------------------------------------------------
 source('../Naive_Bayes/Naive_Bayes.R')
 
-getTheta <- function(train, R) {
+getTheta <- function(train, nVal) {
 	K <- dim(train)[2]
-	N <- dim(train)[1]
+	R <- dim(train)[1]
 	theta <- c()
 	for (col in 1:K) {
-		count <- rep(0,R)
-		distance <- abs(col - (K+1)/2)
-		for (r in 1:N) {
-			count[train[r,col]] <- count[train[r,col]] + 1
-			alpha <- count + rep(distance**0.5,R)
+		count <- rep(0,nVal)
+		distance <- as.numeric(paste(unlist(strsplit(colnames(train)[col],''))[-1],collapse=""))
+		for (r in 1:R) {
+			if (!is.na(train[r,col])) {
+				count[train[r,col]] <- count[train[r,col]] + 1
+			}
 		}
-			theta <- cbind(theta, c(rdirichlet(1,alpha)))
+		alpha <- count + rep(distance**0.5,nVal)
+		theta <- cbind(theta, c(rdirichlet(1,alpha)))
 	}
 	return (theta)
 }
-sampleTheta <- function(W,Y, R) {
+sampleTheta <- function(W, Y, nVal) {
 	train.1 <- W[Y==1,]
 	train.0 <- W[Y==0,]
-	theta.1 <- getTheta(train.1, R)
-	theta.0 <- getTheta(train.0, R)
+	theta.1 <- getTheta(train.1, nVal)
+	theta.0 <- getTheta(train.0, nVal)
 	theta.comb <- list(theta_1=theta.1, theta_0=theta.0)
 	return (theta.comb)
 }
@@ -57,12 +59,13 @@ sampleY <- function(theta.1, theta.0, W, Z) {
 			Y[m] <- 1
 		}
 		else {
-			x <- W[m,]
 			prod.1 <- 1
 			prod.0 <- 1
 			for (j in 1:K) {
-				prod.1 <- prod.1 * theta.1[x[j],j]
-				prod.0 <- prod.0 * theta.0[x[j],j]
+				if (!is.na(W[m,j])) {
+					prod.1 <- prod.1 * theta.1[W[m,j],j]
+					prod.0 <- prod.0 * theta.0[W[m,j],j]
+				}
 			}
 			prob <- P * prod.1/ (P * prod.1 + (1-P) * prod.0)
 			if (runif(1) < prob) {Y[m] <- 1}
@@ -76,7 +79,8 @@ sampleW <- function(Y, theta.1, theta.0, Data, Z) {
 	M <- length(Y)
 	K <- dim(Data)[2]
 	N <- dim(Data)[1]
-	W <- matrix(1, nrow=M, ncol=K)
+	W <- matrix(NA, nrow=M, ncol=K)
+	colnames(W) <- colnames(Data)
 	for (m in 1:M) {
 		sample.or.not <- 1
 		for (n in 1:N) {
@@ -91,14 +95,14 @@ sampleW <- function(Y, theta.1, theta.0, Data, Z) {
 			if (Y[m]==1) {
 				pp <- runif(K)
 				for (j in 1:dim(theta.1)[1]) {
-					W[m,] = W[m,] + ((pp-theta.1[j,])>0)
+					W[m,] <- W[m,] + ((pp-theta.1[j,])>0)
 					pp <- pp-theta.1[j,]
 				}
 			}
 			else {
 				pp <- runif(K)
 				for (j in 1:dim(theta.0)[1]) {
-					W[m,] = W[m,] + ((pp-theta.0[j,])>0)
+					W[m,] <- W[m,] + ((pp-theta.0[j,])>0)
 					pp <- pp-theta.0[j,]
 				}
 			}
@@ -114,7 +118,16 @@ sampleZ <- function(W, Data) {
 	for (n in 1:N) {
 		candidates <- c()
 		for (m in 1:M) {
-			if (prod(Data[n,]==W[m,])) {candidates <- c(candidates, m)}
+			isnot.same <- 0
+			diff <- W[m,] - Data[n,]
+			for (j in 1:dim(W)[2]) {
+				if (!is.na(diff[j])) {
+					isnot.same <- isnot.same + abs(diff[j])
+				}
+			}
+			if (isnot.same==0) {
+				candidates <- c(candidates, m)
+			}
 		}
 		Len <- length(candidates)
 		Z[n] <- candidates[ceiling(Len * runif(1))]
@@ -122,73 +135,74 @@ sampleZ <- function(W, Data) {
 	return (Z)
 }
 
-getProb <- function(X, theta.1, theta.0) {
+getProb <- function(test.data, theta.1, theta.0) {
 		P <- 1e-4
-		if (is.null(dim(X))) {
-			K <- length(X)
+		if (is.vector(test.data)) {
+			K <- length(test.data)
 			prod.1 <- 1
 			prod.0 <- 1
 			for (j in 1:K) {
-				prod.1 <- prod.1 * theta.1[X[j],j]
-				prod.0 <- prod.0 * theta.0[X[j],j]
+				if (!is.na(test.data[j])) {
+					prod.1 <- prod.1 * theta.1[test.data[j],j]
+					prod.0 <- prod.0 * theta.0[test.data[j],j]
+				}
 			}
 			prob <- P * prod.1/ (P * prod.1 + (1.-P) * prod.0)
 			return (prob)
 		} else {
-			K <- dim(X)[2]
-			R <- dim(X)[1]
+			K <- dim(test.data)[2]
+			R <- dim(test.data)[1]
 			prob <- rep(0,R)
-			for (i in 1:R) {
-				x <- X[i,]
+			for (r in 1:R) {
 				prod.1 <- 1
 				prod.0 <- 1
 				for (j in 1:K) {
-					prod.1 <- prod.1 * theta.1[x[j],j]
-					prod.0 <- prod.0 * theta.0[x[j],j]
+					if (!is.na(test.data[r,j])) {
+						prod.1 <- prod.1 * theta.1[test.data[r,j],j]
+						prod.0 <- prod.0 * theta.0[test.data[r,j],j]
+					}
 				}
-				prob[i] <- P * prod.1/ (P * prod.1 + (1.-P) * prod.0)
+				prob[r] <- P * prod.1/ (P * prod.1 + (1-P) * prod.0)
 			}
 			return (prob)
 		}
 }
 
-gibbsSampler <- function(train.data, test.data, AAclass, M, burnin.step, record.step) {
+gibbsSampler <- function(train.data, test.data, nVal, M, burnin.step, record.step) {
 	# some constant
-	X <- train.data
-	N <- dim(X)[1]
-	C <- dim(X)[2]
-	R <- max(AAclass[1,])
+	N <- dim(train.data)[1]
+	C <- dim(train.data)[2]
 	# Initialization
 	Z <- c(1:N)
-	W <- X
+	W <- train.data
 	for (i in 1:(M-N)) {
-		W <- rbind(W, ceiling(R * runif(C)))
+		W <- rbind(W, ceiling(nVal * runif(C)))
 	}
-	theta.1 <- matrix(1/R,nrow=R,ncol=C)
+	theta.1 <- matrix(1/nVal,nrow=nVal,ncol=C)
 	theta.0 <- theta.1
 	Y <- sampleY(theta.1, theta.0, W, Z)
 	# Burn in step
 	for (t in 1:burnin.step) {
-		theta.comb <- sampleTheta(W, Y, R)
+		theta.comb <- sampleTheta(W, Y, nVal)
 		theta.1 <- theta.comb$theta_1
 		theta.0 <- theta.comb$theta_0
 		Y <- sampleY(theta.1, theta.0, W, Z)
-		W <- sampleW(Y, theta.1, theta.0, X, Z)
-		Z <- sampleZ(W, X)
+		W <- sampleW(Y, theta.1, theta.0, train.data, Z)
+		Z <- sampleZ(W, train.data)
 	}
 	# Record step
-	if (is.null(dim(test.data))) {
+	if (is.vector(test.data)) {
 		prob <- 0
 	} else {
 		prob <- rep(0, dim(test.data)[1])
 	}
 	for (t in 1:record.step) {
-		theta.comb <- sampleTheta(W, Y, R)
+		theta.comb <- sampleTheta(W, Y, nVal)
 		theta.1 <- theta.comb$theta_1
 		theta.0 <- theta.comb$theta_0
 		Y <- sampleY(theta.1, theta.0, W, Z)
-		W <- sampleW(Y, theta.1, theta.0, X, Z)
-		Z <- sampleZ(W, X)
+		W <- sampleW(Y, theta.1, theta.0, train.data, Z)
+		Z <- sampleZ(W, train.data)
 		prob <- prob + getProb(test.data, theta.1, theta.0)
 	}
 	prob <- prob/record.step

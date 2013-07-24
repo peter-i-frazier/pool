@@ -97,8 +97,8 @@ $k$, using Bayes rule.  This quantity is
 \begin{equation} \label{eq:prob_Y_orig}
   P\left(Y(x,k) = 1 | \theta^{(k)}\right) =
   \frac{P(Y(x,k)=1) \prod_{i} \theta^{(k)}_{1,i}(x_i)}{
-  \left[ P(Y(x,k)=1) \prod_{i} \theta^{(k)}_{0,i}(x_i)\right] +
-  \left[ P(Y(x,k)=0) \prod_{i} \theta^{(k)}_{1,i}(x_i)\right]}
+  \left[ P(Y(x,k)=1) \prod_{i} \theta^{(k)}_{1,i}(x_i)\right] +
+  \left[ P(Y(x,k)=0) \prod_{i} \theta^{(k)}_{0,i}(x_i)\right]}
 \end{equation}
 where the product over $i$ is taken over all amino acids in the peptide, except for the serine at position $0$,
 and $P(Y(x,k)=1)$ (respectively $P(Y(x,k)=0)$) is the probability that a randomly chosen peptide will be a substrate for enzyme $k$ (respectively, not a substrate).
