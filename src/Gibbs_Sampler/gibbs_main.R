@@ -3,7 +3,7 @@ source('gibbs_util.R')
 source('../Naive_Bayes/getFeatures.R')
 #=================================================================================
 #Specify Paths and working directory
-dataFile <- '../../data/binaryData_v2.csv'
+dataFile <- '../../data/binaryData.csv'
 classFile <- '../../data/Reduced_AA_Alphabet.csv'
 
 #get data 
@@ -77,7 +77,8 @@ nothit.X <- X.train[Y.train==0,]
 # test part
 # some constant
 	train.data <- hit.X
-	test.data <- ceiling(matrix(nVal*runif(No.testcases * dim(hit.X)[2]), ncol=dim(hit.X)[2]))
+	# test.data <- ceiling(matrix(nVal*runif(No.testcases * dim(hit.X)[2]), ncol=dim(hit.X)[2]))
+	test.data <- nothit.X
 	M <- Size.library
 
 	N <- dim(train.data)[1]
