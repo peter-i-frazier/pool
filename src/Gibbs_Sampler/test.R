@@ -12,7 +12,8 @@ alpha.nothit <- abs(1 - alpha.hit + runif(8) * 25)
 theta.hit <- t(rdirichlet(C, alpha.hit))
 theta.nothit <- t(rdirichlet(C, alpha.nothit))
 
-## create artifical training data and test data
+## create artifical training data and test data,
+## 
 train <- matrix(1, nrow=Ntrain, ncol=C)
 for (r in 1:Ntrain) {
 	pp <- runif(C)
@@ -98,13 +99,13 @@ prob <- prob/record.step
 ##### test code 2
 wholedata <- rbind(train, test)
 prob.test2 <- rep(0,Ntrain+Ntest)
-Y <- c(rep(1,Ntrain), rep(0,Ntest))
+Y2 <- c(rep(1,Ntrain), rep(0,Ntest))
 for (n in 1:500) {
 	print (n)
-	theta.comb <- sampleTheta(wholedata, Y, nVal)
-	theta.1 <- theta.comb$theta_1
-	theta.0 <- theta.comb$theta_0
-	prob.test2 <- prob.test2 + getProb(wholedata, theta.1, theta.0)
+	theta.comb2 <- sampleTheta(wholedata, Y2, nVal)
+	theta.12 <- theta.comb2$theta_1
+	theta.02 <- theta.comb2$theta_0
+	prob.test2 <- prob.test2 + getProb(wholedata, theta.12, theta.02)
 }
 prob.test2 <- prob.test2/500
 

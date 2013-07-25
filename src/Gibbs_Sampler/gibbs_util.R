@@ -136,7 +136,7 @@ sampleZ <- function(W, Data) {
 }
 
 getProb <- function(test.data, theta.1, theta.0) {
-		P <- 0.5
+		P <- 1e-4
 		if (is.vector(test.data)) {
 			K <- length(test.data)
 			prod.1 <- 1

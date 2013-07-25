@@ -77,8 +77,8 @@ nothit.X <- X.train[Y.train==0,]
 # test part
 # some constant
 	train.data <- hit.X
-	# test.data <- ceiling(matrix(nVal*runif(No.testcases * dim(hit.X)[2]), ncol=dim(hit.X)[2]))
-	test.data <- nothit.X
+	test.data <- rbind(hit.X, nothit.X, ceiling(matrix(nVal*runif(No.testcases * dim(hit.X)[2]), ncol=dim(hit.X)[2])))
+	# test.data <- nothit.X
 	M <- Size.library
 
 	N <- dim(train.data)[1]
@@ -119,4 +119,18 @@ nothit.X <- X.train[Y.train==0,]
 		prob <- prob + getProb(test.data, theta.1, theta.0)
 	}
 	prob <- prob/record.step
+
+###### test code using original NB
+wholedata <- rbind(hit.X, nothit.X)
+Y2 <- c(rep(1,8), rep(0,5))
+prob.test2 <- rep(0,13)
+for (n in 1:500) {
+	print (n)
+	theta.comb2 <- sampleTheta(wholedata, Y2, nVal)
+	theta.12 <- theta.comb2$theta_1
+	theta.02 <- theta.comb2$theta_0
+	prob.test2 <- prob.test2 + getProb(wholedata, theta.12, theta.02)
+}
+prob.test2 <- prob.test2/500
+
 
