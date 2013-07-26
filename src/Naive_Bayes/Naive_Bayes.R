@@ -18,7 +18,7 @@
 
 
 
-getFeatures <- function(data.org, AAclass, nL, nR)
+getFeatures <- function(data.org, classlist, nL, nR)
 {
 #================================================================================
 #Function: getFeatures
@@ -34,9 +34,9 @@ getFeatures <- function(data.org, AAclass, nL, nR)
 #             columns. The first n show whether each peptide works with n
 #             different enzymes. The last two columns contain amino-acids at the
 #             left of the serene('nterms') and right('cterms').
-#    class
+#    classlist
 #             A matrix specifying the mapping between each amino-acids and the 
-#             class it belongs to
+#             class it belongs to.
 #    nL
 #             Number of amino acids at the left of the serene that will be 
 #             features.
@@ -53,7 +53,7 @@ getFeatures <- function(data.org, AAclass, nL, nR)
 #
 #--------------------------------------------------------------------------------
     #nVal: number of values each feature can take
-    nVal <- max(AAclass)
+    nVal <- length(unique(as.numeric(classlist)))
     #nOUTCOME: number of outcome values
     nOUTCOME <- dim(data.org)[2]-2
     feature <- matrix(NA, nrow=dim(data.org)[1], ncol=nL+nR+nOUTCOME)
@@ -62,14 +62,14 @@ getFeatures <- function(data.org, AAclass, nL, nR)
         l.seq  <- length(sequence)
         l <- min(nL,l.seq)
         for (i in 1:l) {
-		feature[r,nL+1-i] <- AAclass[1,sequence[l.seq+1-i]]
-	  }
+        feature[r,nL+1-i] <- AAclass[1,sequence[l.seq+1-i]]
+      }
         sequence <- unlist(strsplit(data.org[r, 'cterm'],''))
         l.seq  <- length(sequence)
         c <- min(nR,l.seq)
         for (i in 1:c) {
-		feature[r,nL+i] <- AAclass[1,sequence[i]]
-	  }
+        feature[r,nL+i] <- AAclass[1,sequence[i]]
+      }
         if( nOUTCOME != 0) {
             for (i in 1:nOUTCOME) {
                 feature[r,nL+nR+i] <- data.org[r,i]
@@ -96,8 +96,7 @@ getFeatures <- function(data.org, AAclass, nL, nR)
 
 
 
-##==============================================================================
-Dirichlet_Parameter <- function(train, nVal) 
+Dirichlet_Parameter <- function(train, classlist) 
 {
 #===============================================================================
 #Function: Dirichlet_Parameter
@@ -115,8 +114,10 @@ Dirichlet_Parameter <- function(train, nVal)
 #    train
 #             A data matrix. Each row corresponds to a peptide and each column 
 #             corresponds to a feature. The last column contain outcome values.
-#    nVal
-#             Number of values each feature can take.
+#    classlist
+#             A matrix specifying the mapping between each amino-acids and the 
+#             class it belongs to.
+#
 #-------------------------------------------------------------------------------
 #Return objects:
 #    alpha
@@ -127,50 +128,55 @@ Dirichlet_Parameter <- function(train, nVal)
 #             contains the alpha parameter of a feature.
 #
 #-------------------------------------------------------------------------------
+    #nVal: number of values a feature can take
+    nVal <- length(unique(as.numeric(classlist)))
     # K: number of features
     K <- dim(train)[2] - 1
     outcome.value = train[,K+1]
     # divide training data by outcome value
     train_0 <- train[outcome.value == 0, 1:K]
-    train_1 <- train[outcome.value == 1, 1:K]   
-	    
-	R_1 <- dim(train_1)[1]
+    train_1 <- train[outcome.value == 1, 1:K] 
+    print ('train_0')
+    print (train_0)
+    print ('train_1')
+    print (train_1)  
+        
+    R_1 <- dim(train_1)[1]
     alpha_1 <- c()
-	for (col in 1:K) {
-		count <- rep(0,nVal)
-		for (r in 1:R_1) {
+    for (col in 1:K) {
+        count <- rep(0,nVal)
+        for (r in 1:R_1) {
                   if (!is.na(train_1[r,col])) {
                       count[train_1[r,col]] <- count[train_1[r,col]] + 1
                   }
-		}
-		distance <- as.numeric(paste(unlist(strsplit(colnames(train_1)[col],''))[-1],collapse=""))
+        }
+        distance <- as.numeric(paste(unlist(strsplit(colnames(train_1)[col],''))[-1],collapse=""))
         alpha_1 <- cbind(alpha_1, count + rep(distance**0.5,nVal))
     }
     R_0<- dim(train_0)[1]
     alpha_0 <- c()
-	for (col in 1:K) {
-		count <- rep(0,nVal)
-		for (r in 1:R_0) {
+    for (col in 1:K) {
+        count <- rep(0,nVal)
+        for (r in 1:R_0) {
                   if (!is.na(train_0[r,col])) {
                       count[train_0[r,col]] <- count[train_0[r,col]] + 1
                   }
-		}
-		distance <- as.numeric(paste(unlist(strsplit(colnames(train_0)[col],''))[-1],collapse=""))
+        }
+        distance <- as.numeric(paste(unlist(strsplit(colnames(train_0)[col],''))[-1],collapse=""))
         alpha_0 <- cbind(alpha_0, count + rep(distance**0.5,nVal))
-    }	
-	alpha_0 <- as.data.frame(alpha_0)
+    }   
+    alpha_0 <- as.data.frame(alpha_0)
     colnames(alpha_0) <- colnames(train)[1:K]
     alpha_1 <- as.data.frame(alpha_1)
-    colnames(alpha_1) <- colnames(train)[1:K]	
-    alpha <- list("alpha_0" = alpha_0, "alpha_1" = alpha_1)	
+    colnames(alpha_1) <- colnames(train)[1:K]   
+    alpha <- list("alpha_0" = alpha_0, "alpha_1" = alpha_1) 
     return (alpha)
-}
+} 
 
 
 
 
-##==============================================================================
-getTheta_MC <- function(train = NA, alpha = NA, nVal) 
+getTheta_MC <- function(train = NA, alpha = NA, classlist) 
 {
 #===============================================================================
 #Function: getTheta.MC
@@ -195,9 +201,9 @@ getTheta_MC <- function(train = NA, alpha = NA, nVal)
 #             contains the alpha parameter of a feature.       
 #    train and alpha need not to be specified together. When both are specified, 
 #    train will be ignored.
-#
-#    nVal
-#             Number of values each feature can take.
+#    classlist
+#             A matrix specifying the mapping between each amino-acids and the 
+#             class it belongs to.    
 #
 #-------------------------------------------------------------------------------
 #Return objects:
@@ -209,30 +215,39 @@ getTheta_MC <- function(train = NA, alpha = NA, nVal)
 #             x.
 #
 #-------------------------------------------------------------------------------
-	if(missing(alpha)){
-	   alpha <- Dirichlet_Parameter(train, nVal)
-	}
+    nVal <- length(unique(as.numeric(classlist)))
+    print (nVal)
+    if(missing(alpha)){
+       alpha <- Dirichlet_Parameter(train, nVal)
+    }
     alpha_0 <- alpha$alpha_0
-	alpha_1 <- alpha$alpha_1
-	K <- dim(alpha_1)[2]
-	theta_0 <- c()
+    print ('alpha_0')
+    print (alpha_0)
+    alpha_1 <- alpha$alpha_1
+    print (alpha_1)
+    K <- dim(alpha_1)[2]
+    print ('K')
+    print (K)
+    theta_0 <- c()
     theta_1 <- c()
 
-	for (col in 1:K) {
-        gamma.rdn <- rgamma(nVal, shape = alpha_0[,col])	
+    for (col in 1:K) {
+        gamma.rdn <- rgamma(nVal, shape = alpha_0[,col])   
+        # print ('rdn')
+        # print (gamma.rdn) 
         theta_0 <- cbind(theta_0, gamma.rdn/sum(gamma.rdn))
             
-        gamma.rdn <- rgamma(nVal, shape = alpha_1[,col])	
+        gamma.rdn <- rgamma(nVal, shape = alpha_1[,col]) 
+        # print (gamma.rdn)   
         theta_1 <- cbind(theta_1, gamma.rdn/sum(gamma.rdn))         
-	}
+    }
     theta_0 <- as.data.frame(theta_0)
     colnames(theta_0) <- colnames(alpha_0)
     theta_1 <- as.data.frame(theta_1)
     colnames(theta_1) <- colnames(alpha_1)
     theta <- list("theta_0" = theta_0, "theta_1" = theta_1)
-	return (theta)
+    return (theta)
 }
-
 
 
 ##===============================================================================
@@ -282,3 +297,4 @@ NB_predict <- function(newdata, theta, prior.positive = 10**(-4))
     }
     return(predict)
 }
+
