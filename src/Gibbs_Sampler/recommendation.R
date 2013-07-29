@@ -70,9 +70,10 @@ for (n in 1:Nrec) {
 	}
 	random.peptides[n,(nL-random.nL[n]+1):(nL+random.nR[n])] <- one.peptide
 }
+random.peptides <- unique(random.peptides)
 prob.random.peptides <- getProb(random.peptides, theta.1, theta.0)
 table.forSort <- cbind(prob.random.peptides, random.peptides)
 sorted.table <- table.forSort[order(table.forSort[,1],decreasing=T),]
 recommend.list <- sorted.table[1:121,-1]
 recommend.prob <- sorted.table[1:121,1]
-
+write.csv(cbind(recommend.prob, recommend.list),'recommend.csv')
