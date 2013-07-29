@@ -17,7 +17,7 @@ nR <- 19
 trainData <- getFeatures(data.org,AAclass,nL,nR)
 nVal <- max(AAclass[1,])
 itr <- 1000
-Nrec <- 1e7
+Nrec <- 1e6
 #=================================================================================
 ## For AcpH
 outcome <- 'AcpH'
@@ -48,12 +48,19 @@ for (i in 1:dim(storage.1)[1]) {
 }
 theta.1.sd <- matrix(NA, nrow=nVal, ncol=(nL+nR))
 theta.0.sd <- matrix(NA, nrow=nVal, ncol=(nL+nR))
+theta.1 <- matrix(NA, nrow=nVal, ncol=(nL+nR))
+theta.0 <- matrix(NA, nrow=nVal, ncol=(nL+nR))
 for (i in 1:dim(storage.1)[1]) {
-	theta.1[ceiling(i/(nL+nR)), i-(nL+nR)*floor(i/(nL+nR))] <- storage.1[i, itr+1]
-	theta.1.sd[ceiling(i/(nL+nR)), i-(nL+nR)*floor(i/(nL+nR))] <- storage.1[i, itr+2]
-	theta.0[ceiling(i/(nL+nR)), i-(nL+nR)*floor(i/(nL+nR))] <- storage.0[i, itr+1]
-	theta.0.sd[ceiling(i/(nL+nR)), i-(nL+nR)*floor(i/(nL+nR))] <- storage.0[i, itr+2]
+	theta.1[ceiling(i/(nL+nR)), i-(nL+nR)*floor((i-1)/(nL+nR))] <- storage.1[i, itr+1]
+	theta.1.sd[ceiling(i/(nL+nR)), i-(nL+nR)*floor((i-1)/(nL+nR))] <- storage.1[i, itr+2]
+	theta.0[ceiling(i/(nL+nR)), i-(nL+nR)*floor((i-1)/(nL+nR))] <- storage.0[i, itr+1]
+	theta.0.sd[ceiling(i/(nL+nR)), i-(nL+nR)*floor((i-1)/(nL+nR))] <- storage.0[i, itr+2]
 }
+write.csv(theta.1, 'theta_1.csv')
+write.csv(theta.0, 'theta_0.csv')
+write.csv(theta.1.sd, 'theta_1sd.csv')
+write.csv(theta.0.sd, 'theta_0sd.csv')
+write.csv(theta.1/theta.0, 'theta_1vstheta_0.csv')
 
 print ('simulate recommendations')
 #simulate recommendations
@@ -108,7 +115,7 @@ write.csv(recAA.table, 'recAA.csv', row.names=F)
 # test by looking at recAA.prob and recommend.prob
 recAA.prob <- getProb(as.matrix(getFeatures(data.frame(read.csv('recAA.csv', header = T, as.is = T, sep = ",")),AAclass,nL,nR)[,c(1:(nL+nR))]), theta.1, theta.0)
 
-
+print ('mutate')
 # Mutate existing peptides, restrict length to 20
 AAlib <- c(colnames(AAclass), 'S')
 data_hit <- unique(data.org[data.org$AcpH == 1, ])
@@ -163,14 +170,31 @@ recMutates.table <- cbind(recMutates.nterm, recMutates.cterm)
 colnames(recMutates.table) <- c('nterm', 'cterm')
 write.csv(recMutates.table, 'recMutates.csv', row.names=F)
 # test and sort most probable mutations
-recMutates.prob <- getProb(as.matrix(getFeatures(data.frame(read.csv('recMutates.csv', header = T, as.is = T, sep = ",")),AAclass,nL,nR)[,c(1:(nL+nR))]), theta.1, theta.0)
+recMutates.feature <- as.matrix(getFeatures(data.frame(read.csv('recMutates.csv', header = T, as.is = T, sep = ",")),AAclass,nL,nR)[,c(1:(nL+nR))])
+recMutates.table <- recMutates.table[!duplicated(recMutates.feature),]
+recMutates.feature <- recMutates.feature[!duplicated(recMutates.feature),]
+
+#test if print 0, it's correct
+test.case <- as.matrix(getFeatures(recMutates.table,AAclass,nL,nR))
+ttt <- abs(recMutates.feature-test.case)
+count <- 0
+for (ii in 1:dim(ttt)[1]) {
+	for (jj in 1:dim(ttt)[2]) {
+		if (!is.na(ttt[ii,jj])) {
+			count <- count + ttt[ii,jj]
+		}
+	}
+}
+print ('test')
+print (count)
+###test end
+
+recMutates.prob <- getProb(recMutates.feature, theta.1, theta.0)
 sorted.recMutates.table <- recMutates.table[order(recMutates.prob,decreasing=T),]
 sorted.recMutates.table <- unique(sorted.recMutates.table)[1:121,]
 colnames(sorted.recMutates.table) <- c('nterm', 'cterm')
-# write.csv(sorted.recMutates.table, 'recMutates.csv', row.names=F)
-# # test and sort most probable mutations
-# recMutates.prob <- getProb(as.matrix(getFeatures(data.frame(read.csv('recMutates.csv', header = T, as.is = T, sep = ",")),AAclass,nL,nR)[,c(1:(nL+nR))]), theta.1, theta.0)
 
+print ('combine')
 # combine recAAs & recMutates by alternating them
 REC <- c()
 REC.test <- matrix(NA, nrow=121*2, ncol=2)
