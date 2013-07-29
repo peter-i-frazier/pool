@@ -86,7 +86,7 @@ for (i in 1:dim(recommend.list)[1]) {
 	one.rec <- c()
 	for (j in 1:nL) {
 		if (!is.na(recommend.list[i,j])) {
-			AA.group <- unlist(strsplit(AA[recommend.list[i,j]]))
+			AA.group <- unlist(strsplit(AA[recommend.list[i,j]], ''))
 			which.AA <- AA.group[ceiling(length(AA.group) * runif(1))]
 			one.rec <- c(one.rec, which.AA)
 		}
@@ -94,7 +94,7 @@ for (i in 1:dim(recommend.list)[1]) {
 	one.rec <- c(one.rec, 'S')
 	for (j in (nL+1):(nL+nR)) {
 		if (!is.na(recommend.list[i,j])) {
-			AA.group <- unlist(strsplit(AA[recommend.list[i,j]]))
+			AA.group <- unlist(strsplit(AA[recommend.list[i,j]], ''))
 			which.AA <- AA.group[ceiling(length(AA.group) * runif(1))]
 			one.rec <- c(one.rec, which.AA)
 		}
@@ -103,3 +103,5 @@ for (i in 1:dim(recommend.list)[1]) {
 }
 writeLines(recAAs, fileRec)
 close(fileRec)
+
+# Mutate existing peptides, restrict length to 20
