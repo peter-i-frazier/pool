@@ -77,3 +77,29 @@ sorted.table <- table.forSort[order(table.forSort[,1],decreasing=T),]
 recommend.list <- sorted.table[1:121,-1]
 recommend.prob <- sorted.table[1:121,1]
 write.csv(cbind(recommend.prob, recommend.list),'recommend.csv')
+
+#transfer them into strings & write to file
+fileRec <- file('recommend.txt')
+AA <- c('DE','NQ', 'FWY', 'HKR', 'AILMV', 'GP', 'ST', 'C')
+recAAs <- c()
+for (i in 1:dim(recommend.list)[1]) {
+	one.rec <- c()
+	for (j in 1:nL) {
+		if (!is.na(recommend.list[i,j])) {
+			AA.group <- unlist(strsplit(AA[recommend.list[i,j]]))
+			which.AA <- AA.group[ceiling(length(AA.group) * runif(1))]
+			one.rec <- c(one.rec, which.AA)
+		}
+	}
+	one.rec <- c(one.rec, 'S')
+	for (j in (nL+1):(nL+nR)) {
+		if (!is.na(recommend.list[i,j])) {
+			AA.group <- unlist(strsplit(AA[recommend.list[i,j]]))
+			which.AA <- AA.group[ceiling(length(AA.group) * runif(1))]
+			one.rec <- c(one.rec, which.AA)
+		}
+	}
+	recAAs <- c(recAAs, paste(one.rec, collapse=''))
+}
+writeLines(recAAs, fileRec)
+close(fileRec)
