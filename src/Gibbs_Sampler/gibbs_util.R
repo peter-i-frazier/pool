@@ -17,7 +17,7 @@ library(MCMCpack)
 #--------------------------------------------------------------------------------
 source('../Naive_Bayes/Naive_Bayes.R')
 
-getTheta <- function(train, nVal) {
+getTheta <- function(train, nVal, factor) {
 	K <- dim(train)[2]
 	R <- dim(train)[1]
 	theta <- c()
@@ -29,16 +29,16 @@ getTheta <- function(train, nVal) {
 				count[train[r,col]] <- count[train[r,col]] + 1
 			}
 		}
-		alpha <- count + rep(distance**0.5,nVal)
+		alpha <- count + rep(distance**0.5,nVal) * factor
 		theta <- cbind(theta, c(rdirichlet(1,alpha)))
 	}
 	return (theta)
 }
-sampleTheta <- function(W, Y, nVal) {
+sampleTheta <- function(W, Y, nVal, Npos, Nneg) {
 	train.1 <- W[Y==1,]
 	train.0 <- W[Y==0,]
-	theta.1 <- getTheta(train.1, nVal)
-	theta.0 <- getTheta(train.0, nVal)
+	theta.1 <- getTheta(train.1, nVal, Npos/Nneg)
+	theta.0 <- getTheta(train.0, nVal, 1)
 	theta.comb <- list(theta_1=theta.1, theta_0=theta.0)
 	return (theta.comb)
 }

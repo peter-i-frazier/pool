@@ -75,3 +75,4 @@ table.forSort <- cbind(prob.random.peptides, random.peptides)
 sorted.table <- table.forSort[order(table.forSort[,1],decreasing=T),]
 recommend.list <- sorted.table[1:121,-1]
 recommend.prob <- sorted.table[1:121,1]
+
