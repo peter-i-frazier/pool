@@ -17,7 +17,7 @@ nR <- 19
 trainData <- getFeatures(data.org,AAclass,nL,nR)
 nVal <- max(AAclass[1,])
 itr <- 1000
-Nrec <- 1e6
+Nrec <- 1e7
 #=================================================================================
 ## For AcpH
 outcome <- 'AcpH'
@@ -76,30 +76,37 @@ table.forSort <- cbind(prob.random.peptides, random.peptides)
 sorted.table <- table.forSort[order(table.forSort[,1],decreasing=T),]
 recommend.list <- sorted.table[1:121,-1]
 recommend.prob <- sorted.table[1:121,1]
-write.csv(cbind(recommend.prob, recommend.list),'recommend.csv')
 
 #transfer them into strings & write to file
 AA <- c('DE','NQ', 'FWY', 'HKR', 'AILMV', 'GP', 'ST', 'C')
 recAAs <- c()
+recAA.nterm <- c()
+recAA.cterm <- c()
 for (i in 1:dim(recommend.list)[1]) {
-	one.rec <- c()
+	one.nterm <- c()
 	for (j in 1:nL) {
 		if (!is.na(recommend.list[i,j])) {
 			AA.group <- unlist(strsplit(AA[recommend.list[i,j]], split=''))
 			which.AA <- AA.group[ceiling(length(AA.group) * runif(1))]
-			one.rec <- c(one.rec, which.AA)
+			one.nterm <- c(one.nterm, which.AA)
 		}
 	}
-	one.rec <- c(one.rec, 'S')
+	one.cterm <- c()
 	for (j in (nL+1):(nL+nR)) {
 		if (!is.na(recommend.list[i,j])) {
 			AA.group <- unlist(strsplit(AA[recommend.list[i,j]], split=''))
 			which.AA <- AA.group[ceiling(length(AA.group) * runif(1))]
-			one.rec <- c(one.rec, which.AA)
+			one.cterm <- c(one.cterm, which.AA)
 		}
 	}
-	recAAs <- c(recAAs, paste(one.rec, collapse=''))
+	recAA.nterm <- c(recAA.nterm, paste(one.nterm, collapse=''))
+	recAA.cterm <- c(recAA.cterm, paste(one.cterm, collapse=''))
 }
+recAA.table <- cbind(recAA.nterm, recAA.cterm)
+colnames(recAA.table) <- c('nterm', 'cterm')
+write.csv(recAA.table, 'recAA.csv', row.names=F)
+# test by looking at recAA.prob and recommend.prob
+recAA.prob <- getProb(as.matrix(getFeatures(data.frame(read.csv('recAA.csv', header = T, as.is = T, sep = ",")),AAclass,nL,nR)[,c(1:(nL+nR))]), theta.1, theta.0)
 
 
 # Mutate existing peptides, restrict length to 20
@@ -107,7 +114,9 @@ AAlib <- c(colnames(AAclass), 'S')
 data_hit <- unique(data.org[data.org$AcpH == 1, ])
 nTrain <- dim(data_hit)[1]
 recMutates <- c()
-for (n in 1:250) {
+recMutates.nterm <- c()
+recMutates.cterm <- c()
+for (n in 1:1e4) {
 	#choose which peptide to mutate
 	which.peptide <- ceiling(nTrain * runif(1))
 	Nterm <- unlist(strsplit(data_hit[which.peptide,'nterm'], split=''))
@@ -147,17 +156,33 @@ for (n in 1:250) {
 			}
 		}
 	}
-	one.mutate <- paste(c(Nterm, 'S', Cterm), collapse='')
-	recMutates <- c(recMutates, one.mutate)
+	recMutates.nterm <- c(recMutates.nterm, paste(Nterm, collapse=''))
+	recMutates.cterm <- c(recMutates.cterm, paste(Cterm, collapse=''))
 }
-recMutates <- unique(recMutates)[1:121]
+recMutates.table <- cbind(recMutates.nterm, recMutates.cterm)
+colnames(recMutates.table) <- c('nterm', 'cterm')
+write.csv(recMutates.table, 'recMutates.csv', row.names=F)
+# test and sort most probable mutations
+recMutates.prob <- getProb(as.matrix(getFeatures(data.frame(read.csv('recMutates.csv', header = T, as.is = T, sep = ",")),AAclass,nL,nR)[,c(1:(nL+nR))]), theta.1, theta.0)
+sorted.recMutates.table <- recMutates.table[order(recMutates.prob,decreasing=T),]
+sorted.recMutates.table <- unique(sorted.recMutates.table)[1:121,]
+colnames(sorted.recMutates.table) <- c('nterm', 'cterm')
+# write.csv(sorted.recMutates.table, 'recMutates.csv', row.names=F)
+# # test and sort most probable mutations
+# recMutates.prob <- getProb(as.matrix(getFeatures(data.frame(read.csv('recMutates.csv', header = T, as.is = T, sep = ",")),AAclass,nL,nR)[,c(1:(nL+nR))]), theta.1, theta.0)
 
 # combine recAAs & recMutates by alternating them
 REC <- c()
+REC.test <- matrix(NA, nrow=121*2, ncol=2)
+colnames(REC.test) <- c('nterm', 'cterm')
 for (n in 1:121) {
-	REC <- c(REC, recAAs[n])
-	REC <- c(REC, recMutates[n])
+	REC <- c(REC, paste(c(recAA.table[n,1], 'S', recAA.table[n,2]), collapse=''))
+	REC <- c(REC, paste(c(sorted.recMutates.table[n,1], 'S', sorted.recMutates.table[n,2]), collapse=''))
+	REC.test[n*2-1,] <- recAA.table[n,]
+	REC.test[n*2,] <- sorted.recMutates.table[n,]
 }
+write.csv(REC.test, 'RECtest.csv', row.names=F)
+REC.prob <- getProb(as.matrix(getFeatures(data.frame(read.csv('RECtest.csv', header = T, as.is = T, sep = ",")),AAclass,nL,nR)[,c(1:(nL+nR))]), theta.1, theta.0)
 # write REC to file
 fileRec <- file('recommend.txt')
 writeLines(REC, fileRec)
