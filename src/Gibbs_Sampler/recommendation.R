@@ -79,14 +79,13 @@ recommend.prob <- sorted.table[1:121,1]
 write.csv(cbind(recommend.prob, recommend.list),'recommend.csv')
 
 #transfer them into strings & write to file
-fileRec <- file('recommend.txt')
 AA <- c('DE','NQ', 'FWY', 'HKR', 'AILMV', 'GP', 'ST', 'C')
 recAAs <- c()
 for (i in 1:dim(recommend.list)[1]) {
 	one.rec <- c()
 	for (j in 1:nL) {
 		if (!is.na(recommend.list[i,j])) {
-			AA.group <- unlist(strsplit(AA[recommend.list[i,j]], ''))
+			AA.group <- unlist(strsplit(AA[recommend.list[i,j]], split=''))
 			which.AA <- AA.group[ceiling(length(AA.group) * runif(1))]
 			one.rec <- c(one.rec, which.AA)
 		}
@@ -94,14 +93,72 @@ for (i in 1:dim(recommend.list)[1]) {
 	one.rec <- c(one.rec, 'S')
 	for (j in (nL+1):(nL+nR)) {
 		if (!is.na(recommend.list[i,j])) {
-			AA.group <- unlist(strsplit(AA[recommend.list[i,j]], ''))
+			AA.group <- unlist(strsplit(AA[recommend.list[i,j]], split=''))
 			which.AA <- AA.group[ceiling(length(AA.group) * runif(1))]
 			one.rec <- c(one.rec, which.AA)
 		}
 	}
 	recAAs <- c(recAAs, paste(one.rec, collapse=''))
 }
-writeLines(recAAs, fileRec)
-close(fileRec)
+
 
 # Mutate existing peptides, restrict length to 20
+AAlib <- c(colnames(AAclass), 'S')
+data_hit <- unique(data.org[data.org$AcpH == 1, ])
+nTrain <- dim(data_hit)[1]
+recMutates <- c()
+for (n in 1:250) {
+	#choose which peptide to mutate
+	which.peptide <- ceiling(nTrain * runif(1))
+	Nterm <- unlist(strsplit(data_hit[which.peptide,'nterm'], split=''))
+	Cterm <- unlist(strsplit(data_hit[which.peptide,'cterm'], split=''))
+	L.Nterm <- length(Nterm)
+	L.Cterm <- length(Cterm)
+	#check if this peptide's length is greater than 20
+	if ((L.Nterm+L.Cterm)>19) {
+		no.Nterm <- ceiling(7 * runif(1)) + 5
+		no.Cterm <- 19 - no.Nterm
+		Nterm <- Nterm[(L.Nterm-no.Nterm+1):L.Nterm]
+		Cterm <- Cterm[1:no.Cterm]
+	}
+	L.Nterm <- length(Nterm)
+	L.Cterm <- length(Cterm)
+	# choose no. of positions to mutate
+	no.pos <- ceiling(runif(1)*4)
+	# choose which positions to mutate
+	which.pos <- ceiling((L.Nterm+L.Cterm) * runif(no.pos))
+	#choose AAs to mutate on each position
+	for (i in 1:no.pos) {
+		if (which.pos[i]<=L.Nterm) {
+			while (1) {
+				substitute <- AAlib[ceiling(runif(1)*length(AAlib))]
+				if (substitute != Nterm[which.pos[i]]) {
+					Nterm[which.pos[i]] <- substitute
+					break
+				}
+			}
+		} else {
+			while (1) {
+				substitute <- AAlib[ceiling(runif(1)*length(AAlib))]
+				if (substitute != Cterm[which.pos[i]-L.Nterm]) {
+					Cterm[which.pos[i]-L.Nterm] <- substitute
+					break
+				}
+			}
+		}
+	}
+	one.mutate <- paste(c(Nterm, 'S', Cterm), collapse='')
+	recMutates <- c(recMutates, one.mutate)
+}
+recMutates <- unique(recMutates)[1:121]
+
+# combine recAAs & recMutates by alternating them
+REC <- c()
+for (n in 1:121) {
+	REC <- c(REC, recAAs[n])
+	REC <- c(REC, recMutates[n])
+}
+# write REC to file
+fileRec <- file('recommend.txt')
+writeLines(REC, fileRec)
+close(fileRec)
