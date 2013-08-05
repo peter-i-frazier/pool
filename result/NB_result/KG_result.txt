@@ -1,0 +1,38 @@
+242 recom peptides:
+exp reduction:
+
+org:
+1.599 [1.542,1.655]
+
+new:
+1.598 [1.542, 1.654]
+
+
+100 randomly simulated peptides:
+ org_proImpr
+$improve
+[1] 0.3088
+
+$CI
+[1] 0.295993 0.321607
+
+> org_expImpr
+$improve
+[1] 1.2226
+
+$CI
+[1] 1.162609 1.282591
+
+> new_proImpr
+$improve
+[1] 0.3866
+
+$CI
+[1] 0.3731008 0.4000992
+
+> new_expImpr
+$improve
+[1] 1.5906
+
+$CI
+[1] 1.525623 1.655577

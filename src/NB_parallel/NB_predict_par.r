@@ -30,7 +30,7 @@ NB_predict_par <- function(newdata, theta, prior.positive = 10**(-4))
     nData <- dim(newdata)[1]
     #K: number of features
     K <- dim(newdata)[2] 
-    predict <- foreach(n=1:nData, .combine = append) %dopar% {
+    predict <- foreach(n=1:nData, .init = c(), .combine = append) %dopar% {
         feature <- as.numeric(newdata[n,])
         likelihood_1 <- 1
         likelihood_0 <- 1
