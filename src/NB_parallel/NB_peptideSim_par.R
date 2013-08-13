@@ -56,7 +56,7 @@ NB_peptideSim_par <- function(theta = NA, train = NA, outcome_name = NA,
 nVal <- length(unique(as.numeric(classlist)))
 #Case 1 : Generate peptides totally randomly
 if(missing(train) && missing(theta)) {
-	peptides <- foreach(icount(nPep), .combine = rbind, .multicombine = TRUE) %dopar% {
+	peptides <- foreach(icount(nPep), .combine = rbind, .init = c()) %dopar% {
 		#Draw left & right lengths at random from uniform distribution
 		sL <- minL-1+ceiling((maxL-minL+1)*runif(1))
 		sR <- minR-1+ceiling((maxR-minR+1)*runif(1))
@@ -82,7 +82,8 @@ if(missing(train) && missing(theta)) {
 else {
     alpha <- NA
     if(missing(theta)) {
-	alpha <- Dirichlet_Parameter(train,classlist) }
+	alpha <- Dirichlet_Parameter(train,classlist)
+	}
 	peptides <- foreach(icount(nPep), .init = c(), .combine = rbind, 
 	    .multicombine = TRUE, .export = c('rdist','getTheta_MC')) %dopar% {
 		#Draw left & right lengths at random from uniform distribution

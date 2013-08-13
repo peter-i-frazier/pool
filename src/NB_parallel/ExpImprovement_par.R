@@ -1,14 +1,15 @@
-ProbImprovement_par <- function(train, newdata, classlist, nRep, best.length = 11,
+ExpImprovement_par <- function(train, newdata, classlist, nRep = 100, best.length = 11,
  prior.positive = 10**-4)
 {
 #================================================================================
-#Function: ProbImprovement_par
+#Function: ExpImprovement_par
 #
 #--------------------------------------------------------------------------------
 #Description:
-#    The parallel version of ProbImprovement. 
-#        Computes the probability that at least one peptide with length shorter 
-#    than previous best in newdata is a hit.
+#    The parallel version of ExpImprovement. 
+#        Given a set of peptides(newdata), computes the expected reduction in length 
+#    of the shortest peptide known compared with current shortest length
+#    (best.length).
 #
 #--------------------------------------------------------------------------------
 #Input arguments:
@@ -32,42 +33,46 @@ ProbImprovement_par <- function(train, newdata, classlist, nRep, best.length = 1
 #
 #--------------------------------------------------------------------------------
 #Return objects:
-#    prob
+#	 exp_reduc:
 #        A list which contains:
 #    improve
-#            The desired expected reduction. 
-#    CI                
-#            The 95% confidence interval of the desired probability.
+#            The desired expectation of reduction in length.
+#    CI                 
+#            The 95% percent confidence interval of exp.improve
+#
 #--------------------------------------------------------------------------------
-	require(Rlab)
+    require(Rlab)
 	nData <- dim(newdata)[1]
     #prob.hit: A binary vector. prob.hit[i] is the probability the ith peptide in 
 	#          newdata is a hit(according to simulated posterior theta).
     prob.hit <- rep(0, nData)
 	#is.hit: A binary vector. is.hit[i] = 1 if the ith peptide in newdata is a 
-	#        hit, this vector is simulated according to  prob.hit
+	#        hit. This vector is simulated according to  prob.hit.
 	is.hit <- rep(0, nData)
-	#isShorter: A vector. isShorter[i] is the indicator of the ith peptide in 
-	#           newdata being shorter than the best previous peptide.
+	#reduction: A vector. reduction[i] is the reduction in the length compared
+    #        	with best.length of the ith peptide in newdata if that peptide 
+	#           is a hit
+    #                     reduction[i] = 0 if is.hit[i] = 0
+	#           reduction[i] = max(0,best.length-length(newdata[i])) 
+	#           if is.hit[i] = 1
+	
 	#Calculate the length of all peptides in newdata
 	peptide.length <- rowSums(!is.na(newdata))
-	is.shorter <- as.numeric(peptide.length < best.length)
-    #is.found: A binary vector. In the ith simulation, if at least one of the 
-	#          peptides in newdata is a hit and is shorter than best.length, 
-	#      	   is.found[i] = 1, otherwise 0.
-    is.found <- rep(0, nRep)
+	#Initialize reduction
+	reduction <- pmax(0,best.length - peptide.length)
 	alpha <- Dirichlet_Parameter(train, classlist)
-    is.found <- foreach(icount(nRep), .combine = append, .init = c(), .packages = c('Rlab'),
-	    .export = c('NB_predict','getTheta_MC')) %dopar% {        
+	#max_reduction: A vector. max.reduction[i] = is the maximum reduction in the 
+	#               length among all peptides in newdata in the ith simulation.
+    max_reduction <- foreach(icount(nRep), .init = c(), .combine = append, 
+			.packages = c('Rlab'), .export = c('getTheta_MC', 'NB_predict')) %dopar% {        
         theta <- getTheta_MC(alpha = alpha, classlist = classlist)
 		prob.hit <- NB_predict(newdata, theta, prior.positive = prior.positive)
         #Simulate is.hit according to prob.hit
 		is.hit <- rbern(nData, prob.hit)
-		as.numeric(any(is.hit*is.shorter > 0))
+		max(reduction*is.hit)
     }
-    improve <- mean(is.found)
-	CI <- c(improve-sd(is.found)*qnorm(0.975)/sqrt(nRep), improve+sd(is.found)*qnorm(0.975)/sqrt(nRep))
-	prob <- list("improve" = improve, "CI" = CI)
-    return(prob)   
+    improve <- mean(max_reduction)
+	CI <- c(improve-sd(max_reduction)*qnorm(0.975)/sqrt(nRep), improve+sd(max_reduction)*qnorm(0.975)/sqrt(nRep))
+	exp_reduc <- list("improve" = improve, "CI" = CI) 
+    return(exp_reduc)   
 }
-    
