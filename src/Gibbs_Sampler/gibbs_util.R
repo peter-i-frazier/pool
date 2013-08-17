@@ -15,7 +15,7 @@ library(MCMCpack)
 # Input: training data   Type: matrix
 # Output: theta          Type: matrix
 #--------------------------------------------------------------------------------
-source('../Naive_Bayes/Naive_Bayes.R')
+# source('../Naive_Bayes/Naive_Bayes.R')
 
 getTheta <- function(train, nVal, factor) {
 	K <- dim(train)[2]
