@@ -15,8 +15,8 @@ nL <- 19
 nR <- 19
 trainData <- getFeatures(data.org,AAclass,nL,nR)
 nAA <- max(AAclass[1,])
-burnin.step <- 50
-record.step <- 50
+burnin.step <- 4000
+record.step <- 500
 #=================================================================================
 ## For AcpH
 outcome <- 'AcpH'
