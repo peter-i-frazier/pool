@@ -156,7 +156,15 @@ getProb <- function(test.data, mu.1, mu.0, Z.1, Z.0) {
 					prod.0 <- prod.0 * theta.0[test.data[j],j]
 				}
 			}
-			prob <- P * prod.1/ (P * prod.1 + (1.0-P) * prod.0)
+			# print (theta.1)
+			# print (theta.0)
+			# print (prod.1)
+			# print (prod.0)
+			if (prod.1==0 && prod.0==0) {
+				prob <- 0.5
+			} else{
+				prob <- P * prod.1/ (P * prod.1 + (1.0-P) * prod.0)
+			}
 			return (prob)
 		} else {
 			R <- dim(test.data)[1]
@@ -170,7 +178,11 @@ getProb <- function(test.data, mu.1, mu.0, Z.1, Z.0) {
 						prod.0 <- prod.0 * theta.0[test.data[r,j],j]
 					}
 				}
-				prob[r] <- P * prod.1/ (P * prod.1 + (1-P) * prod.0)
+				if (prod.1==0 && prod.0==0) {
+					prob[r] <- 0.5
+				} else{
+					prob[r] <- P * prod.1/ (P * prod.1 + (1.0-P) * prod.0)
+				}
 			}
 		}
 			return (prob)
