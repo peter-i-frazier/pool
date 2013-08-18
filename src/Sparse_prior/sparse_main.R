@@ -1,4 +1,6 @@
 rm(list=ls())
+library(doMC)
+library(foreach)
 source('sparse_prior_util.R')
 #=================================================================================
 #Specify Paths and working directory
@@ -24,13 +26,9 @@ X <- as.matrix(trainData[,c(1:(nL+nR))])
 Y <- trainData[,outcome]
 
 ## cross validation
-prob <- c()
-for (n in 1:length(Y)) {
-	print (n)
-	X.train <- X[-n,]
-	Y.train <- Y[-n]
-	test <- X[n,]
-	prob <- rbind(prob, sparsePrior(X.train, Y.train, test, nAA, burnin.step, record.step))
+registerDoMC()
+prob <- foreach (n=1:length(Y), .combine=rbind) %dopar% {
+	sparsePrior(X[-n,], Y[-n], X[n,], nAA, burnin.step, record.step)
 }
 
 # test <- X[1,]
