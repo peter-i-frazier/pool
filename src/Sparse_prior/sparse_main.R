@@ -23,13 +23,28 @@ outcome <- 'AcpH'
 X <- as.matrix(trainData[,c(1:(nL+nR))])
 Y <- trainData[,outcome]
 
-## cross validation
-prob <- c()
-for (n in 1:length(Y)) {
-	print (n)
-	X.train <- X[-n,]
-	Y.train <- Y[-n]
-	test <- X[n,]
-	prob <- c(prob, mean(sparsePrior(X.train, Y.train, test, nAA, burnin.step, record.step)))
-}
+# ## cross validation
+# prob <- c()
+# for (n in 1:length(Y)) {
+# 	print (n)
+# 	X.train <- X[-n,]
+# 	Y.train <- Y[-n]
+# 	test <- X[n,]
+# 	prob <- c(prob, mean(sparsePrior(X.train, Y.train, test, nAA, burnin.step, record.step)))
+# }
 
+test <- X
+# some constant
+nF <- dim(X)[2]
+X.1 <- X[Y==1,]
+X.0 <- X[Y==0,]
+factor <- length(Y==1)/length(Y==0)
+# Initialization
+ztable <- Ztable(nAA)
+P.1 <- rep(0.5, nF)
+P.0 <- P.1
+Z.1 <- c()
+for (i in 1:nF) {
+	Z.1 <- cbind(Z.1,rbern(nAA, P.1[i]))
+}
+Z.0 <- Z.1
