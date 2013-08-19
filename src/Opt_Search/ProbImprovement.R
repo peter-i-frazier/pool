@@ -1,4 +1,4 @@
-ProbImprovement <- function(train, newdata, nrep, nVal, best.length = 11,
+ProbImprovement <- function(train, newdata, classlist, nRep, best.length = 11,
  prior.positive = 10**-4)
 {
 #================================================================================
@@ -18,10 +18,11 @@ ProbImprovement <- function(train, newdata, nrep, nVal, best.length = 11,
 #    newdata:
 #            A data matrix whose rows correspond to peptides and columns to 
 #            features. There shall be no outcome values.
-#    nrep:
+#    classlist
+#             A matrix specifying the mapping between each amino-acids and the 
+#             class it belongs to.
+#    nRep:
 #            Number of simulation replications.
-#    nVal:
-#            Number of values each feature can take.
 #    best.length
 #            Current shortest length of peptides working with both enzymes.
 #    prior.positive
@@ -32,12 +33,13 @@ ProbImprovement <- function(train, newdata, nrep, nVal, best.length = 11,
 #Return objects:
 #    prob
 #        A list which contains:
-#    prob.improve
+#    improve
 #            The desired expected reduction. 
-#    prod.CI                
+#    CI                
 #            The 95% confidence interval of the desired probability.
 #--------------------------------------------------------------------------------
-    nData <- dim(newdata)[1]
+	require(Rlab)
+	nData <- dim(newdata)[1]
     #prob.hit: A binary vector. prob.hit[i] is the probability the ith peptide in 
 	#          newdata is a hit(according to simulated posterior theta).
     prob.hit <- rep(0, nData)
@@ -46,22 +48,24 @@ ProbImprovement <- function(train, newdata, nrep, nVal, best.length = 11,
 	is.hit <- rep(0, nData)
 	#isShorter: A vector. isShorter[i] is the indicator of the ith peptide in 
 	#           newdata being shorter than the best previous peptide.
-	is.Shorter <- as.numeric(newdata < best.length)
+	#Calculate the length of all peptides in newdata
+	peptide.length <- rowSums(!is.na(newdata))
+	is.shorter <- as.numeric(peptide.length < best.length)
     #is.found: A binary vector. In the ith simulation, if at least one of the 
 	#          peptides in newdata is a hit and is shorter than best.length, 
 	#      	   is.found[i] = 1, otherwise 0.
-    is.found <- rep(0, nrep)
-	alpha <- Dirichlet_Parameter(train, nVal)
-    for(i in 1:nrep) {        
-        theta <- getTheta_MC(alpha = alpha, nVal = nVal)
+    is.found <- rep(0, nRep)
+	alpha <- Dirichlet_Parameter(train, classlist)
+    for(i in 1:nRep) {        
+        theta <- getTheta_MC(alpha = alpha, classlist = classlist)
 		prob.hit <- NB_predict(newdata, theta, prior.positive = prior.positive)
         #Simulate is.hit according to prob.hit
 		is.hit <- rbern(nData, prob.hit)
 		is.found[i] <- as.numeric(any(is.hit*is.shorter > 0))
     }
-    prob.improve <- mean(is.found)
-	prob.CI <- c(prob.improve-sd(is.found)*qnorm(0.975),prob.improve+sd(is.found)*qnorm(0.975))
-	prob <- list("prob.improve" = prob.improve, "prob.CI" = prob.CI)
+    improve <- mean(is.found)
+	CI <- c(improve-sd(is.found)*qnorm(0.975)/sqrt(nRep), improve+sd(is.found)*qnorm(0.975)/sqrt(nRep))
+	prob <- list("improve" = improve, "CI" = CI)
     return(prob)   
 }
     

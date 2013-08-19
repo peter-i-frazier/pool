@@ -40,6 +40,7 @@ ExpImprovement <- function(train, newdata, classlist, nRep = 100, best.length = 
 #            The 95% percent confidence interval of exp.improve
 #
 #--------------------------------------------------------------------------------
+    require(Rlab)
 	nData <- dim(newdata)[1]
     #prob.hit: A binary vector. prob.hit[i] is the probability the ith peptide in 
 	#          newdata is a hit(according to simulated posterior theta).
