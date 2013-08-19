@@ -13,7 +13,7 @@
 \maketitle
 
 \section{Sparse Prior}
-To improve the prediction accuracy of our Naive Bayes classifier, we need to filter out some irrelavant features. To do this, we introduce sparsity by assigning each $\theta_{y,i}^{(k)}(j)$ with a binary random variable $Z_{y,i}^{(k)}(j)$, and when $Z_{y,i}^{(k)}(j)=0$, $\theta_{y,i}^{(k)}(j)$ is sampled from its prior distribution.
+We introduce sparse prior to improve the prediction accuracy of our Naive Bayes classifier. We assign each $\theta_{y,i}^{(k)}(j)$ with a binary random variable $Z_{y,i}^{(k)}(j)$. $\theta_{y,i}^{(k)}(j)=0$ when $Z_{y,i}^{(k)}(j)=0$. Fix $y,k,j$, $\{\theta_{y,i}^{(k)}(j):Z_{y,i}^{(k)}(j)=1\}$ are sampled from Dirichlet distribution as before.
 
 \subsection{the Model}
 Fix $y,k$, denote $i$ as position index for feature vector, and $j = \{1,2, \ldots,8\} $ as class index, thus

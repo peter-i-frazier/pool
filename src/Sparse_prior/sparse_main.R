@@ -31,6 +31,8 @@ prob <- foreach (n=1:length(Y), .combine=rbind) %dopar% {
 	sparsePrior(X[-n,], Y[-n], X[n,], nAA, burnin.step, record.step)
 }
 
+
+
 # test <- X[1,]
 # X <- X[-1,]
 # Y <- Y[-1]
