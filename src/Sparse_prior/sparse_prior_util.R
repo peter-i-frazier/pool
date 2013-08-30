@@ -1,3 +1,4 @@
+
 library(MCMCpack)
 library(Rlab)
 
@@ -54,10 +55,12 @@ for (t in 1:record.step) {
 	Z.0 <- getZ(X.0, P.0, mu.0, ztable)
 	P.1 <- getP(Z.1)
 	P.0 <- getP(Z.0)
-	if (is.vector(test)) {
-		prob <- c(prob, getProb(test, mu.1, mu.0, Z.1, Z.0))
-	} else {
-		prob <- rbind(prob, getProb(test, mu.1, mu.0, Z.1, Z.0))
+	if( t%%100 == 0 ){
+		if (is.vector(test)) {
+			prob <- c(prob, getProb(test, mu.1, mu.0, Z.1, Z.0))
+		} else {
+			prob <- rbind(prob, getProb(test, mu.1, mu.0, Z.1, Z.0))
+		}
 	}
 }
 return (prob)
@@ -82,7 +85,12 @@ getMu <- function(train, factor, Z, P) {
 			mu[index.true,j] <- rdirichlet(1,alpha) * rgamma(1,sum(alpha))
 			mu[Z[,j]==0,j] <- rep(distance**0.5, nAA-no.true) * factor
 		}
-	}
+		if(any(is.na(mu[,j])))
+		{
+		    print(c('NA in mu[,',j,']'))
+			print(Z[,j])
+		}
+	}	
 	return (mu)
 }
 
@@ -113,18 +121,35 @@ getZ <- function(train, P, mu, ztable) {
 			# print (theta)
 			# print (train[,j])
 			# print (theta[train[,j]])
-			prob[n] <- prod(theta[train[,j]])
+			prob[n] <- prod(theta[train[,j][train[,j]!=-1]])*(P[j]**sum(z))*((1-P[j])**sum(1-z))
 		}
-		# print (prob)
-		prob <- prob / sum(prob)
-		# print (prob)
+		#print (prob)
+		if(sum(prob)==0)
+		{
+		    prob <- rep(1/N, N)
+		}
+		else {
+		    prob <- prob / sum(prob)
+		}
+		
+		#print (prob)
 		which.z <- 0
 		pp <- runif(1)
-		while (pp >0) {
+		while (pp > 0) {
 			which.z <- which.z +1
 			pp <- pp - prob[which.z]
+			if(!is.logical((pp>0))){
+			    print(pp)
+				print(prob)
+			}	
 		}
 		Z[,j] <- ztable[which.z,]
+		if(any(is.na(Z[,j])))
+		{
+		    print(c('NA in Z[,',j,']'))
+			print(mu[,j])
+			print(pp)
+		}
 	}
 	return (Z)
 }
@@ -139,13 +164,13 @@ getP <- function(Z) {
 }
 
 getProb <- function(test.data, mu.1, mu.0, Z.1, Z.0) {
-	P <- 1e-4
-	theta.1 <- c()
-	theta.0 <- c()
+	P <- 1e-1
 	nF <- dim(mu.1)[2]
+	nAA <- dim(mu.1)[1]
+	theta.1 <- c()
+	theta.0 <- matrix(table(as.numeric(AAclass))/length(AAclass),nAA,nF)
 	for (j in 1:nF) {
 		theta.1 <- cbind(theta.1, mu.1[,j]*Z.1[,j]/sum(mu.1[,j]*Z.1[,j]))
-		theta.0 <- cbind(theta.0, mu.0[,j]*Z.0[,j]/sum(mu.0[,j]*Z.0[,j]))
 	}
 	if (is.vector(test.data)) {
 			prod.1 <- 1
@@ -156,10 +181,10 @@ getProb <- function(test.data, mu.1, mu.0, Z.1, Z.0) {
 					prod.0 <- prod.0 * theta.0[test.data[j],j]
 				}
 			}
-			# print (theta.1)
-			# print (theta.0)
-			# print (prod.1)
-			# print (prod.0)
+			#print (theta.1)
+			#print (theta.0)
+			#print (prod.1)
+			#print (prod.0)
 			if (prod.1==0 && prod.0==0) {
 				prob <- 0.5
 			} else{
@@ -185,7 +210,7 @@ getProb <- function(test.data, mu.1, mu.0, Z.1, Z.0) {
 				}
 			}
 		}
-			return (prob)
+		return (prob)
 }
 
 getFeatures <- function(data.org, classlist, nL, nR)
