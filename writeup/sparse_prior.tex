@@ -6,6 +6,7 @@
 \newcommand{\zap}[1]{ }
 \newcommand{\R}{\mathbb{R}}
 \newcommand{\data}{\text{training data}}
+\DeclareMathOperator{\Gam}{Gamma}
 %\doublespacing
 
 \title{Sparse Prior}
@@ -25,7 +26,7 @@ Z_{i,j} &:= Z_{y,i}^{(k)}(j)
 \begin{align*}
 Z_{i,j} &\sim Bernoulli (p_i) \\
 \theta_{i,j} &= \frac{\mu_{i,j} Z_{i,j}}{\sum_{j'=1}^8 \mu_{ij'} Z_{ij'}} \\
-\mu_{i,j} &\sim Gamma(\alpha_{i,j},1)
+\mu_{i,j} &\sim \Gam(\alpha_{i,j},1)
 \end{align*}
 In order to simulate posterior distribution of $\theta_{ij}$, we need to simulate joint distribution $\mathbb{P} (p_i, Z_{ij}, \mu_{ij} | Data)$. We use Gibbs sampler to simulate this distribution.
 
@@ -38,7 +39,7 @@ Fix $y,k$. Let $X$ be a data matrix, and each row represents a feature vector $x
  \item
  For $j$ with $Z_{ij}=0$, simulate $\mu_{ij}$ from prior distribution.
  \item
- For $j$ with $Z_{ij}=1$, let $\mathcal{J}=\{j: Z_{ij}=1\}$. First we can simulate $\{\frac{\mu_{ij}}{\sum_{j' \in \mathcal{J}} \mu_{ij'}} : j \in \mathcal{J}\}$ given data, and this is a Dirichlet distribution with parameters $(\alpha_{ij}+\text{\# of occurrence of class $j$ for feature $i$} : j \in \mathcal{J})$. Given $\{\frac{\mu_{ij}}{\sum_{j' \in \mathcal{J}} \mu_{ij'}} : j \in \mathcal{J}\}$, we can simulate $\sum_{j \in \mathcal{J}} \mu_{ij}$ from $Gamma(\sum_{j \in \mathcal{J}} \hat{\alpha_{ij}},1)$, where $\hat{\alpha_{ij}}$ are posterior Dirichlet parameters. Eventually we get $\{\mu_{ij}:j \in \mathcal{J}\}$ given $\{\frac{\mu_{ij}}{\sum_{j' \in \mathcal{J}} \mu_{ij'}} : j \in \mathcal{J}\}$ and $\sum_{j \in \mathcal{J}} \mu_{ij}$. 
+ For $j$ with $Z_{ij}=1$, let $\mathcal{J}=\{j: Z_{ij}=1\}$. First we can simulate $\{\frac{\mu_{ij}}{\sum_{j' \in \mathcal{J}} \mu_{ij'}} : j \in \mathcal{J}\}$ given data, and this is a Dirichlet distribution with parameters $(\alpha_{ij}+\text{\# of occurrence of class $j$ for feature $i$} : j \in \mathcal{J})$. Given $\{\frac{\mu_{ij}}{\sum_{j' \in \mathcal{J}} \mu_{ij'}} : j \in \mathcal{J}\}$, we can simulate $\sum_{j \in \mathcal{J}} \mu_{ij}$ from $\Gam(\sum_{j \in \mathcal{J}} \hat{\alpha_{ij}},1)$, where $\hat{\alpha_{ij}}$ are posterior Dirichlet parameters. Eventually we get $\{\mu_{ij}:j \in \mathcal{J}\}$ given $\{\frac{\mu_{ij}}{\sum_{j' \in \mathcal{J}} \mu_{ij'}} : j \in \mathcal{J}\}$ and $\sum_{j \in \mathcal{J}} \mu_{ij}$. 
  \end{itemize}
     \item
     $Z_{ij}, \forall ij | \mu_{i'j'}, p_{i'}, \forall i'j', X$ \\
