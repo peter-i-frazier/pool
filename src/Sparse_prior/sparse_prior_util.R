@@ -22,6 +22,64 @@ library(Rlab)
 
 #### NOTE!!!! Feature matrix MUST NOT have NAs, for NAs, replace with negative values, like -1
 
+new_sparsePrior <- function(X, Y, test, nAA, burnin.step, record.step) {
+# some constant
+nF <- dim(X)[2]
+X.1 <- X[Y==1,]
+X.0 <- X[Y==0,]
+factor <- sum(Y==1)/sum(Y==0)
+# Initialization
+ztable <- Ztable(nAA)
+P.1 <- rep(0.5, nF)
+P.0 <- P.1
+Z.1 <- c()
+for (i in 1:nF) {
+	Z.1 <- cbind(Z.1,rbern(nAA, P.1[i]))
+}
+Z.0 <- Z.1
+# burn in step
+for (t in 1:burnin.step) {
+	mu.1 <- getMu(X.1, factor, Z.1, P.1)
+	#mu.0 <- getMu(X.0, 1, Z.0, P.0)
+	Z.1 <- getZ(X.1, P.1, mu.1, ztable)
+	#Z.0 <- getZ(X.0, P.0, mu.0, ztable)
+	P.1 <- getP(Z.1)
+	#P.0 <- getP(Z.0)
+}
+# record step
+prob <- c()
+Z.table <- c()
+mu.table <- c()
+for (t in 1:record.step) {
+	mu.1 <- getMu(X.1, factor, Z.1, P.1)
+	#mu.0 <- getMu(X.0, 1, Z.0, P.0)
+	Z.1 <- getZ(X.1, P.1, mu.1, ztable)
+	#Z.0 <- getZ(X.0, P.0, mu.0, ztable)
+	P.1 <- getP(Z.1)
+	#P.0 <- getP(Z.0)
+	if( t%%100 == 0 ){
+		if (is.vector(test)) {
+			prob <- c(prob, getProb(test, mu.1, mu.0, Z.1, Z.0))
+		} else {
+			prob <- rbind(prob, getProb(test, mu.1, mu.0, Z.1, Z.0))
+		}
+		Z.table <- rbind(Z.table, flat_matrix(Z.1))
+		mu.table <- rbind(mu.table, flat_matrix(mu.1))
+	}
+}
+result <- list("prob"=prob, "Ztable"=Z.table, "mutable"=mu.table)
+return (result)
+}
+
+# Convert matrix to vector by linking COLUMNs together
+flat_matrix <- function(M, nrow, ncol) {
+	V <- c()
+	for (k in 1:ncol) {
+		V <- c(V, M[,k])
+	}
+	return (V)
+}
+
 sparsePrior <- function(X, Y, test, nAA, burnin.step, record.step) {
 # some constant
 nF <- dim(X)[2]
