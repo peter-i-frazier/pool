@@ -1,17 +1,18 @@
-rm(list=ls())
-library(doMC)
-library(foreach)
 #=================================================================================
 #Specify Paths and working directory
+rm(list=ls())
 dataPath <- 'D:/Study/Summer2013/Peptide/data.original'
 dataFile <- paste(dataPath,  '/newData.csv', sep = "")
 classFile <- paste(dataPath, '/Reduced_AA_Alphabet.csv', sep = "")
 srcPath <- 'D:/Study/Summer2013/Peptide/src'
 wrkDir <- 'D:/Study/Summer2013/Peptide/wrkDir'
 setwd(wrkDir)
-
-source(paste(srcPath, '/Sparse_prior/sparse_prior_util.R', sep = ""))
-
+#=================================================================================
+#Functions might be used
+source(paste(srcPath, '/Sparse_prior/sparse_prior_util_par.R', sep = ""))
+source(paste(srcPath, '/NaiveBayes/Naive_Bayes_util.R',sep=""))
+source(paste(srcPath, '/Opt_Search/Opt_Search_util.R',sep=""))
+#=================================================================================
 #get data 
 data_org <- data.frame(read.csv(dataFile, header = T, as.is = T, sep = ","))
 AAclass <- read.csv(classFile, header=T, as.is = T, sep=",")
@@ -49,29 +50,40 @@ trainY <- c(rep(1,10), rep(0,6), rep(1,dim(X[Y==1,])[1]-10),rep(0,dim(X[Y==1,])[
 
 ## cross validation
 registerDoMC()
-prob_1 <- foreach (n = 1:16, .init = c(), .combine = rbind, .packages = c('MCMCpack','Rlab'), .inorder = TRUE, .errorhandling = 'pass') %dopar% {
-	sparsePrior(trainX[-n,], trainY[-n], trainX[n,], nAA, burnin.step, record.step)
-}
+system.time(
+prob <- foreach (n = 1:dim(X)[1], .init = c(), .combine = rbind, .packages = c('MCMCpack','Rlab'), .inorder = TRUE, .errorhandling = 'pass') %dopar% {
+	sparsePrior(X[-n,], Y[-n], X[n,], nAA, burnin.step, record.step)
+})[3]
 
 prob <- c()
-for ( n in 1:16 ) {
+system.time(
+for ( n in 1:dim(X)[1] ) {
 	prob <- rbind(prob, sparsePrior(X[-n,], Y[-n], X[n,], nAA, burnin.step, record.step))
+})[3]
+
+rowNames(prob) <- c()
+prob_pep <- rowMeans(prob)
+
+#Plot the ROC curve
+FPR <- rep(-1, 101)
+TPR <- rep(-1, 101)
+for( i in 1:101 ) {
+	threshold <- (i-1)/100
+	label <- rep(0, length(prob_pep))
+	for( j in 1:length(prob_pep) ){
+		if(prob_pep[j] > threshold) {
+			label[j] <- 1 }
+	}
+	FPR[i] <- sum((Y==0)&(label==1))/sum(Y==0)
+	TPR[i] <- sum((Y==1)&(label==1))/sum(Y==1)
 }
-	
-# test <- X[1,]
-# X <- X[-1,]
-# Y <- Y[-1]
-# # some constant
-# nF <- dim(X)[2]
-# X.1 <- X[Y==1,]
-# X.0 <- X[Y==0,]
-# factor <- length(Y==1)/length(Y==0)
-# # Initialization
-# ztable <- Ztable(nAA)
-# P.1 <- rep(0.5, nF)
-# P.0 <- P.1
-# Z.1 <- c()
-# for (i in 1:nF) {
-# 	Z.1 <- cbind(Z.1,rbern(nAA, P.1[i]))
-# }
-# Z.0 <- Z.1
+TP <- sum((Y==1)&(label==1))
+FN <- sum((Y==1)&(label==0))
+TN <- sum((Y==0)&(label==0))
+FP <- sum((Y==0)&(label==1))
+
+
+
+jpeg('ROC_SP.jpg')
+plot(x = FPR, y = TPR, type = 'l', xlim = c(0,1), ylim = c(0,1), xlab = "false positive rate", ylab = "true positive rate")
+dev.off()
