@@ -40,34 +40,38 @@ Z.0 <- Z.1
 # burn in step
 for (t in 1:burnin.step) {
 	mu.1 <- getMu(X.1, factor, Z.1, P.1)
-	#mu.0 <- getMu(X.0, 1, Z.0, P.0)
+	mu.0 <- getMu(X.0, 1, Z.0, P.0)
 	Z.1 <- getZ(X.1, P.1, mu.1, ztable)
-	#Z.0 <- getZ(X.0, P.0, mu.0, ztable)
+	Z.0 <- getZ(X.0, P.0, mu.0, ztable)
 	P.1 <- getP(Z.1)
-	#P.0 <- getP(Z.0)
+	P.0 <- getP(Z.0)
 }
 # record step
 prob <- c()
-Z.table <- c()
-mu.table <- c()
+Z1.table <- c()
+Z0.table <- c()
+mu1.table <- c()
+mu0.table <- c()
 for (t in 1:record.step) {
 	mu.1 <- getMu(X.1, factor, Z.1, P.1)
-	#mu.0 <- getMu(X.0, 1, Z.0, P.0)
+	mu.0 <- getMu(X.0, 1, Z.0, P.0)
 	Z.1 <- getZ(X.1, P.1, mu.1, ztable)
-	#Z.0 <- getZ(X.0, P.0, mu.0, ztable)
+	Z.0 <- getZ(X.0, P.0, mu.0, ztable)
 	P.1 <- getP(Z.1)
-	#P.0 <- getP(Z.0)
+	P.0 <- getP(Z.0)
 	if( t%%100 == 0 ){
 		if (is.vector(test)) {
 			prob <- c(prob, getProb(test, mu.1, mu.0, Z.1, Z.0))
 		} else {
 			prob <- rbind(prob, getProb(test, mu.1, mu.0, Z.1, Z.0))
 		}
-		Z.table <- rbind(Z.table, flat_matrix(Z.1))
-		mu.table <- rbind(mu.table, flat_matrix(mu.1))
+		Z1.table <- rbind(Z1.table, flat_matrix(Z.1))
+		Z0.table <- rbind(Z0.table, flat_matrix(Z.0))
+		mu1.table <- rbind(mu1.table, flat_matrix(mu.1))
+		mu0.table <- rbind(mu0.table, flat_matrix(mu.0))
 	}
 }
-result <- list("prob"=prob, "Ztable"=Z.table, "mutable"=mu.table)
+result <- list("prob"=prob, "Z1table"=Z1.table, "mu1table"=mu1.table, "Z0table"=Z0.table, "mu0table"=mu0.table)
 return (result)
 }
 
