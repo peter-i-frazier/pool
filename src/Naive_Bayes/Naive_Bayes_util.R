@@ -84,13 +84,13 @@ getFeatures <- function(data.org, classlist, nL, nR)
         l.seq  <- length(sequence)
         l <- min(nL,l.seq)
         for (i in 1:l) {
-		feature[r,nL+1-i] <- AAclass[1,sequence[l.seq+1-i]]
+		feature[r,nL+1-i] <- classlist[1,sequence[l.seq+1-i]]
 	  }
         sequence <- unlist(strsplit(data.org[r, 'cterm'],''))
         l.seq  <- length(sequence)
         c <- min(nR,l.seq)
         for (i in 1:c) {
-		feature[r,nL+i] <- AAclass[1,sequence[i]]
+		feature[r,nL+i] <- classlist[1,sequence[i]]
 	  }
         if( nOUTCOME != 0) {
             for (i in 1:nOUTCOME) {
