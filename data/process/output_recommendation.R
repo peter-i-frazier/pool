@@ -103,6 +103,27 @@ for (i in 1:40) {
 colnames(mix_AA) <- c('nterm', 'cterm', 'prob')
 write.csv(mix_AA, 'mix_AA.csv', row.names=F)
 
+# write recommendations as nterm cterm form into csv file
+REC_AA <- c()
+for (i in 1:40) {
+	REC_AA <- rbind(REC_AA, recom_1_AA[i,])
+	REC_AA <- rbind(REC_AA, recom_2_AA[i,])
+	REC_AA <- rbind(REC_AA, recom_3_AA[i,])
+	REC_AA <- rbind(REC_AA, recom_4_AA[i,])
+	REC_AA <- rbind(REC_AA, mutate_AA[i,])
+	REC_AA <- rbind(REC_AA, mix_AA[i,])
+}
+for (i in 41:140) {
+	REC_AA <- rbind(REC_AA, recom_1_AA[i,])
+	REC_AA <- rbind(REC_AA, recom_2_AA[i,])
+	REC_AA <- rbind(REC_AA, mutate_AA[i,])
+}
+for (i in 141:150) {
+	REC_AA <- rbind(REC_AA, mutate_AA[i,])
+}
+write.csv(REC_AA, 'recommendation_AA.csv', row.names=F)
+
+# write as txt format
 REC <- c()
 for (i in 1:40) {
 	REC <- c(REC, paste0(recom_1_AA[i,'nterm'], 'S', recom_1_AA[i,'cterm']))
