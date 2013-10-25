@@ -1,0 +1,38 @@
+\documentclass[12pt]{article}
+\usepackage{amsmath,amssymb,mathtools}
+\usepackage{bbm}
+\newcommand{\E}{\mathbb{E}}
+\newcommand{\EI}{\mathrm{EI}}
+
+\begin{document}
+\section{Solution Method for EI}
+We want to solve 
+\begin{equation*}
+\underset{S \subseteq E:|S| \leq k}{\E} \left[ (b-f^*(S))^+ \right]
+\end{equation*}
+\subsection{objective function is submodular}
+\subsection{greedy method}
+Suppose we have chosen $S=\{x_1, x_2, \ldots, x_n\}$ as a batch of points we are going to evaluate next, and if we want to incorporate one more point $e$, which is distinct from $x_1, x_2, \ldots, x_n$, such that the expected improvement increases most, we use the following criterion to find $e$:
+\begin{equation} \label{eq:finde}
+\underset{e \in E \backslash S}{\mathrm{arg}\max} \EI (S \cup \{e\})
+\end{equation}
+We define $f^*(S)=\underset{x \in S:y(x)=1}{\min} f(x)$, and write expected improvement as
+\begin{align*}
+\EI (S \cup \{e\}) &= \E [b-\underset{x \in S \cup \{e\}:y(x)=1}{\min} f(x)] \\
+                  &= 
+                  \begin{dcases}
+                    \E [b- f^*(S)] & \text{if $y(e)=0$ ,} \\
+                    \E [b- \min \{f(e), f^*(S)\}]       & \text{if $y(e)=1$ ,}
+                    \end{dcases} \\
+                  &= \E [b-f^*(S) + \mathbbm{1}_{\{y(e)=1, f(e) < f^*(S)\}} [f^*(S)-f(e)] ]
+\end{align*}
+Thus equation \eqref{eq:finde} becomes
+\begin{align*}
+&\underset{e \in E \backslash S}{\mathrm{arg}\max} \E [ \mathbbm{1}_{\{y(e)=1, f(e) < f^*(S)\}} [f^*(S)-f(e)] ] \\
+&=\underset{e \in E \backslash S}{\mathrm{arg}\max} \E [ \E [\mathbbm{1}_{\{y(e)=1, f(e) < f^*(S)\}} [f^*(S)-f(e)] | f^*(S)]\\
+&= \underset{e \in E \backslash S}{\mathrm{arg}\max} \E [ \mathbbm{1}_{\{f(e)<f^*(S)\}} \mathbb{P} (y(e)=1 | f^*(S)) [f^*(S)-f(e)]] \\
+&= \underset{e \in E \backslash S}{\mathrm{arg}\max} \sum_{i=1}^{|S|} \mathbb{P} (y(e)=1, y(x_i)=1, y(x_j)=0, \forall j <i) [f(x_i)-f(e)]^+ \\
+&+ \mathbb{P} (y(e)=1, y(x_j)=0, \forall j) [b-f(e)]^+
+\end{align*}
+
+\end{document}
