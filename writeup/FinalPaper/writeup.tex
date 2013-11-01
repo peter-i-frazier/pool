@@ -15,17 +15,18 @@ We first describe the application that motivates our research, and then we provi
 \subsection{Motivating application}
 We have two enzymes (Sfp from {\it Bacillus subtilis}, and PaAcpH from {\it Pseudomonas aeruginosa}), and a collection of peptides that can potentially act as a substrate for one or both of these enzymes.  Our goal is to find a peptide that acts as a substrate for both of these enzymes, and is as short as possible.
 
-To support this goal, we can do lab experiments, in which we synthesize a peptide and test, for each enzyme, whether it is a substrate.We need to find a policy that suggests which peptide to synthesize and test next, so as to reach our goal with as few experiments as possible.
+To support this goal, we can do lab experiments, in which we synthesize a peptide and test, for each enzyme, whether it is a substrate.  We need to find a policy that suggests which peptide to synthesize and test next, so as to reach our goal with as few experiments as possible.
 
 Experiments have parallel setup, thus can be done with a batch of peptides at a time, and so the algorithm suggests a batch of peptides at a time, waiting for the results from the experiment before suggesting the next batch of peptides.
 A large collection of peptides would be considered by the algorithm for potential synthesis and testing, e.g., all peptides with length less than a given threshold.  That is, we would consider more peptides than just those that are sub-peptides of peptides from the literature known to be substrates for one enzyme.
 
 \subsection{General Problem Statement}
-We now formalize it as an active learning problem, which represents a class of interactive learning problems, not only limited to our motivating application.
+We now formalize and generalize our problem as an active learning problem, which includes but is not limited to our motivating application.
 
-In a search space $E$, for each element $x \in E$, it has an unknown binary label $y(x)=\{0,1\}$. There is a known deterministic function $f(x)$ measuring the quality of $x$. Our goal is to find $x$ such that it has positive label and its quality function $f(x)$ is minimum.
+Let $E$ be a generic search space of exemplars.  In our motivating application, $E$ is the space of peptides.
+Each element $x \in E$ has an unknown binary label $y(x)=\{0,1\}$.  A known deterministic function $f(x)$ measures the cost or disutility associated with $x$. Our goal is to perform experiments so as to find $x$ such that it has positive label and its cost function $f(x)$ is minimum.
 
-In order to obtain labels of exemplars, we can do a batch of experiments, which evaluate a subset $S \subseteq E$ and obtain labels at each time. we measure quality of $S$ by
+To obtain labels of exemplars, we can do a batch of experiments, which evaluate a subset $S \subseteq E$ and obtain labels at each time. we measure quality of $S$ by
 \begin{equation} \label{eq:fS}
 f^*(S)= \begin{dcases}
  \underset{x \in S:y(x)=1}{\min} f(x) & \text{if \,} \{x \in S:y(x)=1\} \neq \emptyset \\
