@@ -43,10 +43,10 @@ f^*(S)= \begin{dcases}
 
 Let $b$ be a target value and we wish to find $S\subseteq E$ such that $f^*(S)$ is, in some sense, better than $b$. Specifically, we consider the following two measures:
 \begin{equation} \label{eq:twomeasure}
-\begin{aligned}
+\begin{align*}
 &\text{Probability of Improvement: }&\PI(S) = \mathbb{P}(f^*(S) < b)\\
 &\text{Expected Improvement: }&\EI(S) = \E [(b-f^*(S))]
-\end{aligned}
+\end{align*}
 \end{equation}
 We wish to find $S$ that maximize one of these two measures. Let $g(S)$ be either $\PI(S)$ or $\EI(S)$ and let the cardinality of $S$ be the only constraint on $S$. Our goal is then:
 
@@ -64,12 +64,12 @@ We first prove that the objective function is submodular, and then describe our 
 \subsubsection{Greedy Approach}
 Suppose we have chosen $S=\{x_1, x_2, \ldots, x_n\}$ as a batch of points we are going to evaluate next, and if we want to incorporate one more point $e$, which is distinct from $x_1, x_2, \ldots, x_n$, such that the expected improvement increases most, we use the following criterion to find $e$:
 \begin{equation} \label{eq:finde}
-\underset{e \in E \backslash S}{\mathrm{arg}\max} \, \E \left[ (b-f^*(S \cup \{e\}))^+ \right]
+\underset{e \in E \backslash S}{\mathrm{arg}\max} \, \E \left[ (b-f^*(S \cup \{e\}))^+ \right] 
 \end{equation}
 From \eqref{eq:fS} we write expected improvement part in \eqref{eq:opt} as
 \begin{align*}
 \E \left[ (b-f^*(S))^+ \right] &= \E [b-\underset{x \in S \cup \{e\}:y(x)=1}{\min} f(x)] \\
-                  &=
+                  &= 
                   \begin{dcases}
                     \E [b- f^*(S)] & \text{if $y(e)=0$ ,} \\
                     \E [b- \min \{f(e), f^*(S)\}]       & \text{if $y(e)=1$ ,}
@@ -85,7 +85,7 @@ After some algebra we can write \eqref{eq:finde} as
 &+ \mathbb{P} (y(e)=1, y(x_j)=0, \forall j) [b-f(e)]^+
 \end{align*}
 where $f(x_i)<=f(x_j)$ for $\forall i<j, x_i,x_j \in S$.
-Since
+Since 
 \begin{align*}
 &\mathbb{P} (y(e)=1, y(x_i)=1, y(x_j)=0, \forall j <i)\\
 &= \mathbb{P}(y(x_1)=0) \mathbb{P}(y(x_2)=0|y(x_1)=0) \ldots \mathbb{P}(y(e)=1|\mathcal{F}(x_1,x_2,\ldots,x_i)\\
