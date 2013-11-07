@@ -15,7 +15,7 @@ We first describe the application that motivates our research, and then we provi
 \subsection{Motivating application}
 We have two enzymes (Sfp from {\it Bacillus subtilis}, and PaAcpH from {\it Pseudomonas aeruginosa}), and a collection of peptides that can potentially act as a substrate for one or both of these enzymes.  Our goal is to find a peptide that acts as a substrate for both of these enzymes, and is as short as possible.
 
-To support this goal, we can do lab experiments, in which we synthesize a peptide and test, for each enzyme, whether it is a substrate.  We need to find a policy that suggests which peptide to synthesize and test next, so as to reach our goal with as few experiments as possible.
+To support this goal, we can do lab experiments, in which we synthesize a peptide and test, for each enzyme, whether it is a substrate or not.  We need to find a policy that suggests which peptide to synthesize and test next, so as to reach our goal with as few experiments as possible.
 
 Experiments have parallel setup, thus can be done with a batch of peptides at a time, and so the algorithm suggests a batch of peptides at a time, waiting for the results from the experiment before suggesting the next batch of peptides.
 A large collection of peptides would be considered by the algorithm for potential synthesis and testing, e.g., all peptides with length less than a given threshold.  That is, we would consider more peptides than just those that are sub-peptides of peptides from the literature known to be substrates for one enzyme.
@@ -26,11 +26,11 @@ We now formalize and generalize our problem as an active learning problem, which
 Let $E$ be a generic search space of exemplars.  In our motivating application, $E$ is the space of peptides.
 Each element $x \in E$ has an unknown binary label $y(x)=\{0,1\}$.  A known deterministic function $f(x)$ measures the cost or disutility associated with $x$. Our goal is to perform experiments so as to find $x$ such that it has positive label and its cost function $f(x)$ is minimum.
 
-To obtain labels of exemplars, we can do a batch of experiments, which evaluate a subset $S \subseteq E$ and obtain labels at each time. we measure quality of $S$ by
+To obtain labels of exemplars, we can do a batch of experiments, which evaluate a subset $S \subseteq E$ and obtain labels at each time. We measure quality of $S$ by
 \begin{equation} \label{eq:fS}
 f^*(S)= \begin{dcases}
- \underset{x \in S:y(x)=1}{\min} f(x) & \text{if \,} \{x \in S:y(x)=1\} \neq \emptyset \\
- \infty  & \text{if \,} \{x \in S:y(x)=1\} = \emptyset
+ \underset{x \in S:y(x)=1}{\min} f(x), & \text{if \,} \{x \in S:y(x)=1\} \neq \emptyset, \\
+ \infty,  & \text{if \,} \{x \in S:y(x)=1\} = \emptyset.
  \end{dcases}
 \end{equation}
 
@@ -46,7 +46,7 @@ Let $b$ be a target value and we wish to find $S\subseteq E$ such that $f^*(S)$ 
 \begin{equation} \label{eq:twomeasure}
 \begin{aligned}
 &\text{Probability of Improvement: }&\PI(S) = \mathbb{P}(f^*(S) < b)\\
-&\text{Expected Improvement: }&\EI(S) = \E [(b-f^*(S))]
+&\text{Expected Improvement: }&\EI(S) = \E [(b-f^*(S))^+]
 \end{aligned}
 \end{equation}
 We wish to find $S$ that maximize one of these two measures. Let $g(S)$ be either $\PI(S)$ or $\EI(S)$ and let the cardinality of $S$ be the only constraint on $S$. Our goal is then:
@@ -55,14 +55,15 @@ We wish to find $S$ that maximize one of these two measures. Let $g(S)$ be eithe
 \max_{S\subseteq E:|S|<k}g(S)
 \end{equation}
 
-\subsection{Solution Method for EI}
-If $g(S)$ is $\EI(S)$, from equation \eqref{eq:twomeasure} \eqref{eq:opt}, our goal becomes
-\begin{equation} \label{eq:maxEI}
-\underset{S \subseteq E:|S| \leq k}{\max} \E \left[ (b-f^*(S))^+ \right]
-\end{equation}
-We first prove that the objective function is submodular, and then describe our greedy approach to solve \eqref{eq:maxEI}, finally we show that we have guarantee for our greedy policy compared with optimal policy.
-\subsubsection{Submodularity}
-\subsubsection{Greedy Approach}
+\subsection{Solution Method}
+%If $g(S)$ is $\EI(S)$, from equation \eqref{eq:twomeasure} \eqref{eq:opt}, our goal becomes
+%\begin{equation} \label{eq:maxEI}
+%\underset{S \subseteq E:|S| \leq k}{\max} \E \left[ (b-f^*(S))^+ \right]
+%\end{equation}
+%We first prove that the objective function is submodular, and then describe our greedy approach to solve \eqref{eq:maxEI}, finally we show that we have guarantee for our greedy policy compared with optimal policy.
+We solve \eqref{eq:opt} by greedy algorithm, that is, starting with empty set $S=\emptyset$, find element $e = \mathrm{arg}\max_e g(S \cup \{e\})-g(S)$ to include in $S$ iteratively until $|S|=k$ for some chosen k. We can show the greedy solution has lower bound, which is a factor $(1-1/ e)$ of the optimal objective value.
+\subsubsection{Lower bound of greedy algorithm}
+\subsubsection{Algorithm}
 Suppose we have chosen $S=\{x_1, x_2, \ldots, x_n\}$ as a batch of points we are going to evaluate next, and if we want to incorporate one more point $e$, which is distinct from $x_1, x_2, \ldots, x_n$, such that the expected improvement increases most, we use the following criterion to find $e$:
 \begin{equation} \label{eq:finde}
 \underset{e \in E \backslash S}{\mathrm{arg}\max} \, \E \left[ (b-f^*(S \cup \{e\}))^+ \right]
