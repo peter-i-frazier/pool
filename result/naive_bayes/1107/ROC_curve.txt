@@ -1,0 +1,12 @@
+ROC_newData_1106_1:
+
+812 examples
+
+Gamma_0: 100, Gamma_1: 0.25;
+
+
+ROC_oldData_1106_1:
+
+262 examples
+
+Gamma_0 :100, Gamma_1: 0.25
