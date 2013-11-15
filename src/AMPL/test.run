@@ -1,0 +1,5 @@
+model test.mod;
+data test.dat;
+solve;
+display x;
+quit;
