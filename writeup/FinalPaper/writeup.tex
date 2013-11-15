@@ -1,10 +1,11 @@
 \documentclass[12pt]{article}
-\usepackage{amsmath,amssymb,mathtools}
+\usepackage{amsmath,amssymb,mathtools, amsthm}
 \usepackage{bbm}
 \newcommand{\E}{\mathbb{E}}
 \newcommand{\EI}{\mathrm{EI}}
 \newcommand{\PI}{\text{P}^*}
 \newcommand{\mb}{\mathbf}
+\newtheorem{thm}{Theorem}
 
 \begin{document}
 \section{Introduction}
@@ -61,38 +62,180 @@ We wish to find $S$ that maximize one of these two measures. Let $g(S)$ be eithe
 %\underset{S \subseteq E:|S| \leq k}{\max} \E \left[ (b-f^*(S))^+ \right]
 %\end{equation}
 %We first prove that the objective function is submodular, and then describe our greedy approach to solve \eqref{eq:maxEI}, finally we show that we have guarantee for our greedy policy compared with optimal policy.
-We solve \eqref{eq:opt} by greedy algorithm, that is, starting with empty set $S=\emptyset$, find element $e = \mathrm{arg}\max_e g(S \cup \{e\})-g(S)$ to include in $S$ iteratively until $|S|=k$ for some chosen k. We can show the greedy solution has lower bound, which is a factor $(1-1/ e)$ of the optimal objective value.
+We solve \eqref{eq:opt} using greedy heuristic, that is, starting with empty set $S=\emptyset$, find element $e = \mathrm{arg}\max_e g(S \cup \{e\})-g(S)$ to include in $S$ iteratively until $|S|=K$ for some chosen K. We show first the solution using greedy heuristic has a lower bound, and then present our method.
 \subsection{Lower bound of greedy algorithm}
-\subsection{Algorithm}
-Suppose we have chosen $S=\{x_1, x_2, \ldots, x_n\}$ as a batch of points we are going to evaluate next, and if we want to incorporate one more point $e$, which is distinct from $x_1, x_2, \ldots, x_n$, such that the expected improvement increases most, we use the following criterion to find $e$:
-\begin{equation} \label{eq:finde}
-\underset{e \in E \backslash S}{\mathrm{arg}\max} \, \E \left[ (b-f^*(S \cup \{e\}))^+ \right]
+We claim that if objective function is probability of improvement (i.e $\PI(S)$) or expected improvement (i.e $\EI(S)$), the greedy algorithm is guaranteed to achieve a factor $(1-1/e) (\approx 63\%)$ of the optimal value. This lower bound is obtained from a theorem stated in the following:
+
+\begin{thm} (Nemhauser, Wolsey, $\&$ Fisher (1978))
+If $F(S)$ is submodular, nondecreasing and $F(\emptyset)=0$, the greedy heuristic always produces a solution whose value is at least $1-[(K-1)/K]^K$ times the optimal value, where $|S| \leq K$. This bound can be achieved for each $K$ and has a limiting value of $1-1/e$, where $e$ is the base of the natural logarithm.
+\end{thm}
+
+If we can show our objective functions meet condition in Theorem 1, we find lower bound of the greedy solution.
+
+\begin{thm} 
+Probability of improvement $\PI(S)$ is submodular, nondecreasing and $\PI(\emptyset)=0$.
+\end{thm}
+\begin{proof}
+\begin{itemize}
+\item
+$\PI(\emptyset) = \mathbb{P}(f^*(\emptyset)<b) = \mathbb{P}(\infty<b)=0$.
+\item
+Suppose $A \subseteq B \subseteq E$ where $E$ is a finite set.
+\begin{align*}
+\PI(B) &= \mathbb{P}(f^*(B)<b) \\
+       &= \mathbb{P}(f^*(B)<b |f^*(A) \geq b) \mathbb{P}(f^*(A) \geq b) + \mathbb{P}(f^*(B)<b |f^*(A)<b) \mathbb{P}(f^*(A)<b) \\
+       &= \mathbb{P}(f^*(B)<b |f^*(A) \geq b) \mathbb{P}(f^*(A) \geq b) + \mathbb{P}(f^*(A)<b) \\
+       &\geq \mathbb{P}(f^*(A)<b) \\
+       &= \PI(A)
+\end{align*}
+\item
+For $e \in E\backslash B$,
+\begin{align*}
+\PI(A \cup \{e\}) - \PI(A) &= \mathbb{P}(f^*(A \cup \{e\})<b)-\mathbb{P}(f^*(A)<b)\\
+                           &= \mathbb{P}(f^*(A \cup \{e\})<b|f^*(A)<b)\mathbb{P}(f^*(A)<b) + \\
+                           &\mathbb{P}(f^*(A \cup \{e\})<b|f^*(A)\geq b)\mathbb{P}(f^*(A)\geq b) -\mathbb{P}(f^*(A)<b) \\
+                           &=\mathbb{P}(f^*(A)<b) + \mathbb{P}(f^*(A \cup \{e\})<b|f^*(A)\geq b)\mathbb{P}(f^*(A)\geq b) -\\
+                           &\mathbb{P}(f^*(A)<b)\\
+                           &= \mathbb{P}(f^*(A \cup \{e\})<b|f^*(A)\geq b)\mathbb{P}(f^*(A)\geq b) \\
+                           &= \mathbb{P}(f(e)<b, y(e)=1|f^*(A)\geq b)\mathbb{P}(f^*(A)\geq b) \\
+                           &= \mathbb{P}(f(e)<b, y(e)=1,f^*(A)\geq b)
+\end{align*}
+Using similar argument,
+\begin{align*}
+\PI(B \cup \{e\}) - \PI(B) &= \mathbb{P}(f(e)<b, y(e)=1,f^*(B)\geq b) \\
+                           &= \mathbb{P}(f(e)<b, y(e)=1,f^*(A)\geq b, f^*(B\backslash A) \geq b )
+\end{align*}
+Therefore, $\PI(A \cup \{e\}) - \PI(A) \geq \PI(B \cup \{e\}) - \PI(B)$, thus we conclude that $\PI(S)$ is submodular.
+\end{itemize}
+\end{proof}
+
+\begin{thm}
+Expected improvement $\EI(S)$ is submodular, nondecreasing and $\EI(\emptyset)=0$.
+\end{thm}
+\begin{proof}
+\begin{itemize}
+\item
+$\EI(\emptyset) = \E[(b-f^*(\emptyset))^+] = \E[0] = 0$.
+\item
+Suppose $A \subseteq B \subseteq E$ where $E$ is a finite set. Since $f^*(B) \leq f^*(A)$, $b-f^*(B) \geq b-f^*(A)$, and $(b-f^*(B))^+ \geq (b-f^*(A))^+$, therefore, $\E[(b-f^*(B))^+] \geq \E[(b-f^*(A))^+]$.
+\item
+For $e \in E\backslash B$, consider $\E[(b-f^*(A \cup \{e\}))^+]-\E[(b-f^*(A))^+]$. We can write
+\begin{equation*}
+(b-f^*(A \cup \{e\}))^+ = \begin{dcases}
+                         (b-f^*(A))^+ & \text{if $y(e)=0$} \\
+                         (b-\min\{f(e),f^*(A)\})^+ & \text{if $y(e)=1$}
+                         \end{dcases}
+\end{equation*}
+Then 
+\begin{align*}
+&\E[(b-f^*(A \cup \{e\}))^+]-\E[(b-f^*(A))^+] \\
+&= \mathbb{P}(y(e)=1) \E[(b-\min\{f(e),f^*(A)\})^+ -(b-f^*(A))^+|y(e)=1]\\
+&= \mathbb{P}(y(e)=1) \mathbb{P}(f(e)<f^*(A)|y(e)=1) \E[(b-e)^+-(b-f^*(A))^+|y(e)=1, f(e)<f^*(A)]\\
+&= \E[ \mathbbm{1}_{y(e)=1, f(e)<f^*(A)} ((b-e)^+-(b-f^*(A))^+)]
+\end{align*}
+Since $f^*(A) \geq f^*(B)$, $\mathbbm{1}_{y(e)=1, f(e)<f^*(A)} ((b-e)^+-(b-f^*(A))^+)) \geq \mathbbm{1}_{y(e)=1, f(e)<f^*(B)} ((b-e)^+-(b-f^*(B))^+))$, thus
+\begin{equation*}
+\EI(A\cup \{e\})-\EI(A) \geq \EI(B\cup \{e\})-\EI(B)
+\end{equation*}
+$\EI(S)$ is submodular.
+
+\end{itemize}
+\end{proof}
+
+
+
+\subsection{Greedy Algorithm}
+Suppose we have chosen $S=\{x_1, x_2, \ldots, x_n\}$ as a batch of points we are going to evaluate next, and if we want to incorporate one more point $e$, which is distinct from $x_1, x_2, \ldots, x_n$, such that the objective function increases most, we use the following criterion to find $e$:
+\begin{equation} \label{eq:greedy}
+\underset{e \in E \backslash S}{\mathrm{arg}\max} \,g(S \cup \{e\})
 \end{equation}
-From \eqref{eq:fS} we write expected improvement part in \eqref{eq:opt} as
-\begin{align*}
-\E \left[ (b-f^*(S))^+ \right] &= \E [b-\underset{x \in S \cup \{e\}:y(x)=1}{\min} f(x)] \\
-                  &=
-                  \begin{dcases}
-                    \E [b- f^*(S)] & \text{if $y(e)=0$ ,} \\
-                    \E [b- \min \{f(e), f^*(S)\}]       & \text{if $y(e)=1$ ,}
-                    \end{dcases} \\
-                  &= \E [b-f^*(S) + \mathbbm{1}_{\{y(e)=1, f(e) < f^*(S)\}} [f^*(S)-f(e)] ]
-\end{align*}
-After some algebra we can write \eqref{eq:finde} as
-\begin{align*}
-&\underset{e \in E \backslash S}{\mathrm{arg}\max} \E [ \mathbbm{1}_{\{y(e)=1, f(e) < f^*(S)\}} [f^*(S)-f(e)] ] \\
-%&=\underset{e \in E \backslash S}{\mathrm{arg}\max} \E [ \E [\mathbbm{1}_{\{y(e)=1, f(e) < f^*(S)\}} [f^*(S)-f(e)] | f^*(S)]\\
-%&= \underset{e \in E \backslash S}{\mathrm{arg}\max} \E [ \mathbbm{1}_{\{f(e)<f^*(S)\}} \mathbb{P} (y(e)=1 | f^*(S)) [f^*(S)-f(e)]] \\
-&= \underset{e \in E \backslash S}{\mathrm{arg}\max} \sum_{i=1}^{|S|} \mathbb{P} (y(e)=1, y(x_i)=1, y(x_j)=0, \forall j <i) [f(x_i)-f(e)]^+ \\
-&+ \mathbb{P} (y(e)=1, y(x_j)=0, \forall j) [b-f(e)]^+
-\end{align*}
-where $f(x_i)<=f(x_j)$ for $\forall i<j, x_i,x_j \in S$.
+
+\subsubsection{Probability of Improvement}
+In the case that objective function is $\PI$, we rewrite \eqref{eq:greedy} as 
+\begin{equation} \label{eq:PI}
+\underset{e \in E \backslash S}{\mathrm{arg}\max} \,\PI (S \cup \{e\}).
+\end{equation} 
 Since
 \begin{align*}
-&\mathbb{P} (y(e)=1, y(x_i)=1, y(x_j)=0, \forall j <i)\\
-&= \mathbb{P}(y(x_1)=0) \mathbb{P}(y(x_2)=0|y(x_1)=0) \ldots \mathbb{P}(y(e)=1|\mathcal{F}(x_1,x_2,\ldots,x_i)\\
-&\propto \mathbb{P}(y(e)=1|\mathcal{F}(x_1,x_2,\ldots,x_i)
+\PI(S \cup \{e\}) &= \mathbb{P}(f^*(S\cup \{e\})<b)\\
+                  &= \mathbb{P}(f^*(S)<b) + \mathbb{P}(f^*(S)\geq b) \mathbb{P}(f(e)<b, y(e)=1|f^*(S)\geq b),
 \end{align*}
+we can rewrite \eqref{eq:PI} as
+\begin{equation} \label{eq:PI2}
+\underset{e \in E \backslash S}{\mathrm{arg}\max} \, \mathbb{P}(f(e)<b, y(e)=1|f^*(S)\geq b).
+\end{equation}
+Thus we use \eqref{eq:PI2} as search criterion for our greedy approach. Note that when $f(e) \geq b$, $\mathbb{P}(f(e)<b, y(e)=1|f^*(S)\geq b)=0$, thus our algorithm will always propose $e$ such that $f(e)<b$. Therefore, it is reasonable to assume that $f(x)<b$ for $\forall x \in S$, and $f^*(S)\geq b$ means $y(x)=0$ for $\forall x \in S$. Now we can write \eqref{eq:PI2} as 
+\begin{equation}
+\underset{e \in E \backslash S, f(e)<b}{\mathrm{arg}\max} \, \mathbb{P}(y(e)=1|y(x)=0, \forall x \in S).
+\end{equation}
+
+\subsubsection{Expected Improvement}
+If objective function is $\EI$, rewrite \eqref{eq:greedy} as 
+\begin{equation} \label{eq:EI}
+\underset{e \in E \backslash S}{\mathrm{arg}\max} \, \E \left[ (b-f^*(S \cup \{e\}))^+ \right].
+\end{equation}
+Since choosing $e$ such that $f(e) \geq b$ has no contribution to the objective function, by using similar argument as dealing with probability of improvement, we argue that $f(x)<b$ for $\forall x \in S$. Thus
+\begin{equation*}
+f^*(S)  \begin{dcases}
+         =\infty & \text{if $y(x)=0$ for $\forall x \in S$},\\
+         < b & \text{else}.
+ \end{dcases}
+\end{equation*}
+Now objective function we want to maximize becomes
+\begin{align*}
+&\E \left[ (b-f^*(S \cup \{e\}))^+ \right] \\
+&= \E[(b-f(e))^+ \mathbbm{1}_{f^*(S)=\infty, y(e)=1}]+ \E[ (b-f^*(S \cup \{e\}))^+ \mathbbm{1}_{f^*(S)<b}] \\
+&= \E[(b-f(e))^+ \mathbbm{1}_{f^*(S)=\infty, y(e)=1}]+ \E[ (b-f^*(S)) \mathbbm{1}_{f^*(S)<b}] + \E[(f^*(S)-f(e)) \mathbbm{1}_{y(e)=1, f(e)<f^*(S)<b}].
+\end{align*}
+Equation \eqref{eq:EI} is equivalent to 
+\begin{equation} \label{eq:EI2}
+\underset{e \in E \backslash S, f(e)<b}{\mathrm{arg}\max} \, \E[(b-f(e)) \mathbbm{1}_{f^*(S)=\infty, y(e)=1}]+\E[(f^*(S)-f(e)) \mathbbm{1}_{y(e)=1, f(e)<f^*(S)<b}].
+\end{equation}
+For $e \in E \backslash S, f(e)<b$,
+\begin{align*}
+&\E[(b-f(e)) \mathbbm{1}_{f^*(S)=\infty, y(e)=1}] = (b-f(e)) \mathbb{P}(y(e)=1, y(x)=0, \forall x \in S)\\
+&\E[(f^*(S)-f(e)) \mathbbm{1}_{y(e)=1, f(e)<f^*(S)<b}]\\
+&=\E[\E[(f^*(S)-f(e)) \mathbbm{1}_{y(e)=1, f(e)<f^*(S)<b}]|f^*(S)=l]\\
+&= \sum_{l \in L, f(e)<l} \mathbb{P}(y(e)=1|f^*(S)=l)(l-f(e))\mathbb{P}(f^*(S)=l),\\
+\end{align*}
+where $L = \{f(x): x \in S\}$. If we rank elements in $S$ such that $f(x_i) \leq f(x_j), \forall i<j, x_i,x_j \in S$, we can write equation above as
+\begin{equation*}
+\sum_{i=1}^{|S|} \mathbb{P}(y(e)=1, y(x_i)=1, y(x_j)=0, \forall j<i, x_i,x_j \in S)(f(x_i)-f(e))^+
+\end{equation*}
+Since $\mathbb{P}(y(e)=1, \mathcal{F}(x_1,\ldots,x_{|S|}) \propto \mathbb{P}(y(e)=1| \mathcal{F}(x_1,\ldots,x_{|S|})$, and coefficient is known given $S$, we can write our criterion for greedy algorithm as
+\begin{equation}
+\underset{e \in E \backslash S}{\mathrm{arg}\max} \, c_0 \mathbb{P}_0(e)(b-f(e))^+ + \sum_{i=1}^{|S|} c_i \mathbb{P}_i(e)(f(x_i)-f(e))^+,
+\end{equation}
+where
+\begin{align*}
+&\mathbb{P}_0(e)=\mathbb{P}(y(e)=1|y(x)=0, \forall x \in S)\\
+&\mathbb{P}_i(e)=\mathbb{P}(y(e)=1|y(x_i)=1, y(x_j)=0, \forall j<i, x_i,x_j \in S),
+\end{align*}
+and $c_i, i=0,\ldots,|S|$ are known coefficients.
+
+%Since
+%\begin{equation*}
+%(b-f^*(S \cup \{e\}))^+ =      \begin{dcases}
+%                    (b- f^*(S))^+ & \text{if $y(e)=1, f(e)<f^*(S)$ ,} \\
+%                    (b- \min \{f(e), f^*(S)\})^+      & \text{if $y(e)=1$ ,}
+%                    \end{dcases}
+%\end{equation*}
+%%&= \E [b-f^*(S) + \mathbbm{1}_{\{y(e)=1, f(e) < f^*(S)\}} [f^*(S)-f(e)] ]
+%After some algebra we can write \eqref{eq:finde} as
+%\begin{align*}
+%&\underset{e \in E \backslash S}{\mathrm{arg}\max} \E [ \mathbbm{1}_{\{y(e)=1, f(e) < f^*(S)\}} [f^*(S)-f(e)] ] \\
+%%&=\underset{e \in E \backslash S}{\mathrm{arg}\max} \E [ \E [\mathbbm{1}_{\{y(e)=1, f(e) < f^*(S)\}} [f^*(S)-f(e)] | f^*(S)]\\
+%%&= \underset{e \in E \backslash S}{\mathrm{arg}\max} \E [ \mathbbm{1}_{\{f(e)<f^*(S)\}} \mathbb{P} (y(e)=1 | f^*(S)) [f^*(S)-f(e)]] \\
+%&= \underset{e \in E \backslash S}{\mathrm{arg}\max} \sum_{i=1}^{|S|} \mathbb{P} (y(e)=1, y(x_i)=1, y(x_j)=0, \forall j <i) [f(x_i)-f(e)]^+ \\
+%&+ \mathbb{P} (y(e)=1, y(x_j)=0, \forall j) [b-f(e)]^+
+%\end{align*}
+%where $f(x_i)<=f(x_j)$ for $\forall i<j, x_i,x_j \in S$.
+%Since
+%\begin{align*}
+%&\mathbb{P} (y(e)=1, y(x_i)=1, y(x_j)=0, \forall j <i)\\
+%&= \mathbb{P}(y(x_1)=0) \mathbb{P}(y(x_2)=0|y(x_1)=0) \ldots \mathbb{P}(y(e)=1|\mathcal{F}(x_1,x_2,\ldots,x_i)\\
+%&\propto \mathbb{P}(y(e)=1|\mathcal{F}(x_1,x_2,\ldots,x_i)
+%\end{align*}
 
 
 
