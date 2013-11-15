@@ -1,23 +1,48 @@
-##############					Naive_Bayes					##################
-#	INPUT:
-#		trainX
-#		trainY
-#		testData
-#		prior.positive
-#		classlist
-#		predIter
-#	OUTPUT:
-#		predProb
-
-Naive_Bayes <- function(trainX, trainY, testData, classlist, Gamma = 1, prior.positive = 1e-4, predIter = 1000)
+Naive_Bayes <- function(trainX, trainY, testData, classlist, Gamma_0 = 1, Gamma_1 = 1, prior.positive = 1e-4, predIter = 1000)
 {
+#================================================================================
+#Function: gNaive_Bayes
+#
+#--------------------------------------------------------------------------------
+#Description:    
+#    Given training data and test data, train the model and given predicction of
+#	 test data.
+#
+#--------------------------------------------------------------------------------
+#Input arguments:
+#    train_X
+#             A matrix of training instances, whose rows correspond to peptides 
+#		      and columns to features.
+#    train_Y
+#			  A vector of training labels.
+#	 testData
+#			  A matrix of test instances, same format of train_X.
+#    classlist
+#             A vector specifying the mapping between each amino-acids and the 
+#             class it belongs to.
+#    Gamma_0, Gamma_1
+#             Gamma parameters of the prior distribution of theta.
+#    prior.positive
+#             Prior probability of being hits.
+#	 predIter
+#			  If simulating theta according to posterior, this is the number of 
+#             iterations carried for prediction.
+#
+#--------------------------------------------------------------------------------
+#Return objects:
+#    predProb
+#             Predicted probability of test data.
+#
+#--------------------------------------------------------------------------------
 	nF <- dim(trainX)[2];
 	nAA <- length(unique(as.numeric(classlist))) 
 	#theta_0 <- matrix(table(as.numeric(classlist))/length(classlist),nAA,nF)
 	#colnames(theta_0) <- colnames(trainX)
+	alpha <- Dirichlet_Parameter(trainX, trainY, classlist, Gamma_0 = Gamma_0, Gamma_1 = Gamma_1)
 	predict_mat <- c()
+	
 	for(i in 1:predIter) {
-		theta <- getTheta_MC(trainX = trainX, trainY = trainY, classlist = AAclass, Gamma = Gamma)
+		theta <- getTheta_MC(alpha = alpha, classlist = AAclass, Gamma_0 = Gamma_0, Gamma_1 = Gamma_1)
 		#theta$theta_0 <- theta_0
 		if(is.vector(testData)){
 			predict_mat <- c(predict_mat, NB_predict(testData, theta, prior.positive))
@@ -35,6 +60,74 @@ Naive_Bayes <- function(trainX, trainY, testData, classlist, Gamma = 1, prior.po
 	}
 	return(predProb)
 }
+
+
+
+
+
+Naive_Bayes_2 <- function(trainX, trainY, testData, classlist, Gamma_0 = 1, Gamma_1 = 1, prior.positive = 1e-4, predIter = 1000)
+{
+#================================================================================
+#Function: gNaive_Bayes
+#
+#--------------------------------------------------------------------------------
+#Description:    
+#    Given training data and test data, train the model and given predicction of
+#	 test data.
+#
+#--------------------------------------------------------------------------------
+#Input arguments:
+#    train_X
+#             A matrix of training instances, whose rows correspond to peptides 
+#		      and columns to features.
+#    train_Y
+#			  A vector of training labels.
+#	 testData
+#			  A matrix of test instances, same format of train_X.
+#    classlist
+#             A vector specifying the mapping between each amino-acids and the 
+#             class it belongs to.
+#    Gamma_0, Gamma_1
+#             Gamma parameters of the prior distribution of theta.
+#    prior.positive
+#             Prior probability of being hits.
+#	 predIter
+#			  If simulating theta according to posterior, this is the number of 
+#             iterations carried for prediction.
+#
+#--------------------------------------------------------------------------------
+#Return objects:
+#    predProb
+#             Predicted probability of test data.
+#
+#--------------------------------------------------------------------------------
+	nF <- dim(trainX)[2];
+	nAA <- length(unique(as.numeric(classlist))) 
+	theta_0 <- matrix(table(as.numeric(classlist))/length(classlist),nAA,nF)
+	colnames(theta_0) <- colnames(trainX)
+	alpha <- Dirichlet_Parameter(trainX, trainY, classlist, Gamma_0 = Gamma_0, Gamma_1 = Gamma_1)
+	predict_mat <- c()
+	
+	for(i in 1:predIter) {
+		theta <- getTheta_MC(alpha = alpha, classlist = AAclass, Gamma_0 = Gamma_0, Gamma_1 = Gamma_1)
+		theta$theta_0 <- theta_0
+		if(is.vector(testData)){
+			predict_mat <- c(predict_mat, NB_predict(testData, theta, prior.positive))
+		}
+		else{
+			predict_mat <- rbind(predict_mat, NB_predict(testData, theta, prior.positive))
+		}
+	}
+	predProb <- c()
+	if(is.vector(testData)){
+		predProb <- mean(predict_mat)
+	}
+	else{
+		predProb <- colMeans(predProb)
+	}
+	return(predProb)
+}
+
 
 
 
@@ -84,13 +177,13 @@ getFeatures <- function(data.org, classlist, nL, nR)
         l.seq  <- length(sequence)
         l <- min(nL,l.seq)
         for (i in 1:l) {
-		feature[r,nL+1-i] <- classlist[1,sequence[l.seq+1-i]]
+		feature[r,nL+1-i] <- AAclass[1,sequence[l.seq+1-i]]
 	  }
         sequence <- unlist(strsplit(data.org[r, 'cterm'],''))
         l.seq  <- length(sequence)
         c <- min(nR,l.seq)
         for (i in 1:c) {
-		feature[r,nL+i] <- classlist[1,sequence[i]]
+		feature[r,nL+i] <- AAclass[1,sequence[i]]
 	  }
         if( nOUTCOME != 0) {
             for (i in 1:nOUTCOME) {
@@ -115,8 +208,12 @@ getFeatures <- function(data.org, classlist, nL, nR)
     return( feature )
 }
 
-###############################################################################################
-getTheta_MC <- function(trainX = NA, trainY = NA, alpha = NA, classlist, Gamma = 1) 
+
+
+
+
+##############################################################################################
+getTheta_MC <- function(trainX = NA, trainY = NA, alpha = NA, classlist, Gamma_0, Gamma_1) 
 {
 #===============================================================================
 #Function: getTheta.MC
@@ -157,7 +254,7 @@ getTheta_MC <- function(trainX = NA, trainY = NA, alpha = NA, classlist, Gamma =
 #-------------------------------------------------------------------------------
 	nVal <- length(unique(as.numeric(classlist)))
 	if(missing(alpha)){
-	   alpha <- Dirichlet_Parameter(trainX, trainY, classlist, Gamma)
+	   alpha <- Dirichlet_Parameter(trainX, trainY, classlist, Gamma_0, Gamma_1)
 	}
     alpha_0 <- alpha$alpha_0
 	alpha_1 <- alpha$alpha_1
@@ -183,8 +280,64 @@ getTheta_MC <- function(trainX = NA, trainY = NA, alpha = NA, classlist, Gamma =
 
 
 
+
+##############################################################################################
+getTheta <- function(trainX = NA, trainY = NA, alpha = NA, classlist, Gamma_0, Gamma_1) 
+{
+#===============================================================================
+#Function: getTheta
+#-------------------------------------------------------------------------------
+#Description:
+#    A supporting function that computes the likelihood parameters of the Naive 
+#    Bayesian model, assuming the likelihood has (posterior) Dirichlet 
+#    distribution. The likelihood is the mean of the Dirichlet distribution.
+# 
+#-------------------------------------------------------------------------------
+#Input arguments:
+#    train
+#             A data matrix. Each row corresponds to a peptide and each column 
+#             corresponds to a feature with the last column being the outcome
+#             value.
+#    nVal
+#             Number of values each feature can take.
+#-------------------------------------------------------------------------------
+#Return objects:
+#    theta
+#             A list of two likelihood matrices: theta_0 and theta_1. 
+#             The rows of a likelihood matrix correspond to possible values a 
+#             feature can take and columns to features. Each entry (x,y) 
+#             corresponds to a likelihood probability that feature y takes value 
+#             x.
+#
+#-------------------------------------------------------------------------------
+    nVal <- length(unique(as.numeric(classlist)))
+	if(missing(alpha)){
+	   alpha <- Dirichlet_Parameter(trainX, trainY, classlist, Gamma_0, Gamma_1)
+	}
+    alpha_0 <- alpha$alpha_0
+	alpha_1 <- alpha$alpha_1
+	K <- dim(alpha_1)[2]
+	theta_0 <- c()
+    theta_1 <- c()
+  
+	for (k in 1:K) {	
+        theta_0 <- cbind(theta_0, alpha_0[,k]/sum(alpha_0[,k]))
+        theta_1 <- cbind(theta_1, alpha_1[,k]/sum(alpha_1[,k]))         
+	}
+	theta_0 <- as.data.frame(theta_0)
+    colnames(theta_0) <- colnames(alpha_0)
+    theta_1 <- as.data.frame(theta_1)
+    colnames(theta_1) <- colnames(alpha_1)
+    theta = list(theta_0 = theta_0, theta_1 = theta_1)
+	return (theta)
+}
+
+
+
+
+
 ####    This is the function: Dirichlet_Parameter required by getTheta_MC    ####
-Dirichlet_Parameter <- function(trainX, trainY, classlist, Gamma = 1) 
+Dirichlet_Parameter <- function(trainX, trainY, classlist, Gamma_0, Gamma_1) 
 {
 #===============================================================================
 #Function: Dirichlet_Parameter
@@ -234,7 +387,7 @@ Dirichlet_Parameter <- function(trainX, trainY, classlist, Gamma = 1)
             }
 		}
 		distance <- as.numeric(paste(unlist(strsplit(colnames(train_1)[col],''))[-1],collapse=""))
-        alpha_1 <- cbind(alpha_1, count + rep(distance**0.5*Gamma,nVal))
+        alpha_1 <- cbind(alpha_1, count + rep(distance**0.5*Gamma_1,nVal))
     }
     R_0<- dim(train_0)[1]
     alpha_0 <- c()
@@ -246,7 +399,7 @@ Dirichlet_Parameter <- function(trainX, trainY, classlist, Gamma = 1)
             }
 		}
     	distance <- as.numeric(paste(unlist(strsplit(colnames(train_0)[col],''))[-1],collapse=""))
-        alpha_0 <- cbind(alpha_0, count + rep(distance**0.5*Gamma,nVal))
+        alpha_0 <- cbind(alpha_0, count + table(as.numeric(classlist))/length(classlist)*Gamma_0)
     }	
 	alpha_0 <- as.data.frame(alpha_0)
     colnames(alpha_0) <- colnames(trainX)
@@ -259,8 +412,9 @@ Dirichlet_Parameter <- function(trainX, trainY, classlist, Gamma = 1)
 
 
 
+
 #######################################################################################
-NB_predict <- function(newdata, theta, prior.positive = 10**(-4))
+NB_predict <- function(newData, theta, maxL, maxR, prior.positive = 10**(-4))
 {
 #================================================================================
 #Function: NB_predict
@@ -287,13 +441,15 @@ NB_predict <- function(newdata, theta, prior.positive = 10**(-4))
 #--------------------------------------------------------------------------------
     theta_0 <- theta$theta_0
     theta_1 <- theta$theta_1
+	newdata <- newData
+	newdata[newData == -1] <- 9
 	if(is.vector(newdata)){
 		feature <- as.numeric(newdata)
         likelihood_1 <- 1
         likelihood_0 <- 1
 		K <- length(newdata)
         for(i in 1:K) {
-            if(feature[i]!=-1){
+            if(feature[i]!=9){
                 likelihood_1 <- theta_1[feature[i],i]*likelihood_1
                 likelihood_0 <- theta_0[feature[i],i]*likelihood_0
             }
@@ -303,21 +459,16 @@ NB_predict <- function(newdata, theta, prior.positive = 10**(-4))
 	}
 	else{
 		nData <- dim(newdata)[1]
-		K <- dim(newdata)[2] 
-		predict <- rep(0, nData)
-		for(n in 1:nData) {
-			feature <- as.numeric(newdata[n,])
-			likelihood_1 <- 1
-			likelihood_0 <- 1
-			for(i in 1:K) {
-				if(feature[i]!=-1){
-					likelihood_1 <- theta_1[feature[i],i]*likelihood_1
-					likelihood_0 <- theta_0[feature[i],i]*likelihood_0
-				}
-			}
-			predict[n] <- likelihood_1*prior.positive/(likelihood_0*(1-prior.positive)
-					+ likelihood_1*prior.positive)
+		ratio <- theta_0/theta_1
+		nF <- dim(newdata)[2]
+		ratio <- rbind(ratio, rep(1, nF))
+		ratio_table <- c()
+		colprod <- 1		
+		for(n in (nF/2-maxL+1):(nF/2+maxR)){ 
+			colprod <- colprod*ratio[newdata[,n], n]
 		}
+		coeff <- (1-prior.positive)/prior.positive
+		predict <- 1/(1+coeff*colprod)
 	}    
     return(predict)
 }
@@ -356,24 +507,41 @@ NB_predict_par <- function(newdata, theta, prior.positive = 10**(-4))
 #--------------------------------------------------------------------------------
     theta_0 <- theta$theta_0
     theta_1 <- theta$theta_1
-    nData <- dim(newdata)[1]
-    #K: number of features
-    K <- dim(newdata)[2] 
-    predict <- foreach(n=1:nData, .init = c(), .combine = append) %dopar% {
-        feature <- as.numeric(newdata[n,])
+	if(is.vector(newdata)){
+		feature <- as.numeric(newdata)
         likelihood_1 <- 1
         likelihood_0 <- 1
+		K <- length(newdata)
         for(i in 1:K) {
             if(feature[i]!=-1){
                 likelihood_1 <- theta_1[feature[i],i]*likelihood_1
                 likelihood_0 <- theta_0[feature[i],i]*likelihood_0
             }
         }
-        likelihood_1*prior.positive/(likelihood_0*(1-prior.positive)
+        predict <- likelihood_1*prior.positive/(likelihood_0*(1-prior.positive)
             + likelihood_1*prior.positive)
-    }
+	}
+	else{
+		nData <- dim(newdata)[1]
+		#K: number of features
+		K <- dim(newdata)[2] 
+		predict <- foreach(n=1:nData, .init = c(), .combine = append) %dopar% {
+			feature <- as.numeric(newdata[n,])
+			likelihood_1 <- 1
+			likelihood_0 <- 1
+			for(i in 1:K) {
+				if(feature[i]!=-1){
+					likelihood_1 <- theta_1[feature[i],i]*likelihood_1
+					likelihood_0 <- theta_0[feature[i],i]*likelihood_0
+				}
+			}
+			likelihood_1*prior.positive/(likelihood_0*(1-prior.positive)
+				+ likelihood_1*prior.positive)
+		}
+	}
     return(predict)
 }
+
 
 
 
@@ -505,6 +673,8 @@ return(result)
 
 
 
+
+
 ##########    This is the function: rdist required by NB_peptideSim    #########
 rdist <- function(value, p) 
 {
@@ -541,4 +711,16 @@ rdist <- function(value, p)
         }
     }
     return(rdn)
+}
+
+AUC <- function(x, y)
+{
+	n <- length(y)
+	U <- 0
+	L <- 0
+	for(i in 1:(n-1)) {
+		U <- U + y[i+1]*(x[i+1]-x[i])
+		L <- L + y[i]*(x[i+1]-x[i])
+	}
+	return((U+L)/2)
 }
