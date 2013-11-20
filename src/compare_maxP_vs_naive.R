@@ -42,5 +42,10 @@ for (n in 1:Nlib) {
 }
 maxL <- ceiling(maxLen*0.6)
 maxR <- ceiling(maxLen*0.8)
+print ('peptide lib done')
+# mutation library
+
 #recom
 recom <- maxP_search3(X, Y, AAclass, Nrec=40, itr=400, peplib, maxL=maxL, maxR=maxR, Gamma_1 = Gamma_1, Gamma_0 = Gamma_0, add_ins = 10)
+
+
