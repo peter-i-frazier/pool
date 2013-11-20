@@ -2,12 +2,12 @@ rm(list=ls())
 
 #=================================================================================
 #Specify Paths and working directory
-dataFile <- '../data/newData.csv'
-classFile <- '../data/Reduced_AA_Alphabet.csv'
+dataFile <- '../../data/newData.csv'
+classFile <- '../../data/Reduced_AA_Alphabet.csv'
 #=================================================================================
 #import module
-source('Naive_Bayes/Naive_Bayes_util.R')
-source('Opt_Search/Opt_Search_util.R')
+source('../Naive_Bayes/Naive_Bayes_util.R')
+source('../Opt_Search/Opt_Search_util.R')
 
 #=================================================================================
 #get data 
