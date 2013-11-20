@@ -21,7 +21,7 @@ prob_shortest_hit <- function(peptides, prob, b) {
 		} else {
 			prod <- 1
 			for (i in 1:length(idx)) {
-				prod <- prod * (1.0-prob(idx[i]))
+				prod <- prod * (1.0-prob[idx[i]])
 			}
 			result <- 1.0-prod
 		}
