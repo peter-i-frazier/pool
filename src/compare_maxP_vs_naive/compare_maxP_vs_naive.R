@@ -97,7 +97,8 @@ maxR <- ceiling(maxLen*0.8)
 #recom
 print ('add in=1, includes mutate')
 recom <- maxP_search3(X, Y, AAclass, Nrec=100, itr=400, combo.lib, maxL=maxL, maxR=maxR, Gamma_1 = Gamma_1, Gamma_0 = Gamma_0, add_ins = 1)
-
+recom2 <- maxP_search_2(X, Y, AAclass, Nrec=100, maxLen=maxLen, minLen=minLen, Gamma_0=Gamma_0, Gamma_1=Gamma_1, add_ins=1)
+  
 #Naive method
 Itr <- 1000
 no.rec <- 100

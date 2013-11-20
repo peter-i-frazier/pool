@@ -206,7 +206,7 @@ maxP_search3 <- function(X, Y, classlist, Nrec, itr=400, peptides.library, maxL,
 		# }	
 		# find open peptide with highest prob being hit, without delete repeated recommendation
 		best_index <- which(prob==max(prob))
-		rec <- rbind(rec, peplib[best_index,])
+		rec <- rbind(rec, peptides.library[best_index,])
 		nPep <- nPep + 1
 		for (i in 1:add_ins){
 			trainX <- rbind(trainX, rec[nPep,])
