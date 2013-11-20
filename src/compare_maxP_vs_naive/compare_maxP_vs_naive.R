@@ -95,8 +95,8 @@ combo.lib <- rbind(peplib, mutlib)
 maxL <- ceiling(maxLen*0.6)
 maxR <- ceiling(maxLen*0.8)
 #recom
-print ('add in=10, includes mutate')
-recom <- maxP_search3(X, Y, AAclass, Nrec=100, itr=400, combo.lib, maxL=maxL, maxR=maxR, Gamma_1 = Gamma_1, Gamma_0 = Gamma_0, add_ins = 10)
+print ('add in=1, includes mutate')
+recom <- maxP_search3(X, Y, AAclass, Nrec=100, itr=400, combo.lib, maxL=maxL, maxR=maxR, Gamma_1 = Gamma_1, Gamma_0 = Gamma_0, add_ins = 1)
 
 #Naive method
 Itr <- 1000
