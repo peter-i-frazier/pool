@@ -90,7 +90,8 @@ mutlib <- as.matrix(mutlib)
 print ('mutlib done')
 
 # combined library
-combo.lib <- rbind(peplib, mutlib)
+# combo.lib <- rbind(peplib, mutlib)
+combo.lib <- peplib
 
 maxL <- ceiling(maxLen*0.6)
 maxR <- ceiling(maxLen*0.8)
