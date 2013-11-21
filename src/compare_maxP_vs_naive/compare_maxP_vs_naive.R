@@ -94,11 +94,11 @@ combo.lib <- rbind(peplib, mutlib)
 
 maxL <- ceiling(maxLen*0.6)
 maxR <- ceiling(maxLen*0.8)
-#recom
-print ('add in=1, includes mutate')
-recom <- maxP_search3(X, Y, AAclass, Nrec=100, itr=400, combo.lib, maxL=maxL, maxR=maxR, Gamma_1 = Gamma_1, Gamma_0 = Gamma_0, add_ins = 1)
-recom2 <- maxP_search_2(X, Y, AAclass, Nrec=100, maxLen=maxLen, minLen=minLen, Gamma_0=Gamma_0, Gamma_1=Gamma_1, add_ins=1)
-  
+#Our method
+print ('add in=10, includes mutate')
+recom <- maxP_search3(X, Y, AAclass, Nrec=100, itr=400, combo.lib, maxL=maxL, maxR=maxR, Gamma_1 = Gamma_1, Gamma_0 = Gamma_0, add_ins = 10)
+recom2 <- maxP_search_2(X, Y, AAclass, Nrec=100, maxLen=maxLen, minLen=minLen, Gamma_0=Gamma_0, Gamma_1=Gamma_1, add_ins=10)
+
 #Naive method
 Itr <- 1000
 no.rec <- 100
@@ -121,4 +121,24 @@ for (i in 1:Itr) {
 	recom_prob <- NB_predict(recom$rec, theta, maxL = maxL, maxR = maxR) + recom_prob
 }
 recom_prob <- recom_prob/ Itr
+
+# calculate prob for recom2
+recom2_prob <- 0
+for (i in 1:Itr) {
+        theta <- getTheta_MC(alpha = alpha, classlist = AAclass, Gamma_0 = Gamma_0, Gamma_1 = Gamma_1)
+        recom2_prob <- NB_predict(recom2, theta, maxL = maxL, maxR = maxR) + recom2_prob
+}
+recom2_prob <- recom2_prob/ Itr
+
+# Mutate method
+prob <- 0
+for (i in 1:Itr) {
+        theta <- getTheta_MC(alpha = alpha, classlist = AAclass, Gamma_0 = Gamma_0, Gamma_1 = Gamma_1)
+        prob <- NB_predict(mutlib, theta, maxL = maxL, maxR = maxR) + prob
+}
+prob <- prob/Itr
+dec_order <- order(prob, decreasing=T)
+mutate_rec <- mutlib[dec_order[1:no.rec],]
+mutate_prob <- prob[dec_order[1:no.rec]]
+
 
