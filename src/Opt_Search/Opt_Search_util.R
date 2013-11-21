@@ -132,7 +132,7 @@ maxP_search_2 <- function(X, Y, classlist, Nrec, maxLen, minLen, Gamma_0, Gamma_
 
 
 
-maxP_search3 <- function(X, Y, classlist, Nrec, itr=400, peptides.library, maxL, maxR, Gamma_1, Gamma_0, add_ins = 1) 
+maxP_search3 <- function(X, Y, classlist, Nrec, itr=150, peptides.library, maxL, maxR, Gamma_1, Gamma_0, add_ins = 1) 
 {
 #================================================================================
 #Function: maxP_search3
@@ -218,6 +218,15 @@ maxP_search3 <- function(X, Y, classlist, Nrec, itr=400, peptides.library, maxL,
 	rownames(rec) <- c(1:dim(rec)[1])
 	result <- list("rec"=rec, "idx"=recIdx)
 	return (result)
+}
+predict_MC <- function(alpha, classlist, Gamma_1, Gamma_0, itr, X, maxL, maxR) {
+	prob <- 0
+	for (i in 1:itr) {
+		theta <- getTheta_MC(alpha = alpha, classlist = classlist, Gamma_0 = Gamma_0, Gamma_1 = Gamma_1)
+		prob <- NB_predict(X, theta, maxL = maxL, maxR = maxR) + prob
+	}
+	prob <- prob/itr
+	return (prob)
 }
 #######################################################################################
 ExpImprovement_par <- function(X, Y, newdata, classlist, nRep = 400, best.length = 20,

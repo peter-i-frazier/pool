@@ -137,12 +137,4 @@ recom2_prob <- predict_MC(alpha, AAclass, Gamma_1, Gamma_0, 1000, recom2, maxL, 
 naive_prob <- predict_MC(alpha, AAclass, Gamma_1, Gamma_0, 1000, naive_rec, maxL, maxR)
 mutate_prob <- predict_MC(alpha, AAclass, Gamma_1, Gamma_0, 1000, mutate_rec, maxL, maxR)
 
-predict_MC <- function(alpha, classlist, Gamma_1, Gamma_0, itr, X, maxL, maxR) {
-	prob <- 0
-	for (i in 1:itr) {
-		theta <- getTheta_MC(alpha = alpha, classlist = classlist, Gamma_0 = Gamma_0, Gamma_1 = Gamma_1)
-		prob <- NB_predict(X, theta, maxL = maxL, maxR = maxR) + prob
-	}
-	prob <- prob/itr
-	return (prob)
-}
+
