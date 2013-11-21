@@ -4,6 +4,7 @@ rm(list=ls())
 #Specify Paths and working directory
 dataFile <- '../../data/newData.csv'
 classFile <- '../../data/Reduced_AA_Alphabet.csv'
+dataFileB2 <- '../../data/newData#2.csv'
 #=================================================================================
 #import module
 source('../Naive_Bayes/Naive_Bayes_util.R')
@@ -12,18 +13,22 @@ source('../Opt_Search/Opt_Search_util.R')
 #=================================================================================
 #get data 
 data_org <- data.frame(read.csv(dataFile, header = T, as.is = T, sep = ","))
+data_orgB2 <- data.frame(read.csv(dataFileB2, header = T, as.is = T, sep = ","))
 AAclass <- read.csv(classFile, header=T, as.is = T, sep=",")
 #=================================================================================
 #Set parameters
 nL <- 19
 nR <- 19
 trainData <- getFeatures(data_org,AAclass,nL,nR)
+trainDataB2 <- getFeatures(data_orgB2,AAclass,nL,nR)
 nAA <- max(AAclass[1,])
 #=================================================================================
 ## For AcpH
 outcome <- 'AcpH'
 X <- as.matrix(trainData[,c(1:(nL+nR))])
 Y <- trainData[,outcome]
+XB2 <- as.matrix(trainDataB2[,c(1:(nL+nR))])
+YB2 <- trainDataB2[,outcome]
 
 Gamma_0 <- 1000
 Gamma_1 <- 0.05
@@ -96,7 +101,7 @@ combo.lib <- peplib
 maxL <- ceiling(maxLen*0.6)
 maxR <- ceiling(maxLen*0.8)
 #Our method
-print ('add in=10, includes mutate')
+print ('add in=10, dont include mutate')
 # recom <- maxP_search3(X, Y, AAclass, Nrec=100, itr=400, combo.lib, maxL=maxL, maxR=maxR, Gamma_1 = Gamma_1, Gamma_0 = Gamma_0, add_ins = 10)
 recom2 <- maxP_search_2(X, Y, AAclass, Nrec=100, maxLen=maxLen, minLen=minLen, Gamma_0=Gamma_0, Gamma_1=Gamma_1, add_ins=10)
 
@@ -112,24 +117,7 @@ for (i in 1:Itr) {
 prob <- prob/ Itr
 dec_order <- order(prob, decreasing=T)
 naive_rec <- combo.lib[dec_order[1:no.rec],]
-naive_idx <- dec_order[1:no.rec]
-naive_prob <- prob[dec_order[1:no.rec]]
-
-# # calculate prob for recom
-# recom_prob <- 0
-# for (i in 1:Itr) {
-# 	theta <- getTheta_MC(alpha = alpha, classlist = AAclass, Gamma_0 = Gamma_0, Gamma_1 = Gamma_1)
-# 	recom_prob <- NB_predict(recom$rec, theta, maxL = maxL, maxR = maxR) + recom_prob
-# }
-# recom_prob <- recom_prob/ Itr
-
-# calculate prob for recom2
-recom2_prob <- 0
-for (i in 1:Itr) {
-        theta <- getTheta_MC(alpha = alpha, classlist = AAclass, Gamma_0 = Gamma_0, Gamma_1 = Gamma_1)
-        recom2_prob <- NB_predict(recom2, theta, maxL = maxL, maxR = maxR) + recom2_prob
-}
-recom2_prob <- recom2_prob/ Itr
+print ('naive method done')
 
 # Mutate method
 prob <- 0
@@ -140,6 +128,21 @@ for (i in 1:Itr) {
 prob <- prob/Itr
 dec_order <- order(prob, decreasing=T)
 mutate_rec <- mutlib[dec_order[1:no.rec],]
-mutate_prob <- prob[dec_order[1:no.rec]]
+print ('mutate method done')
 
 
+# calculate prob of hit for these methods
+alpha <- Dirichlet_Parameter(XB2, YB2, AAclass, Gamma_0 = Gamma_0, Gamma_1 = Gamma_1)
+recom2_prob <- predict_MC(alpha, AAclass, Gamma_1, Gamma_0, 1000, recom2, maxL, maxR)
+naive_prob <- predict_MC(alpha, AAclass, Gamma_1, Gamma_0, 1000, naive_rec, maxL, maxR)
+mutate_prob <- predict_MC(alpha, AAclass, Gamma_1, Gamma_0, 1000, mutate_rec, maxL, maxR)
+
+predict_MC <- function(alpha, classlist, Gamma_1, Gamma_0, itr, X, maxL, maxR) {
+	prob <- 0
+	for (i in 1:itr) {
+		theta <- getTheta_MC(alpha = alpha, classlist = classlist, Gamma_0 = Gamma_0, Gamma_1 = Gamma_1)
+		prob <- NB_predict(X, theta, maxL = maxL, maxR = maxR) + prob
+	}
+	prob <- prob/itr
+	return (prob)
+}
