@@ -213,6 +213,7 @@ maxP_search3 <- function(X, Y, classlist, Nrec, itr=150, peptides.library, maxL,
 		}
 		trainY <- c(trainY, rep(0, add_ins))	
 		recIdx <- c(recIdx, best_index)
+		print (nPep)
 	}
 	colnames(rec) <- colnames(X)
 	rownames(rec) <- c(1:dim(rec)[1])

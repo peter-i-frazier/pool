@@ -102,7 +102,7 @@ maxL <- ceiling(maxLen*0.6)
 maxR <- ceiling(maxLen*0.8)
 #Our method
 print ('add in=10, dont include mutate')
-# recom <- maxP_search3(X, Y, AAclass, Nrec=100, itr=400, combo.lib, maxL=maxL, maxR=maxR, Gamma_1 = Gamma_1, Gamma_0 = Gamma_0, add_ins = 10)
+recom <- maxP_search3(X, Y, AAclass, Nrec=100, itr=100, combo.lib, maxL=maxL, maxR=maxR, Gamma_1 = Gamma_1, Gamma_0 = Gamma_0, add_ins = 10)
 recom2 <- maxP_search_2(X, Y, AAclass, Nrec=100, maxLen=maxLen, minLen=minLen, Gamma_0=Gamma_0, Gamma_1=Gamma_1, add_ins=10)
 
 #Naive method
@@ -136,5 +136,5 @@ alpha <- Dirichlet_Parameter(XB2, YB2, AAclass, Gamma_0 = Gamma_0, Gamma_1 = Gam
 recom2_prob <- predict_MC(alpha, AAclass, Gamma_1, Gamma_0, 1000, recom2, maxL, maxR)
 naive_prob <- predict_MC(alpha, AAclass, Gamma_1, Gamma_0, 1000, naive_rec, maxL, maxR)
 mutate_prob <- predict_MC(alpha, AAclass, Gamma_1, Gamma_0, 1000, mutate_rec, maxL, maxR)
-
+recom_prob <- predict_MC(alpha, AAclass, Gamma_1, Gamma_0, 1000, recom$rec, maxL, maxR)
 
