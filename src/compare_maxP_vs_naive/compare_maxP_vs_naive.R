@@ -114,13 +114,13 @@ naive_rec <- combo.lib[dec_order[1:no.rec],]
 naive_idx <- dec_order[1:no.rec]
 naive_prob <- prob[dec_order[1:no.rec]]
 
-# calculate prob for recom
-recom_prob <- 0
-for (i in 1:Itr) {
-	theta <- getTheta_MC(alpha = alpha, classlist = AAclass, Gamma_0 = Gamma_0, Gamma_1 = Gamma_1)
-	recom_prob <- NB_predict(recom$rec, theta, maxL = maxL, maxR = maxR) + recom_prob
-}
-recom_prob <- recom_prob/ Itr
+# # calculate prob for recom
+# recom_prob <- 0
+# for (i in 1:Itr) {
+# 	theta <- getTheta_MC(alpha = alpha, classlist = AAclass, Gamma_0 = Gamma_0, Gamma_1 = Gamma_1)
+# 	recom_prob <- NB_predict(recom$rec, theta, maxL = maxL, maxR = maxR) + recom_prob
+# }
+# recom_prob <- recom_prob/ Itr
 
 # calculate prob for recom2
 recom2_prob <- 0
