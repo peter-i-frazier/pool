@@ -116,13 +116,13 @@ maxP_search_2 <- function(X, Y, classlist, Nrec, maxLen, minLen, Gamma_0, Gamma_
 		R <- tL - L
 		best.peptide <- rep(-1, nF)
 		best.peptide[(nF/2-L+1):(nF/2+R)] <- best.class[(nF/2-L+1):(nF/2+R)]
-		if(dim(unique(rbind(rec,best.peptide)))[1] > nPep){
+		# if(dim(unique(rbind(rec,best.peptide)))[1] > nPep){
 			rec <- rbind(rec, best.peptide)
 			nPep = nPep + 1
 			for(i in 1:add_ins){
 				trainX <- rbind(trainX, rec[nPep,])
 			}
-		}
+		# }
 	}
 	colnames(rec) <- colnames(X)
 	rownames(rec) <- c(1:dim(rec)[1])
