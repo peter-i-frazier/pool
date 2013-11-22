@@ -116,13 +116,13 @@ maxP_search_2 <- function(X, Y, classlist, Nrec, maxLen, minLen, Gamma_0, Gamma_
 		R <- tL - L
 		best.peptide <- rep(-1, nF)
 		best.peptide[(nF/2-L+1):(nF/2+R)] <- best.class[(nF/2-L+1):(nF/2+R)]
-		if(dim(unique(rbind(rec,best.peptide)))[1] > nPep){
+		# if(dim(unique(rbind(rec,best.peptide)))[1] > nPep){
 			rec <- rbind(rec, best.peptide)
 			nPep = nPep + 1
 			for(i in 1:add_ins){
 				trainX <- rbind(trainX, rec[nPep,])
 			}
-		}
+		# }
 	}
 	colnames(rec) <- colnames(X)
 	rownames(rec) <- c(1:dim(rec)[1])
@@ -132,7 +132,103 @@ maxP_search_2 <- function(X, Y, classlist, Nrec, maxLen, minLen, Gamma_0, Gamma_
 
 
 
-
+maxP_search3 <- function(X, Y, classlist, Nrec, itr=150, peptides.library, maxL, maxR, Gamma_1, Gamma_0, add_ins = 1) 
+{
+#================================================================================
+#Function: maxP_search3
+#
+#--------------------------------------------------------------------------------
+#Description:
+#    give a set of recommendations S that maximize P(at least one peptide in S is hit)
+#
+#--------------------------------------------------------------------------------
+#Input arguments:
+#	 classlist
+#             A matrix specifying the mapping between each amino-acids and the 
+#             class it belongs to.
+#    Nrec
+# 			 No. of recommendations to be generated
+# 	 itr
+#			 Iteration needed for calculation prob being hit
+#	 peptides.library
+# 			 peptide library for search optimal
+#
+#--------------------------------------------------------------------------------
+#Return objects:
+#    a list
+#            result$rec:	matrix with each row representing a recommended peptide  
+#--------------------------------------------------------------------------------
+	nF <- dim(X)[2]
+	nAA <- length(unique(as.numeric(classlist)))
+	rec <- c()
+	trainX <- X
+	trainY <- Y	
+	colnames(peptides.library) <- colnames(trainX)
+	nPep <- 0
+	recIdx <- c()
+	while(nPep < Nrec) {	
+		# tL <- ceiling(runif(1)*(maxLen - minLen)) + minLen
+  #       ratioL <- runif(1)*0.4 + 0.2
+		# L <- floor(tL * ratioL)
+		# R <- tL - L
+		# sample random peptides	
+		# peptides.library <- matrix(-1, nrow=Nlib, ncol=nF)
+		# rdn.peptides <- ceiling(replicate(L+R, runif(Nlib)*nAA))
+		# peptides.library[, (nF/2-L+1):(nF/2+R)] <- rdn.peptides
+		
+		# train & predict
+		prob <- 0
+		alpha <- Dirichlet_Parameter(trainX, trainY, classlist, Gamma_0 = Gamma_0, Gamma_1 = Gamma_1)
+		for (i in 1:itr) {
+			theta <- getTheta_MC(alpha = alpha, classlist = classlist, Gamma_0 = Gamma_0, Gamma_1 = Gamma_1)
+			prob <- NB_predict(peptides.library, theta, maxL = maxL, maxR = maxR) + prob
+		}
+		prob <- prob/ itr
+		# # find one peptide with highest prob being hit, is recommendation, delete repeated recommendation
+		# is_added <- FALSE
+		# while(!is_added) {
+		# 	best_index <- which(prob==max(prob))
+		# 	add_pep <- peptides.library[best_index,]
+		# 	if(dim(unique(rbind(rec,add_pep)))[1] > nPep){
+		# 		rec <- rbind(rec, add_pep)
+		# 		nPep <- nPep + 1
+		# 		is_added <- TRUE
+		# 		for(i in 1:add_ins){
+		# 			trainX <- rbind(trainX, rec[nPep,])
+		# 		}
+		# 		trainY <- c(trainY, rep(0,add_ins))	
+		# 		# recIdx <- c(recIdx, best_index)
+		# 	}
+		# 	else {
+		# 		peptides.library <- peptides.library[-best_index,]
+		# 		prob <- prob[-best_index]
+		# 	}
+		# }	
+		# find open peptide with highest prob being hit, without delete repeated recommendation
+		best_index <- which(prob==max(prob))
+		rec <- rbind(rec, peptides.library[best_index,])
+		nPep <- nPep + 1
+		for (i in 1:add_ins){
+			trainX <- rbind(trainX, rec[nPep,])
+		}
+		trainY <- c(trainY, rep(0, add_ins))	
+		recIdx <- c(recIdx, best_index)
+		print (nPep)
+	}
+	colnames(rec) <- colnames(X)
+	rownames(rec) <- c(1:dim(rec)[1])
+	result <- list("rec"=rec, "idx"=recIdx)
+	return (result)
+}
+predict_MC <- function(alpha, classlist, Gamma_1, Gamma_0, itr, X, maxL, maxR) {
+	prob <- 0
+	for (i in 1:itr) {
+		theta <- getTheta_MC(alpha = alpha, classlist = classlist, Gamma_0 = Gamma_0, Gamma_1 = Gamma_1)
+		prob <- NB_predict(X, theta, maxL = maxL, maxR = maxR) + prob
+	}
+	prob <- prob/itr
+	return (prob)
+}
 #######################################################################################
 ExpImprovement_par <- function(X, Y, newdata, classlist, nRep = 400, best.length = 20,
  prior.positive = 10**-4)
