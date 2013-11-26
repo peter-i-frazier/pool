@@ -90,13 +90,13 @@ P.naive <- P.naive/Itr
 print ('P.naive calculated')
 # calculate prob_shortest_hit for mutate
 P.mutate <- rep(0,N)
-for (itr in 1:Itr) {
+for (itr in 1:100) {
 	theta <- getTheta_MC(alpha = alpha, classlist = AAclass, Gamma_0 = Gamma_0, Gamma_1 = Gamma_1)
 	prob <- NB_predict(mutlib, theta, maxL = nL, maxR = nR)
 	P_short_hit <- rep(0,N)
 	for (i in 1:N) {
-		for (j in 1:100) {
-			P_short_hit[i] <- P_short_hit[i] + prob_shortest_hit(mutlib[(100*(j-1)+1):(100*(j-1)+i),], prob[(100*(j-1)+1):(100*(j-1)+i)], b)
+		for (j in 1:30) {
+			P_short_hit[i] <- P_short_hit[i] + prob_shortest_hit(mutlib[(100*(3*j-1)+1):(100*(3*j-1)+i),], prob[(100*(3*j-1)+1):(100*(3*j-1)+i)], b)
 		}
 	}
 	P.mutate <- P.mutate + P_short_hit/100
@@ -106,7 +106,7 @@ print ('P.mutate calculated')
 
 # save P to csv for plot in MATLAB
 PP <- rbind(P.recom, P.naive, P.mutate)
-write.csv(PP, 'PP_use_newData#1.csv')
+write.csv(PP, 'PP_use_newData#1_quick.csv')
 
 
 
