@@ -102,8 +102,8 @@ maxL <- ceiling(maxLen*0.6)
 maxR <- ceiling(maxLen*0.8)
 #Our method
 print ('add in=10, dont include mutate')
-recom <- maxP_search3(X, Y, AAclass, Nrec=100, itr=100, combo.lib, maxL=maxL, maxR=maxR, Gamma_1 = Gamma_1, Gamma_0 = Gamma_0, add_ins = 10)
-recom2 <- maxP_search_2(X, Y, AAclass, Nrec=100, maxLen=maxLen, minLen=minLen, Gamma_0=Gamma_0, Gamma_1=Gamma_1, add_ins=10)
+recom <- maxP_search3(X, Y, AAclass, Nrec=100, itr=100, peplib, maxL=maxL, maxR=maxR, Gamma_1 = Gamma_1, Gamma_0 = Gamma_0, add_ins = 10)
+# recom2 <- maxP_search_2(X, Y, AAclass, Nrec=100, maxLen=maxLen, minLen=minLen, Gamma_0=Gamma_0, Gamma_1=Gamma_1, add_ins=10)
 
 #Naive method
 Itr <- 1000
@@ -112,11 +112,14 @@ prob <- 0
 alpha <- Dirichlet_Parameter(X, Y, AAclass, Gamma_0 = Gamma_0, Gamma_1 = Gamma_1)
 for (i in 1:Itr) {
 	theta <- getTheta_MC(alpha = alpha, classlist = AAclass, Gamma_0 = Gamma_0, Gamma_1 = Gamma_1)
-	prob <- NB_predict(combo.lib, theta, maxL = maxL, maxR = maxR) + prob
+	prob <- NB_predict(peplib, theta, maxL = maxL, maxR = maxR) + prob
 }
 prob <- prob/ Itr
 dec_order <- order(prob, decreasing=T)
-naive_rec <- combo.lib[dec_order[1:no.rec],]
+naive_rec <- c()
+for (i in 1:100) {
+	naive_rec <- rbind(naive_rec,peplib[dec_order[1],])
+}
 print ('naive method done')
 
 # Mutate method
@@ -130,7 +133,7 @@ print ('naive method done')
 # mutate_rec <- mutlib[dec_order[1:no.rec],]
 print ('mutate method done, use mutlib')
 
-save(list=ls(), file='recom_data_2Benchmark.RData')
+save(list=c('recom','naive_rec','mutlib'), file='recommendation_list.RData')
 # # calculate prob of hit for these methods
 # alpha <- Dirichlet_Parameter(XB2, YB2, AAclass, Gamma_0 = Gamma_0, Gamma_1 = Gamma_1)
 # recom2_prob <- predict_MC(alpha, AAclass, Gamma_1, Gamma_0, 1000, recom2, maxL, maxR)
