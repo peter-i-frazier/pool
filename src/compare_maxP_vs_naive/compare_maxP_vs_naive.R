@@ -120,21 +120,21 @@ naive_rec <- combo.lib[dec_order[1:no.rec],]
 print ('naive method done')
 
 # Mutate method
-prob <- 0
-for (i in 1:Itr) {
-        theta <- getTheta_MC(alpha = alpha, classlist = AAclass, Gamma_0 = Gamma_0, Gamma_1 = Gamma_1)
-        prob <- NB_predict(mutlib, theta, maxL = maxL, maxR = maxR) + prob
-}
-prob <- prob/Itr
-dec_order <- order(prob, decreasing=T)
-mutate_rec <- mutlib[dec_order[1:no.rec],]
-print ('mutate method done')
+# prob <- 0
+# for (i in 1:Itr) {
+#         theta <- getTheta_MC(alpha = alpha, classlist = AAclass, Gamma_0 = Gamma_0, Gamma_1 = Gamma_1)
+#         prob <- NB_predict(mutlib, theta, maxL = maxL, maxR = maxR) + prob
+# }
+# prob <- prob/Itr
+# dec_order <- order(prob, decreasing=T)
+# mutate_rec <- mutlib[dec_order[1:no.rec],]
+print ('mutate method done, use mutlib')
 
-
-# calculate prob of hit for these methods
-alpha <- Dirichlet_Parameter(XB2, YB2, AAclass, Gamma_0 = Gamma_0, Gamma_1 = Gamma_1)
-recom2_prob <- predict_MC(alpha, AAclass, Gamma_1, Gamma_0, 1000, recom2, maxL, maxR)
-naive_prob <- predict_MC(alpha, AAclass, Gamma_1, Gamma_0, 1000, naive_rec, maxL, maxR)
-mutate_prob <- predict_MC(alpha, AAclass, Gamma_1, Gamma_0, 1000, mutate_rec, maxL, maxR)
-recom_prob <- predict_MC(alpha, AAclass, Gamma_1, Gamma_0, 1000, recom$rec, maxL, maxR)
+save(list=ls(), file='recom_data_2Benchmark.RData')
+# # calculate prob of hit for these methods
+# alpha <- Dirichlet_Parameter(XB2, YB2, AAclass, Gamma_0 = Gamma_0, Gamma_1 = Gamma_1)
+# recom2_prob <- predict_MC(alpha, AAclass, Gamma_1, Gamma_0, 1000, recom2, maxL, maxR)
+# naive_prob <- predict_MC(alpha, AAclass, Gamma_1, Gamma_0, 1000, naive_rec, maxL, maxR)
+# mutate_prob <- predict_MC(alpha, AAclass, Gamma_1, Gamma_0, 1000, mutate_rec, maxL, maxR)
+# recom_prob <- predict_MC(alpha, AAclass, Gamma_1, Gamma_0, 1000, recom$rec, maxL, maxR)
 
