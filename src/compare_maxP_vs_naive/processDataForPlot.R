@@ -42,9 +42,9 @@ prob_shortest_hit <- function(peptides, prob, b) {
 }
 
 #=================================================================================
-load('recom_data#2Benchmark.RData')
+load('recommend_list.RData')
 classFile <- '../../data/Reduced_AA_Alphabet.csv'
-dataFileB2 <- '../../data/newData#2.csv'
+dataFileB2 <- '../../data/newData.csv'
 data_orgB2 <- data.frame(read.csv(dataFileB2, header = T, as.is = T, sep = ","))
 AAclass <- read.csv(classFile, header=T, as.is = T, sep=",")
 #Set parameters
@@ -59,7 +59,7 @@ Gamma_0 <- 1000
 Gamma_1 <- 0.05
 N <- 100
 b <- 12
-Itr <- 1000
+Itr <- 400
 # calculate posterior of theta
 alpha <- Dirichlet_Parameter(XB2, YB2, AAclass, Gamma_0 = Gamma_0, Gamma_1 = Gamma_1)
 # calculate prob_shortest_hit for recom
@@ -96,7 +96,7 @@ for (itr in 1:Itr) {
 	P_short_hit <- rep(0,N)
 	for (i in 1:N) {
 		for (j in 1:100) {
-			P_short_hit[i] <- P_short_hit[i] + prob_shortest_hit(mutlib[(100*(j-1)+1):(100*(j-1)+i),], prob_recom[(100*(j-1)+1):(100*(j-1)+i)], b)
+			P_short_hit[i] <- P_short_hit[i] + prob_shortest_hit(mutlib[(100*(j-1)+1):(100*(j-1)+i),], prob[(100*(j-1)+1):(100*(j-1)+i)], b)
 		}
 	}
 	P.mutate <- P.mutate + P_short_hit/100
@@ -106,7 +106,7 @@ print ('P.mutate calculated')
 
 # save P to csv for plot in MATLAB
 PP <- rbind(P.recom, P.naive, P.mutate)
-write.csv(PP, 'PP_use_newData#2.csv')
+write.csv(PP, 'PP_use_newData#1.csv')
 
 
 
