@@ -44,7 +44,7 @@ prob_shortest_hit <- function(peptides, prob, b) {
 #=================================================================================
 load('recommend_list.RData')
 classFile <- '../../data/Reduced_AA_Alphabet.csv'
-dataFileB2 <- '../../data/newData.csv'
+dataFileB2 <- '../../data/newData#2.csv'
 data_orgB2 <- data.frame(read.csv(dataFileB2, header = T, as.is = T, sep = ","))
 AAclass <- read.csv(classFile, header=T, as.is = T, sep=",")
 #Set parameters
@@ -106,7 +106,7 @@ print ('P.mutate calculated')
 
 # save P to csv for plot in MATLAB
 PP <- rbind(P.recom, P.naive, P.mutate)
-write.csv(PP, 'PP_use_newData#1_quick.csv')
+write.csv(PP, 'PP_use_newData#2_quick.csv')
 
 
 
