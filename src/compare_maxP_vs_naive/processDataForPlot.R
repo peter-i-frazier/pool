@@ -42,9 +42,9 @@ prob_shortest_hit <- function(peptides, prob, b) {
 }
 
 #=================================================================================
-load('recommend_list.RData')
+load('Benchmark.RData')
 classFile <- '../../data/Reduced_AA_Alphabet.csv'
-dataFileB2 <- '../../data/newData.csv'
+dataFileB2 <- '../../data/newData#2.csv'
 data_orgB2 <- data.frame(read.csv(dataFileB2, header = T, as.is = T, sep = ","))
 AAclass <- read.csv(classFile, header=T, as.is = T, sep=",")
 #Set parameters
@@ -66,23 +66,27 @@ alpha <- Dirichlet_Parameter(XB2, YB2, AAclass, Gamma_0 = Gamma_0, Gamma_1 = Gam
 P.recom <- rep(0,N)
 for (itr in 1:Itr) {
 	theta <- getTheta_MC(alpha = alpha, classlist = AAclass, Gamma_0 = Gamma_0, Gamma_1 = Gamma_1)
-	prob <- NB_predict(recom$rec, theta, maxL = nL, maxR = nR)
+	prob <- NB_predict(recom2, theta, maxL = nL, maxR = nR)
 	P_short_hit <- rep(0,N)
 	for (i in 1:N) {
-		P_short_hit[i] <- prob_shortest_hit(recom$rec[1:i,], prob[1:i], b)
+		P_short_hit[i] <- prob_shortest_hit(recom2[1:i,], prob[1:i], b)
 	}
 	P.recom <- P.recom + P_short_hit
 }
 P.recom <- P.recom/Itr
 print ('P.recom calculated')
-# calculate prob_shortest_hit for naive
+calculate prob_shortest_hit for naive
+naive_single <- c()
+for (i in 1:100) {
+	naive_single <- rbind(naive_single, naive_rec[1,])
+}
 P.naive <- rep(0,N)
 for (itr in 1:Itr) {
 	theta <- getTheta_MC(alpha = alpha, classlist = AAclass, Gamma_0 = Gamma_0, Gamma_1 = Gamma_1)
-	prob <- NB_predict(naive_rec, theta, maxL = nL, maxR = nR)
+	prob <- NB_predict(naive_single, theta, maxL = nL, maxR = nR)
 	P_short_hit <- rep(0,N)
 	for (i in 1:N) {
-		P_short_hit[i] <- prob_shortest_hit(naive_rec[1:i,], prob[1:i], b)
+		P_short_hit[i] <- prob_shortest_hit(naive_single[1:i,], prob[1:i], b)
 	}
 	P.naive <- P.naive + P_short_hit
 }
@@ -106,7 +110,33 @@ print ('P.mutate calculated')
 
 # save P to csv for plot in MATLAB
 PP <- rbind(P.recom, P.naive, P.mutate)
-write.csv(PP, 'PP_use_newData#1_quick.csv')
+write.csv(PP, 'forplot.csv')
 
 
+# #=================================================================================
+# # estimate prob of hit first, and then calculate P_short_hit
+# # maxP method
+# ori_P.recom <- rep(0,N)
+# prob <- rep(0,dim(recom$rec)[1])
+# for (itr in 1:Itr) {
+# 	theta <- getTheta_MC(alpha = alpha, classlist = AAclass, Gamma_0 = Gamma_0, Gamma_1 = Gamma_1)
+# 	prob <- prob + NB_predict(recom2, theta, maxL = nL, maxR = nR)
+# }
+# prob <- prob / Itr
+# for (i in 1:N) {
+# 	ori_P.recom[i] <- prob_shortest_hit(recom2[1:i,], prob[1:i], b)
+# }
+# # Naive method
+# ori_P.naive <- rep(0,N)
+# prob <- rep(0,dim(recom$rec)[1])
+# for (itr in 1:Itr) {
+# 	theta <- getTheta_MC(alpha = alpha, classlist = AAclass, Gamma_0 = Gamma_0, Gamma_1 = Gamma_1)
+# 	prob <- prob + NB_predict(naive_rec, theta, maxL = nL, maxR = nR)
+# }
+# prob <- prob / Itr
+# for (i in 1:N) {
+# 	ori_P.naive[i] <- prob_shortest_hit(naive_rec[1:i,], prob[1:i], b)
+# }
+
+# write.csv(rbind(ori_P.recom, ori_P.naive), 'PP_use_newData#2_ori.csv')
 

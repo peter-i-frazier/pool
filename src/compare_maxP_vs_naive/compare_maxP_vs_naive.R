@@ -103,7 +103,7 @@ maxR <- ceiling(maxLen*0.8)
 #Our method
 print ('add in=10, dont include mutate')
 recom <- maxP_search3(X, Y, AAclass, Nrec=100, itr=100, peplib, maxL=maxL, maxR=maxR, Gamma_1 = Gamma_1, Gamma_0 = Gamma_0, add_ins = 10)
-# recom2 <- maxP_search_2(X, Y, AAclass, Nrec=100, maxLen=maxLen, minLen=minLen, Gamma_0=Gamma_0, Gamma_1=Gamma_1, add_ins=10)
+recom2 <- maxP_search_2(X, Y, AAclass, Nrec=100, maxLen=maxLen, minLen=minLen, Gamma_0=Gamma_0, Gamma_1=Gamma_1, add_ins=10)
 
 #Naive method
 Itr <- 1000
@@ -133,7 +133,7 @@ print ('naive method done')
 # mutate_rec <- mutlib[dec_order[1:no.rec],]
 print ('mutate method done, use mutlib')
 
-save(list=c('recom','naive_rec','mutlib'), file='recommendation_list.RData')
+save(list=ls(), file='Benchmark.RData')
 # # calculate prob of hit for these methods
 # alpha <- Dirichlet_Parameter(XB2, YB2, AAclass, Gamma_0 = Gamma_0, Gamma_1 = Gamma_1)
 # recom2_prob <- predict_MC(alpha, AAclass, Gamma_1, Gamma_0, 1000, recom2, maxL, maxR)
