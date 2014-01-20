@@ -17,4 +17,6 @@ xlabel('No. of recommendations','FontSize',30);
 ylabel('P(shortest hit <= 12)','FontSize',30);
 axis([0 100 0 1.2]);
 legend('maxP','Ranking estimated probability of hit','mutate');
+% Or, if you have room for a more verbose legend:
+% legend('Probability of improvement algorithm','Pick most probable from posterior','Mutate from known hits');
 print(h,'-dpng','maxP_comparison.png');
