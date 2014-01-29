@@ -1,0 +1,46 @@
+\begin{thebibliography}{}
+
+\bibitem[Chen et~al., 2013]{Chen2013}
+Chen, Y., Krause, A., and Zurich, E. T.~H. (2013).
+\newblock {Near-optimal Batch Mode Active Learning and Adaptive Submodular
+  Optimization}.
+\newblock 28.
+
+\bibitem[Ginsbourger et~al., 2008]{Ginsbourger2008}
+Ginsbourger, D., Riche, R.~L., and Carraro, L. (2008).
+\newblock {A multi-points criterion for deterministic parallel global
+  optimization based on Gaussian processes}.
+\newblock {\em In Intl. Conf. on Nonconvex Programming, NCP07, page ..., Rouen,
+  France.}, pages 1--30.
+
+\bibitem[Hoi et~al., 2006a]{Hoi2006a}
+Hoi, S. C.~H., Jin, R., and Lyu, M.~R. (2006a).
+\newblock {Large-scale text categorization by batch mode active learning}.
+\newblock {\em Proceedings of the 15th international conference on World Wide
+  Web - WWW '06}, page 633.
+
+\bibitem[Hoi et~al., 2006b]{Hoi2006}
+Hoi, S. C.~H., Jin, R., Zhu, J., and Lyu, M.~R. (2006b).
+\newblock {Batch mode active learning and its application to medical image
+  classification}.
+\newblock {\em Proceedings of the 23rd international conference on Machine
+  learning - ICML '06}, pages 417--424.
+
+\bibitem[Jones et~al., 1998]{Jones1998}
+Jones, D., Schonlau, M., and Welch, W. (1998).
+\newblock {Efficient global optimization of expensive black-box functions}.
+\newblock {\em Journal of Global optimization}, pages 455--492.
+
+\bibitem[Negoescu et~al., 2010]{Negoescu2010}
+Negoescu, D.~M., Frazier, P.~I., and Powell, W.~B. (2010).
+\newblock {The Knowledge-Gradient Algorithm for Sequencing Experiments in Drug
+  Discovery}.
+\newblock {\em INFORMS Journal on Computing}, 23(3):346--363.
+
+\bibitem[NemHauser et~al., 1978]{Company1978}
+NemHauser, G., Fisher, M., and Wolsey, L. (1978).
+\newblock {An Analysis of Approximations for Maximizing Submodular Set
+  Functions}.
+\newblock 14:265--294.
+
+\end{thebibliography}
