@@ -1,0 +1,9 @@
+#!/bin/sh
+
+mkdir /fs/home/py75/Documents/peptide/temp/temp_${1}
+cd /fs/home/py75/Documents/peptide/temp/temp_${1}
+
+cp /fs/home/py75/Documents/peptide/src/utility/crossValidation.R .
+R CMD BATCH --no-save --no-restore "--args n=${1} nL=${2} nR=${3} S.Pos=${4} outcome_name = ${5} maxL=${6} maxR=${7} Gamma_0=${10} Gamma_1=${9} prior.positive=$10} predIter=${11} " crossValidation.R test.out
+
+
