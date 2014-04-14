@@ -1,11 +1,18 @@
-source('~/Study/Peptide/src/NaiveBayes/Naive_Bayes_util.R')
+#Specify path/to/'Naive_Bayes_util.R' here:
+source('/fs/home/py75/Documents/peptide/src/NB_Greedy_library/Naive_Bayes_util.R')
 
-datafile <- '~/Study/Peptide/data/Data_10.csv'
-classfile <- '~/Study/Peptide/data/Reduced_AA_Alphabet.csv'
+#Specify path/to/training data file here
+datafile <- 'fs/home/py75/Documents/peptide/data/Data_10.csv'
+
+#Specify path/to/classlist file here
+classfile <- 'fs/home/py75/Documents/peptide/data/Reduced_AA_Alphabet.csv'
 
 args <- commandArgs(TRUE)
+print(length(args))
+
 for(i in 1:length(args)) {
 	eval(parse(text = args[i]))
+	print(args[i])
 }
 data_org <- data.frame(read.csv(datafile, header = T, as.is = T, sep = ','))
 AAclass <- data.frame(read.csv(classfile, header = T, as.is = T, sep = ','))
