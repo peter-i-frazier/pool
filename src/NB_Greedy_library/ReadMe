@@ -29,8 +29,8 @@ first. Make sure the three files (a),(b) and (c) must be put in the same folder 
 
 (2) To generate a ROC plot, call the function 'ROC_plot'. See its funciton description in file(a)utility.R
 
-(3) To do cross validation, enter the foler NB_Greedy_library and run 
-	./crossValidation.sh 
-    to submit a series of jobs on NBS system and run 
-	./data_collect.sh 
-    to process the outputs. This will generate a list of probabilities required by the function 'ROC_plot'. 
+(3) To do cross validation , enter the foler NB_Greedy_library and run the following commands in the terminal:
+$chmod 755 crossValidation.sh
+$chmod 755 data_collect.sh
+
+Then type ./crossValidation.sh to submit a series of jobs on NBS system. After all jobs are finished, run ./data_collect.sh to collect the outputs. This will generate a file output in list of probabilities required by the function 'ROC_plot'. 
