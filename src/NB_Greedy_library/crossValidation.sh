@@ -1,8 +1,8 @@
 #!/bin/sh
+ROOT_PATH = "/fs/home/jw865/peptide-catalysis/"
+rm -R "${ROOT_PATH}temp/*/"
 
-rm -R /fs/home/py75/Documents/peptide/temp/*/
-
-N=$(($(wc -l < /fs/home/py75/Documents/peptide/data/Data_10.csv) - 1))
+N=$(($(wc -l < "${ROOT_PATH}data/Data_10.csv") - 1))
 
 for i in $(seq 1 $N)
 do
