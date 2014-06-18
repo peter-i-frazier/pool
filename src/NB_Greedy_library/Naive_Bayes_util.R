@@ -1,14 +1,9 @@
-Naive_Bayes <- function(trainX, trainY, testData, classlist, S.Pos, maxL, maxR, Gamma_0 = 1000, Gamma_1 = 0.05, prior.positive = 1e-4, predIter = 1000)
-{
-#================================================================================================================================================================================
 #Function: Naive_Bayes
 #
-#--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 #Description:    
 #	Given training data(trainX and trainY), train a model(learn alpha parameters) and predict the posterior Pr(Y=1|train data,alpha) for all points in testData, where Y is
 #       the label. The prediction is done by Monte Carlo simulation.	 
-#
-#--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+#=====================================
 #Input arguments:
 #    	trainX
 #		A matrix of training samples. Each row is the feature vector of a peptide, namely it is the first (nL + nR) columns of 'feature' in the function (see the note of
@@ -31,13 +26,13 @@ Naive_Bayes <- function(trainX, trainY, testData, classlist, S.Pos, maxL, maxR, 
 #            	Prior probability  Pr(Y=1). Y is the label, default 10^-4.
 #	predIter
 #		Number of iterations of simulation. In each iteration, a set of new theta parameter is simulated, and posterior Pr(Y=1|theta) is computed. 
-#
-#--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+#=====================================
 #Return objects:
 #    	predProb	
 #       	A vector of posterior probability of Pr(Y=1|train data) of each peptide in testData.  
-#
-#--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+#=====================================
+Naive_Bayes <- function(trainX, trainY, testData, classlist, S.Pos, maxL, maxR, Gamma_0 = 1000, Gamma_1 = 0.05, prior.positive = 1e-4, predIter = 1000)
+{
 	nF <- dim(trainX)[2]
 	nAA <- length(unique(as.numeric(classlist))) 
 	alpha <- Dirichlet_Parameter(trainX, trainY, classlist, Gamma_0 = Gamma_0, Gamma_1 = Gamma_1)
@@ -62,26 +57,15 @@ Naive_Bayes <- function(trainX, trainY, testData, classlist, S.Pos, maxL, maxR, 
 	return(predProb)
 }
 
-
-
-
-
-
-#################################################################################################################################################################################
-getFeatures <- function(data.org, classlist, nL, nR)
-{
-#================================================================================================================================================================================
 #Function: getFeatures
-#
-#--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+#=====================================
 #Description:    
 #    Generate feature vectors of all peptides. 
-#
-#--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+#=====================================
 #Input arguments:
 #	data.org
 #		A matrix. Each row corresponds to a peptide. The matrix has n+2 columns. The first n show whether each peptide works with n different enzymes. The last two 
-#		columns contain amino-acids at the left of the serene('nterms') and right('cterms').
+#		columns contain amino-acids to the left of the serene('nterms') and right('cterms').
 #		E.g. we have 2 enzymes, and the first peptide 'AGDVSPTLG' works with Enzyme_1('sfp') but not with Enzyme_2('acph'), then the 1st row of data.org could be:
 #			sfp	acph	nterm	cterm
 #		1	1	0	'AGDV'	'PTLG'
@@ -93,8 +77,7 @@ getFeatures <- function(data.org, classlist, nL, nR)
 #		Maximum number of amino acids at the left of the serene in the feature vector.
 #	nR
 #		Maximum number of amino acids at the right of the serene in the feature vector.
-#
-#--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+#=====================================
 #Return objects:
 #	feature
 #		A matrix. Each row corresponds to the feature vector of a peptide. The matrix has nL+nR+n columns, where nL is the number of features to the left of the serene 
@@ -108,8 +91,9 @@ getFeatures <- function(data.org, classlist, nL, nR)
 #		1	-1	5	2	...	1	-1	1	0
 #		'-1' appears in position 1 and 10 because there're only 4 amino acids at the left or right of the serene 'S' respectively. If whether a peptide works with an 
 #		enzyme is not specified, the corresponding column will be filled with 'NA'.
-#
-#--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+#=====================================
+getFeatures <- function(data.org, classlist, nL, nR)
+{
     #nVal: number of values each feature can take
     nVal <- length(unique(as.numeric(classlist)))
     #nOUTCOME: number of outcome values
@@ -130,7 +114,11 @@ getFeatures <- function(data.org, classlist, nL, nR)
 	  }
         if( nOUTCOME != 0) {
             for (i in 1:nOUTCOME) {
-                feature[r,nL+nR+i] <- data.org[r,i]
+                if (is.na(data.org[r,i])) {
+                    feature[r,nL+nR+i] <- 0
+                } else {
+                    feature[r,nL+nR+i] <- data.org[r,i]
+                }
             }
         }
     }    
@@ -155,19 +143,13 @@ getFeatures <- function(data.org, classlist, nL, nR)
 
 
 
-#################################################################################################################################################################################
-getTheta_MC <- function(trainX = NA, trainY = NA, alpha = NA, classlist, Gamma_0, Gamma_1) 
-{
-#================================================================================================================================================================================
 #Function: getTheta_MC
-#
-#--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+#=====================================
 #Description:
 #	A supporting function that estimates the theta parameters of the Naive Bayesian model through Monte Carlo simulation, assuming theta has a Dirichlet distribution with 
 #	hyperprior alpha. If alpha(posterior) is specified, theta will be simulated according to Dirichlet(alpha); otherwise trainX and trainY must be specified and posterior
 #      	alpha will be estimated accoring to trainX and trainY by calling function Dirichlet_Parameter.
-# 
-#--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+#===================================== 
 #Input arguments:
 #	trainX
 #		A matrix of training samples. Each row is the feature vector of a peptide, namely it is the first (nL + nR) columns of feature(see the note of function
@@ -185,13 +167,13 @@ getTheta_MC <- function(trainX = NA, trainY = NA, alpha = NA, classlist, Gamma_0
 #		The vector specifying the class each amino acid belongs to.    
 #	Gamma_0,Gamma_1
 #		The gamma parameters for computing prior alpha parameters. When alpha is not specified, Gamma_0 and Gamma_1 must be specified.
-#
-#--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+#=====================================
 #Return objects:
 #	theta
 #	A list of two matrices: theta_0 and theta_1, specifying the theta parameter. Each matrix has the same size as alpha_0/alpha_1 and is arranged in the same way as them. 
-#       
-#--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+#=====================================       
+getTheta_MC <- function(trainX = NA, trainY = NA, alpha = NA, classlist, Gamma_0, Gamma_1) 
+{
 	nVal <- length(unique(as.numeric(classlist)))
 	if(missing(alpha)){
 	   alpha <- Dirichlet_Parameter(trainX, trainY, classlist, Gamma_0, Gamma_1)
@@ -220,25 +202,19 @@ getTheta_MC <- function(trainX = NA, trainY = NA, alpha = NA, classlist, Gamma_0
 
 
 
-#################################################################################################################################################################################
-getTheta <- function(trainX = NA, trainY = NA, alpha = NA, classlist, Gamma_0, Gamma_1) 
-{
-#================================================================================================================================================================================
 #Function: getTheta
-#--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 #Description:
 #	Similar as getTheta_MC. But theta is estimated as the mean of the Dirichlet distribution it follows. I.e., for k in {1..K}, where K is the number of classes,
 #			thete_k = alpha_k/\Sum_{k=1}^K(alpha_k).
-# 
-#--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+#===================================== 
 #Input arguments:
 #	see description of getTheta_MC
-#
-#--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+#=====================================
 #Return objects:
 #	see description of getTheta_MC
-#
-#--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+#=====================================
+getTheta <- function(trainX = NA, trainY = NA, alpha = NA, classlist, Gamma_0, Gamma_1) 
+{
        	nVal <- length(unique(as.numeric(classlist)))
 	if(missing(alpha)){
 	   alpha <- Dirichlet_Parameter(trainX, trainY, classlist, Gamma_0, Gamma_1)
@@ -265,12 +241,7 @@ getTheta <- function(trainX = NA, trainY = NA, alpha = NA, classlist, Gamma_0, G
 
 
 
-#################################################################################################################################################################################
-Dirichlet_Parameter <- function(trainX, trainY, classlist, Gamma_0, Gamma_1) 
-{
-#================================================================================================================================================================================
 #Function: Dirichlet_Parameter
-#--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 #Description:
 #	This function estimates the posterior alpha parameter of the Dirichlet distribution theta follows. For the jth position to the left/right of serene of the feature vector
 #	the prior alpha_1 is defined as(assuming K classes):
@@ -278,8 +249,7 @@ Dirichlet_Parameter <- function(trainX, trainY, classlist, Gamma_0, Gamma_1)
 #	and the prior alpha_0 is defined as(assuming K classes):
 #		(Gamma_0*n_1/n, Gamma_0*n_2/n, ..., Gamma_0*n_K/n).
 #	where for k in {1..K} n_k is the number of unique amino-acids in class k in the classlist and n is the total number of amino-acids in the classlist.
-# 
-#--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+#===================================== 
 #Input arguments:
 #	trainX
 #		see description of trainX in function getTheta_MC. 
@@ -289,13 +259,13 @@ Dirichlet_Parameter <- function(trainX, trainY, classlist, Gamma_0, Gamma_1)
 #		see description of classlist in function getTheta_MC.
 #	Gamma_0, Gamma_1
 #		The gamma parameters for computing prior alpha parameters.
-#
-#--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+#=====================================
 #Return objects:
 #	alpha
 #		see description of alpha in function getTheta_MC.   
-#
-#--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+#=====================================
+Dirichlet_Parameter <- function(trainX, trainY, classlist, Gamma_0, Gamma_1) 
+{
 	#nVal: number of values a feature can take
 	nVal <- length(unique(as.numeric(classlist)))
 	# K: number of features
@@ -343,13 +313,8 @@ Dirichlet_Parameter <- function(trainX, trainY, classlist, Gamma_0, Gamma_1)
 
 
 
-#################################################################################################################################################################################
-NB_predict <- function(newdata, theta, S.Pos, maxL, maxR, prior.positive = 10**(-4))
-{
-#================================================================================================================================================================================
 #Function: NB_predict
-#
-#--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+#=====================================
 #Description:
 #    	Predict label of each peptide in newdata. To speed up, when newdata contains more than 1 data point, we use the following way to compute predict:
 #	For a data point x, assuming feature vector has length J, 
@@ -360,8 +325,7 @@ NB_predict <- function(newdata, theta, S.Pos, maxL, maxR, prior.positive = 10**(
 #       In the case x_j = -1, \eta_j(-1) is undefined. To solve this problem, first append one line with all entries being 1 to the ratio matrix, now suppose the ratio matrix 
 #	has m lines, then convert all newdata[n,j] to m for all n and j such that newdata[n,j] = -1. In this way when we multiplicate the ratio in all positions the result will
 #	not be influenced by '-1' entries in newdata.	
-#
-#--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+#=====================================
 #Input arguments:
 #    	newdata
 #            	Data points whose labels are to be predicted. Arranged in the same format as trainX in getTheta_MC.
@@ -375,12 +339,13 @@ NB_predict <- function(newdata, theta, S.Pos, maxL, maxR, prior.positive = 10**(
 #	maxL, maxR
 #		maxL is the number of peptides to the left of the serene of the peptide in newdata with most number of peptides to the left of serene. Similar definition of
 #       	maxR.
-#
-#--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+#=====================================
 #Return objects:
 #    	predict
 #            A vector of posterior probability of Pr(Y=1|theta) of each peptide in newdata.  
-#--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+#=====================================
+NB_predict <- function(newdata, theta, S.Pos, maxL, maxR, prior.positive = 10**(-4))
+{
     	theta_0 <- theta$theta_0
     	theta_1 <- theta$theta_1
 	if(is.vector(newdata)){

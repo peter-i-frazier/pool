@@ -1,20 +1,16 @@
-Recom_Generation <- function(training_file, classfile, outcome_name, nL, nR, S.Pos, prior.positive = 1e-4, itr = 500, Nrec, Nlib, maxL, maxR, minL, minR, Gamma_0 = 1000, Gamma_1
-			     = 0.05, add_ins = 1, use_map = 0, out_file)
-{
-#================================================================================================================================================================================#Function: Recom_Generation
-#
-#===============================================================================================================================================================================
+#Function: Recom_Generation
+#=====================================
 #Description:	
 #	Given training data, this function generates a set of recommendations in the following way:
 #		(1) Generate a set of recommending feature vectors using the greedy heuristic, maximizing probability of improvement at each step.
 #		(2) For each recommending feature vector, at each position, choose uniformly from amino-acids that belongs to the class at that position
-#
-#================================================================================================================================================================================#Input	Arguments:
+#=====================================
+#Input	Arguments:
 #	training_file:
 #		The file containing training data. It is a string of the filename includinng its full path. The file MUST be arranged in this way:
 #		A csv file, comma separated, with n+2 columns and each row corresponds to a peptide. The (n+2) columns are:
-#		Y_1	...	Y_n	cterm	nterm
-#		where Y_1...Y_n are names of n different labels(e.g. 'AcpH' or 'Type_1'), each takes value in {0,1}, and cterm/nterm are parts of peptide to the left/right of
+#		Y_1	...	Y_n	nterm	cterm
+#		where Y_1...Y_n are names of n different labels(e.g. 'AcpH' or 'Type_1'), each takes value in {0,1}, and nterm/cterm are parts of peptide to the left/right of
 #       	the serene(both in the form a string of amino-acids)	
 #	classfile
 #		A string of the name(including full path) of the class file: a two-lines csv file that contains the mapping between amino-acids and classes they belon to:
@@ -45,8 +41,7 @@ Recom_Generation <- function(training_file, classfile, outcome_name, nL, nR, S.P
 #		simulated.
 #	out_file:
 #		The name(including the full path) of output file. A csv file and a plane text file with this name will be generated to record the recommendations generated.
-#			
-#================================================================================================================================================================================
+#=====================================			
 #Return object:
 #	No objects are returned. Two files will be created in the path specified in out_file:
 #		(1) A csv file, with 4 columns:
@@ -54,8 +49,10 @@ Recom_Generation <- function(training_file, classfile, outcome_name, nL, nR, S.P
 #		e.g.	AD	LEWMD	ADSLEWMD	1
 #		AAseq is the full sequence of amino-acids of the peptide, prob is the probability of being hit.
 #		(2) A plane text file, each line is the full sequence of amino-acids of a peptide.
-#	
-#================================================================================================================================================================================
+#=====================================	
+Recom_Generation <- function(training_file, classfile, outcome_name, nL, nR, S.Pos, prior.positive = 1e-4, itr = 500, Nrec, Nlib, maxL, maxR, minL, minR, Gamma_0 = 1000, Gamma_1
+			     = 0.05, add_ins = 1, use_map = 0, out_file)
+{
 	data_org <- data.frame(read.csv(training_file, header = T, as.is = T, sep =','))
 	AAclass <- data.frame(read.csv(classfile, header = T, as.is = T, sep = ','))
 	S.Pos <- nL
@@ -73,22 +70,12 @@ Recom_Generation <- function(training_file, classfile, outcome_name, nL, nR, S.P
 	writePep(recom, S.Pos, pred_prob, AAclass, out_file)
 }
 
-
-
-
-
-#################################################################################################################################################################################
-writePep <- function(newPep, S.Pos, pred_prob, classlist, out_file) 
-{
-#================================================================================================================================================================================
 #Function: writePep
-#
-#================================================================================================================================================================================
+#=====================================
 #Description
 #	This function takes a matrix as input, each row is the feature vector of a peptide. It generates the amino-acid at each position uniformly according to classlist, and
 #      	write generated peptides into a csv file and a text file named by out_file. 
-#
-#================================================================================================================================================================================
+#=====================================
 #Input Arguments
 #	newPep
 #		The matrix of peptides to write, of which each row is the feature vector of the peptide.
@@ -101,16 +88,16 @@ writePep <- function(newPep, S.Pos, pred_prob, classlist, out_file)
 #		The vector specifying the class each amino acid belongs to.    
 #	out_file:
 #		The name(including the full path) of output file. A csv file and a plane text file with this name will be generated to record the recommendations generated.
-#
-#================================================================================================================================================================================#Return objects
+#=====================================
 ##	No objects are returned. Two files will be created in the path specified in out_file:
 #		(1) A csv file, with 4 columns:
 #			nterm	cterm	AAseq		prob
 #		e.g.	AD	LEWMD	ADSLEWMD	1
 #		AAseq is the full sequence of amino-acids of the peptide, prob is the predicted probability of being hit.
 #		(2) A plane text file, each line is the full sequence of amino-acids of a peptide.
-#	
-#================================================================================================================================================================================
+#=====================================	
+writePep <- function(newPep, S.Pos, pred_prob, classlist, out_file) 
+{
 	#Generate the amino-acid on each position 
 	nPep <- dim(newPep)[1]
 	nF <- dim(newPep)[2]
@@ -152,20 +139,11 @@ writePep <- function(newPep, S.Pos, pred_prob, classlist, out_file)
 	close(fileConn)	
 }
 
-
-
-
-#################################################################################################################################################################################
-muteGen <- function(data_file, class_file, outcome_name, nMute = c(2:4), nPep, pred_prob_param, out_file)
-{
-#================================================================================================================================================================================
 #Function: muteGen
-#
-#================================================================================================================================================================================
+#=====================================
 #Description
 #	Given a set of peptides, this function mutates the amino-acid at some positions of some peptides in this set to create a new set of recommendations.
-#
-#===============================================================================================================================================================================
+#=====================================
 #Input Arguments
 #	data_file
 #		The file containing the peptides to mutate. It is a string of the filename includinng its full path. The file MUST be arranged in this way:
@@ -191,8 +169,7 @@ muteGen <- function(data_file, class_file, outcome_name, nMute = c(2:4), nPep, p
 #		This parameter could be left unspecified. If unspecified, the 'prob' column of the out put csv file(see description below) will be an empty column.
 #	out_file:
 #		The name(including the full path) of output file. A csv file and a plane text file with this name will be generated to record the recommendations generated.
-#			
-#================================================================================================================================================================================
+#=====================================			
 #Return object:
 #	No objects are returned. Two files will be created in the path specified in out_file:
 #		(1) A csv file, with 4 columns:
@@ -200,8 +177,9 @@ muteGen <- function(data_file, class_file, outcome_name, nMute = c(2:4), nPep, p
 #		e.g.	AD	LEWMD	ADSLEWMD	1
 #		AAseq is the full sequence of amino-acids of the peptide, prob is the probability of being hit.
 #		(2) A plane text file, each line is the full sequence of amino-acids of a peptide.
-#	
-#================================================================================================================================================================================
+#=====================================	
+muteGen <- function(data_file, class_file, outcome_name, nMute = c(2:4), nPep, pred_prob_param, out_file)
+{
 	AAclass <- data.frame(read.csv(class_file, header = T, as.is = T, sep = ','))
 	pep_lib <- data.frame(read.csv(data_file, header = T, as.is = T, sep = ','))
 	pep_lib <- pep_lib[pep_lib[,which(colnames(pep_lib) == outcome_name)]==1,]
@@ -275,16 +253,8 @@ muteGen <- function(data_file, class_file, outcome_name, nMute = c(2:4), nPep, p
 	close(fileConn)	
 }
 
-
-
-
-#################################################################################################################################################################################
-crossValid_ROC <- function(prob_file, label_file, outcome_name, out_file)
-{
-#================================================================================================================================================================================
 #Function: crossValid_ROC
-#
-#================================================================================================================================================================================#Input Arguments
+#=====================================
 #	prob_file
 #		The file containing the predicted probability of being hit. This is the file generated by data_collect.sh
 #	label_fiel
@@ -293,12 +263,12 @@ crossValid_ROC <- function(prob_file, label_file, outcome_name, out_file)
 #		A string. The name of the outcome value.
 #	out_file
 #		The name(including the full path) of the file of the ROC plot.
-#
-#================================================================================================================================================================================
+#=====================================
 #Return Objects:
 #	No objects will be returned. A pdf plot named by out_file will be created in the path specified by out_file.
-#
-#================================================================================================================================================================================
+#=====================================
+crossValid_ROC <- function(prob_file, label_file, outcome_name, out_file)
+{
 	Y <- data.frame(read.csv(label_file, header = T, as.is = T, sep = ','))[,outcome_name]	
 	file_conn <- file(prob_file, 'r')
 	prob <- readLines(file_conn)
@@ -306,20 +276,10 @@ crossValid_ROC <- function(prob_file, label_file, outcome_name, out_file)
 	ROC_plot(prob, Y, out_file)
 }
 
-
-
-
-
-#################################################################################################################################################################################
-ROC_plot <- function(prob, Y, out_file) 
-{
-#================================================================================================================================================================================
 #Function: ROC_plot
-#
-#================================================================================================================================================================================#Description:
+#=====================================
 #	This function plots the ROC curve given a vector of predicted probability.
-#
-#================================================================================================================================================================================
+#=====================================
 #Input Arguments
 #	prob
 #		The vector of predicted probability. 
@@ -327,12 +287,12 @@ ROC_plot <- function(prob, Y, out_file)
 #		A vector of actual labels. The order of labels in Y must be in corresponding with the order of probabilities in prob_file
 #	out_file
 #		The name(including the full path) of the file of the ROC plot.
-#
-#================================================================================================================================================================================
+#=====================================
 #Return Objects:
 #	No objects will be returned. A pdf plot named by out_file will be created in the path specified by out_file.
-#
-#================================================================================================================================================================================
+#=====================================
+ROC_plot <- function(prob, Y, out_file) 
+{
 	FPR <- rep(-1, length(prob))
 	TPR <- rep(-1, length(prob))
 	thresholds <- sort(prob)

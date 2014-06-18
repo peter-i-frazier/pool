@@ -1,12 +1,12 @@
-ROOT_PATH = "/fs/home/jw865/peptide-catalysis/"
+ROOT_PATH = "/fs/home/jw865/peptide-catalysis"
 
 #Specify path/to/'Naive_Bayes_util.R' here:
-source("${ROOT_PATH}src/NB_Greedy_library/Naive_Bayes_util.R")
+source("${ROOT_PATH}/src/NB_Greedy_library/Naive_Bayes_util.R")
 #Specify path/to/training data file here
-datafile <- "${ROOT_PATH}data/Data_10.csv"
+datafile <- "${ROOT_PATH}/data/Data_10.csv"
 
 #Specify path/to/classlist file here
-classfile <- "${ROOT_PATH}data/Reduced_AA_Alphabet.csv"
+classfile <- "${ROOT_PATH}/data/Reduced_AA_Alphabet.csv"
 
 args <- commandArgs(TRUE)
 for(i in 1:length(args))

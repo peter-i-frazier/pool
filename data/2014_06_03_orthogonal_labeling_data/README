@@ -1,0 +1,7 @@
+2014-06-03_Data_Summary.xlsx 
+            has all the information derived from this batch of experiments
+Training_Set.csv
+            is supplied to algorithm
+Training_Set_Cumulate.csv
+            contains training data from this batch and 2013-12-19 experiments.
+

@@ -1,8 +1,8 @@
 #!/bin/sh
-ROOT_PATH = "/fs/home/jw865/peptide-catalysis/"
-rm -R "${ROOT_PATH}temp/*/"
+ROOT_PATH = "/fs/home/jw865/peptide-catalysis"
+rm -R "${ROOT_PATH}/temp/*/"
 
-N=$(($(wc -l < "${ROOT_PATH}data/Data_10.csv") - 1))
+N=$(($(wc -l < "${ROOT_PATH}/data/2014_06_03_orthogonal_labeling_data/Training_Set_Cumulative.csv") - 1))
 
 for i in $(seq 1 $N)
 do
