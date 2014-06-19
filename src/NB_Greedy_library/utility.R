@@ -293,6 +293,16 @@ crossValid_ROC <- function(prob_file, label_file, outcome_name, out_file)
 #=====================================
 ROC_plot <- function(prob, Y, out_file) 
 {
+    result <- ROC_xy_output(prob, Y)
+	pdf(paste(out_file, '.pdf',sep=''))
+	plot(x = result$x, y = result$y, type = 'l', xlim = c(0,1), ylim = c(0,1), xlab = "false positive rate", ylab = "true positive rate")
+	Table <- cbind(result$x, result$y)
+	colnames(Table) <- c("FPR", "TPR")
+	write.csv(Table, paste(out_file,'.csv', sep=""))
+	dev.off()
+}
+
+ROC_xy_output <- function(prob, Y) {
 	FPR <- rep(-1, length(prob))
 	TPR <- rep(-1, length(prob))
 	thresholds <- sort(prob)
@@ -306,12 +316,7 @@ ROC_plot <- function(prob, Y, out_file)
 		FPR[i] <- sum((Y==0)&(label==1))/sum(Y==0)
 		TPR[i] <- sum((Y==1)&(label==1))/sum(Y==1)
 	}
-	pdf(paste(out_file, '.pdf',sep=''))
-	plot(x = FPR, y = TPR, type = 'l', xlim = c(0,1), ylim = c(0,1), xlab = "false positive rate", ylab = "true positive rate")
-	Table <- cbind(FPR, TPR)
-	colnames(Table) <- c("FPR", "TPR")
-	write.csv(Table, paste(out_file,'.csv', sep=""))
-	dev.off()
+    return (list(x=FPR, y=TPR))
 }
 
 

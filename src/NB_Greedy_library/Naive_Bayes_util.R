@@ -285,12 +285,12 @@ Dirichlet_Parameter <- function(trainX, trainY, classlist, Gamma_0, Gamma_1)
             		}
 		}
 		distance <- as.numeric(paste(unlist(strsplit(colnames(train_1)[col],''))[-1],collapse=""))
-        	alpha_1 <- cbind(alpha_1, count + rep(distance**0.5*Gamma_1,nVal))
+        alpha_1 <- cbind(alpha_1, count + rep(distance**0.5*Gamma_1,nVal))
     	}	
 	
 	#R_0: number of negative training samples
 	R_0<- dim(train_0)[1]
-    	alpha_0 <- c()
+    alpha_0 <- c()
 	for (col in 1:K) {
 		count <- rep(0,nVal)
 		for (r in 1:R_0) {
@@ -377,7 +377,17 @@ NB_predict <- function(newdata, theta, S.Pos, maxL, maxR, prior.positive = 10**(
     	return(predict)
 }
 
-
+AUC <- function(x, y)
+{
+	n <- length(y)
+	U <- 0
+	L <- 0
+	for(i in 1:(n-1)) {
+		U <- U + y[i+1]*(x[i+1]-x[i])
+		L <- L + y[i]*(x[i+1]-x[i])
+	}
+	return((U+L)/2)
+}
 
 
 
