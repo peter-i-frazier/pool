@@ -1,4 +1,4 @@
-maxP_search <- function(X, Y, classlist, S.Pos, Nrec, itr = 500, Nlib = 1e5, maxL, maxR, minL, minR, Gamma_0 = 1, Gamma_1 = 1, add_ins = 1) 
+maxP_search <- function(X, Y, classlist, S.Pos, Nrec, itr, Nlib, maxL, maxR, minL, minR, Gamma_0, Gamma_1, add_ins) 
 {
 #================================================================================================================================================================================
 #Function: maxP_search

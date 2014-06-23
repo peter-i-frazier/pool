@@ -50,8 +50,7 @@
 #		AAseq is the full sequence of amino-acids of the peptide, prob is the probability of being hit.
 #		(2) A plane text file, each line is the full sequence of amino-acids of a peptide.
 #=====================================	
-Recom_Generation <- function(training_file, classfile, outcome_name, nL, nR, S.Pos, prior.positive = 1e-4, itr = 500, Nrec, Nlib, maxL, maxR, minL, minR, Gamma_0 = 1000, Gamma_1
-			     = 0.05, add_ins = 1, use_map = 0, out_file)
+Recom_Generation <- function(training_file, classfile, outcome_name, nL, nR, S.Pos, prior.positive, itr, Nrec, Nlib, maxL, maxR, minL, minR, Gamma_0, Gamma_1, add_ins, use_map, out_file)
 {
 	data_org <- data.frame(read.csv(training_file, header = T, as.is = T, sep =','))
 	AAclass <- data.frame(read.csv(classfile, header = T, as.is = T, sep = ','))
