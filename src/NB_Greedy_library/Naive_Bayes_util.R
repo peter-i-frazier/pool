@@ -31,7 +31,7 @@
 #    	predProb	
 #       	A vector of posterior probability of Pr(Y=1|train data) of each peptide in testData.  
 #=====================================
-Naive_Bayes <- function(trainX, trainY, testData, classlist, S.Pos, maxL, maxR, Gamma_0 = 1000, Gamma_1 = 0.05, prior.positive = 1e-4, predIter = 1000)
+Naive_Bayes <- function(trainX, trainY, testData, classlist, S.Pos, maxL, maxR, Gamma_0, Gamma_1, prior.positive, predIter)
 {
 	nF <- dim(trainX)[2]
 	nAA <- length(unique(as.numeric(classlist))) 
