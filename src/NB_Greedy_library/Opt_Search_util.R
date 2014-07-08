@@ -109,11 +109,13 @@ gen_peptide_lib <- function(Nlib, nAA, nF, maxL, maxR, minL, minR, S.Pos, col_na
 }
 
 # select the peptide to be added to recommendation set is not added before
-select_new_recom <- function(prev_recom_list, peptides.library, prob, pep_idx) {
+select_new_recom <- function(trainX, peptides.library, prob) {
+    unique_training_data <- unique(trainX)
+    num_unique <- dim(unique_training_data)[1]
     while(length(prob)>0) {
         best_index <- which(prob==max(prob))
         add_pep <- peptides.library[best_index,]
-        if((pep_idx==1) || (dim(unique(rbind(prev_recom_list,add_pep)))[1]==pep_idx)){
+        if((dim(unique(rbind(unique_training_data, add_pep)))[1] - num_unique) == 1){
             return (add_pep)
         }
         else {

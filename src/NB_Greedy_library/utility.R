@@ -89,11 +89,10 @@ Recom_Generation <- function(training_file, classfile, outcome_name, nL, nR, S.P
 #		The name(including the full path) of output file. A csv file and a plane text file with this name will be generated to record the recommendations generated.
 #=====================================
 ##	No objects are returned. Two files will be created in the path specified in out_file:
-#		(1) A csv file, with 4 columns:
-#			nterm	cterm	AAseq		prob
-#		e.g.	AD	LEWMD	ADSLEWMD	1
+#		A csv file, with 4 columns:
+#			nterm	cterm	AAseq		ucsd_format        prob
+#		e.g.	AD	LEWMD	ADSLEWMD	A D S L E W M D     1
 #		AAseq is the full sequence of amino-acids of the peptide, prob is the predicted probability of being hit.
-#		(2) A plane text file, each line is the full sequence of amino-acids of a peptide.
 #=====================================	
 writePep <- function(newPep, S.Pos, pred_prob, classlist, out_file) 
 {
@@ -128,14 +127,6 @@ writePep <- function(newPep, S.Pos, pred_prob, classlist, out_file)
 	rownames(pepTable) <- c(1:nPep)
 	pepTable <- as.data.frame(pepTable, stringsAsFactors = FALSE)	
 	write.csv(pepTable, paste(out_file,'.csv',sep=''))
-	#pepList <- c()
-	#for( i in 1:nPep ) {
-	#	pep <- paste(pepTable[i,'nTerm'], 'S', pepTable[i, 'cTerm'], sep = "")
-	#	pepList <- rbind(pepList, pep)
-	#}
-	fileConn<-file(paste(out_file,'.txt',sep=''))
-	writeLines(pepTable$AAseq, fileConn)
-	close(fileConn)	
 }
 
 #Function: muteGen
