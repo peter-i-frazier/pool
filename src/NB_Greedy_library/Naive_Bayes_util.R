@@ -114,10 +114,10 @@ getFeatures <- function(data.org, classlist, nL, nR)
 	  }
         if( nOUTCOME != 0) {
             for (i in 1:nOUTCOME) {
-                if (is.na(data.org[r,i])) {
+                if (is.na(data.org[r,i+2])) {
                     feature[r,nL+nR+i] <- 0
                 } else {
-                    feature[r,nL+nR+i] <- data.org[r,i]
+                    feature[r,nL+nR+i] <- data.org[r,i+2]
                 }
             }
         }
@@ -125,7 +125,7 @@ getFeatures <- function(data.org, classlist, nL, nR)
     #outcome.names : name of outcome values
     outcome.names <- c()
     if(nOUTCOME != 0) {
-        outcome.names <- colnames(data.org)[1:nOUTCOME]
+        outcome.names <- colnames(data.org)[3:(nOUTCOME+2)]
     }
     feature <- as.data.frame(feature)
     if(nOUTCOME != 0){
@@ -172,7 +172,7 @@ getFeatures <- function(data.org, classlist, nL, nR)
 #	theta
 #	A list of two matrices: theta_0 and theta_1, specifying the theta parameter. Each matrix has the same size as alpha_0/alpha_1 and is arranged in the same way as them. 
 #=====================================       
-getTheta_MC <- function(trainX = NA, trainY = NA, alpha = NA, classlist, Gamma_0, Gamma_1) 
+getTheta_MC <- function(trainX = NA, trainY = NA, alpha = NA, classlist, Gamma_0 = NA, Gamma_1 = NA) 
 {
 	nVal <- length(unique(as.numeric(classlist)))
 	if(missing(alpha)){
@@ -390,6 +390,55 @@ AUC <- function(x, y)
 }
 
 
+# New_Dirichlet_Parameter <- function(trainX, trainY, classlist, Gamma_0, Gamma_1) 
+# {
+# 	#nVal: number of values a feature can take
+# 	nVal <- length(unique(as.numeric(classlist)))
+#     trainX.L <- trainX$left
+#     trainX.R <- trainX$right
+# 	# K: number of features
+#     K.L <- dim(trainX.L)[2]
+#     K.R <- dim(trainX.R)[2]
+# 	# divide training data by outcome value
+# 	train.L.0 <- trainX.L[trainY == 0,]
+# 	train.R.0 <- trainX.R[trainY == 0,]
+# 	train.L.1 <- trainX.L[trainY == 1,]
+# 	train.R.1 <- trainX.R[trainY == 1,]
+# 	
+# 	#R_1: number of positive training samples
+# 	R_1 <- dim(train_1)[1]
+# 	alpha_1 <- c()
+# 	for (col in 1:K) {
+# 		count <- rep(0,nVal)
+# 		for (r in 1:R_1) {
+#             		if (train_1[r,col] != -1) {
+#                 		count[train_1[r,col]] <- count[train_1[r,col]] + 1
+#             		}
+# 		}
+# 		distance <- as.numeric(paste(unlist(strsplit(colnames(train_1)[col],''))[-1],collapse=""))
+#         alpha_1 <- cbind(alpha_1, count + rep(distance**0.5*Gamma_1,nVal))
+#     	}	
+# 	
+# 	#R_0: number of negative training samples
+# 	R_0<- dim(train_0)[1]
+#     alpha_0 <- c()
+# 	for (col in 1:K) {
+# 		count <- rep(0,nVal)
+# 		for (r in 1:R_0) {
+#             		if (train_0[r,col] != -1) {
+#                 		count[train_0[r,col]] <- count[train_0[r,col]] + 1
+#             		}
+# 		}
+#     		#distance <- as.numeric(paste(unlist(strsplit(colnames(train_0)[col],''))[-1],collapse=""))
+#         	alpha_0 <- cbind(alpha_0, count + table(as.numeric(classlist))/length(classlist)*Gamma_0)
+#     	}	
+# 	alpha_0 <- as.data.frame(alpha_0)
+#     	colnames(alpha_0) <- colnames(trainX)
+#     	alpha_1 <- as.data.frame(alpha_1)
+#     	colnames(alpha_1) <- colnames(trainX)
+#     	alpha <- list("alpha_0" = alpha_0, "alpha_1" = alpha_1)	
+#     	return (alpha)
+# } 
 
 
 

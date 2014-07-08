@@ -1,3 +1,5 @@
+source('Naive_Bayes_util.R')
+
 maxP_search <- function(X, Y, classlist, S.Pos, Nrec, itr, Nlib, maxL, maxR, minL, minR, Gamma_0, Gamma_1, add_ins) 
 {
 #================================================================================================================================================================================
@@ -125,6 +127,42 @@ select_new_recom <- function(trainX, peptides.library, prob) {
     }		
 }
 
+opt_gen_peptide_lib <- function(Nlib, maxL, maxR, minL, minR, S.Pos, col_name, alpha, classlist) {
+    peptides.library <- matrix(-1, nrow=Nlib, ncol=nF)
+    nL.lib <- runif(Nlib, min = minL, max = maxL)
+    nR.lib <- runif(Nlib, min = minR, max = maxR)
+    for (n in 1:Nlib) {
+        theta <- getTheta_MC(alpha=alpha, classlist=classlist)
+        ratio <- as.matrix(theta$theta_1) / as.matrix(theta$theta_0)
+        for (l in 1:nL.lib[n]) {
+            peptides.library[n, S.Pos-l+1] <- which.max(ratio[,S.Pos-l+1])
+        }
+        for (r in 1:nR.lib[n]) {
+            peptides.library[n, S.Pos+r] <- which.max(ratio[,S.Pos+r])
+        }
+    }
+    return (peptides.library)
+}
+
+new_opt_gen_peptide_lib <- function(Nlib, maxL, maxR, minL, minR, S.Pos, col_name, alpha_label_like, alpha_label_unlike, alpha_unlabel, classlist) {
+    peptides.library <- matrix(-1, nrow=Nlib, ncol=nF)
+    nL.lib <- runif(Nlib, min = minL, max = maxL)
+    nR.lib <- runif(Nlib, min = minR, max = maxR)
+    for (n in 1:Nlib) {
+        theta_label_like <- getTheta_MC(alpha=alpha_label_like, classlist=classlist)
+        theta_label_unlike <- getTheta_MC(alpha=alpha_label_unlike, classlist=classlist)
+        theta_unlabel <- getTheta_MC(alpha=alpha_unlabel, classlist=classlist)
+
+        ratio <- as.matrix(theta_label_like$theta_1) / as.matrix(theta_label_like$theta_0) * as.matrix(theta_label_unlike$theta_0) / as.matrix(theta_label_unlike$theta_1) * as.matrix(theta_unlabel$theta_1) / as.matrix(theta_unlabel$theta_0)
+        for (l in 1:nL.lib[n]) {
+            peptides.library[n, S.Pos-l+1] <- which.max(ratio[,S.Pos-l+1])
+        }
+        for (r in 1:nR.lib[n]) {
+            peptides.library[n, S.Pos+r] <- which.max(ratio[,S.Pos+r])
+        }
+    }
+    return (peptides.library)
+}
 
 maxP_search_MAP <- function(X, Y, classlist, S.Pos, Nrec, itr = 500, Nlib = 1e5, maxL, maxR, minL, minR, Gamma_0 = 1, Gamma_1 = 1, add_ins = 1) 
 {
