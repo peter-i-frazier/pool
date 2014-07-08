@@ -442,6 +442,23 @@ AUC <- function(x, y)
 
 
 
+opt_gen_peptide_lib <- function(Nlib, maxL, maxR, minL, minR, S.Pos, col_name, alpha, classlist) {
+    peptides.library <- matrix(-1, nrow=Nlib, ncol=nF)
+    nL.lib <- runif(Nlib, min = minL, max = maxL)
+    nR.lib <- runif(Nlib, min = minR, max = maxR)
+    for (n in 1:Nlib) {
+        theta <- getTheta_MC(alpha=alpha, classlist=classlist)
+        ratio <- as.matrix(theta$theta_1) / as.matrix(theta$theta_0)
+        for (l in 1:nL.lib[n]) {
+            peptides.library[n, S.Pos-l+1] <- which.max(ratio[,S.Pos-l+1])
+        }
+        for (r in 1:nR.lib[n]) {
+            peptides.library[n, S.Pos+r] <- which.max(ratio[,S.Pos+r])
+        }
+    }
+    return (peptides.library)
+}
+
 
 
 
