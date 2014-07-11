@@ -114,7 +114,8 @@
 } % end of the block
 
 \ABSTRACT{%
-We consider a Bayesian optimal search problem, related to active learning and arising in an application to materials science. In active learning, we have training data with unknown binary labels. Obtaining labels is expensive, and we wish to obtain a small number of labels, so that the statistical classifier built from them is good. We consider a variant in which each datapoint has an associated known value, and our goal is to find a datapoint with a positive label and large value.
+We are motivated by a problem of searching short peptides with desired property in biochemistry, and generalize it as a Bayesian optimal search problem related to active learning. In active learning, we have training data with unknown binary labels. Obtaining labels is expensive, and we wish to obtain a small number of labels, so that the statistical classifier built from them is good. We consider a variant in which each datapoint has an associated known value, and our goal is to find
+a datapoint with a positive label and large value. We proposed two greedy algorithms to address this problem and proved lower bound of the algorithms that guarantees their performance. We also built a prediction model for our motivated problem, and use the proposed optimal search algorithm to find desired peptides. We showed our proposed method did significant better job than typical approach in biochemistry field.
 % Enter your abstract
 }%
 
@@ -153,44 +154,41 @@ community \citep{Chen2013, Hoi2006, Hoi2006a} , but they only aim to maximize in
 We first describe the application that motivates our research, and then we provide mathematical formalism to address a more general problem. In the last sub-section we derive our method in solving this problem.
 
 \subsection{Motivating application.} \label{sec: motivate app}
-We have two enzymes (Sfp from {\it Bacillus subtilis}, and PaAcpH from {\it Pseudomonas aeruginosa}), and a collection of peptides that can potentially act as a substrate for one or both of these enzymes.  Our goal is to find a peptide that acts as a substrate for both of these enzymes, and is as short as possible.
+Over the past decade, many chemistry-based tools have been developed for protein labeling, which have great use in biological studies and preparation of novel materials. In the recent years, focus has been moved to short peptide labeling techniques. Peptides are short chains of amino acid monomers, and they are much shorter than protein. Because of that, peptide labeling has minimal perturbation to native systems, which is a much desired feature.  Based on prevailing short peptide
+labeling methods, a biochemistry research group in UC San Diego takes a step further and aims to develop a novel method of selectively adding and removing the desired label. To support this goal, they need to find such peptide from an enormous peptide library ($\sim 10^{27}$ peptides) that only reacts with some specific enzymes, while stays inert to other enzymes. This is a challenging task because this kind of peptide is extremly rare in nature (less than 1 in $10^4$), and experiment cost
+is so expensive that the project can only afford to test hundreds of peptide candidates.
 
-To support this goal, we can do lab experiments, in which we synthesize a peptide and test, for each enzyme, whether it is a substrate or not.  We need to find a policy that suggests which peptide to synthesize and test next, so as to reach our goal with as few experiments as possible.
-
-Experiments have parallel setup, thus can be done with a batch of peptides at a time, and so the algorithm suggests a batch of peptides at a time, waiting for the results from the experiment before suggesting the next batch of peptides.
-A large collection of peptides would be considered by the algorithm for potential synthesis and testing, e.g., all peptides with length less than a given threshold.  That is, we would consider more peptides than just those that are sub-peptides of peptides from the literature known to be substrates for one enzyme.
+To design optimal experiments for this project is critical, because with so large search space, so rare the occurrence of target and so small amount of permitted evaluations, random sampling will almost surely lead to failure. The motivation for our work lies in developing robust prediction model given a small training dataset, and optimal search algorithm that finds target with least number of evaluations.
 
 \subsection{General problem statement.}
 We now formalize and generalize our problem as an active learning problem, which includes but is not limited to our motivating application.
 
-Let $E$ be a generic search space of exemplars.  In our motivating application, $E$ is the space of peptides.
-Each element $x \in E$ has an unknown binary label $y(x)=\{0,1\}$.  A known deterministic function $f(x)$ measures the cost or disutility associated with $x$. Our goal is to perform experiments so as to find $x$ such that it has positive label and its cost function $f(x)$ is minimum.
+Let $E$ be a generic search space of exemplars.  In our motivating application, $E$ is the search space of peptide candidates. Each element $x \in E$ has an unknown binary label $y(x)=\{0,1\}$.  A known deterministic function $f(x)$ measures the cost or disutility associated with $x$, which is length of the peptide candidate in the motivating application. Our goal is to perform experiments so as to find $x$ such that it has positive label and its cost function $f(x)$ is as small as
+possible.
 
-To obtain labels of exemplars, we can do a batch of experiments, which evaluate a subset $S \subseteq E$ and obtain labels at each time. We measure quality of $S$ by
+To obtain labels of exemplars, we can do a batch of experiments, which evaluates the labels for a subset $S \subseteq E$. We let cardinality of $S$ be constrained by some number $K$ (i.e. $|S| \leq K$), because budget of doing experiments is usually limited. We measure the quality of $S$ by 
 \begin{equation} \label{eq:fS}
-f^*(S)= \begin{dcases}
- \underset{x \in S:y(x)=1}{\min} f(x), & \text{if \,} \{x \in S:y(x)=1\} \neq \emptyset, \\
- \infty,  & \text{if \,} \{x \in S:y(x)=1\} = \emptyset.
- \end{dcases}
+f^*(S)= \underset{x \in S:y(x)=1}{\min} f(x),
 \end{equation}
+where we assume $\min \emptyset = \infty$. $f^*(S)$ measures the smallest cost function for positive labeled elements in the set $S$, and in our motivating application, that means the shortest length of desired peptides in the set of peptides to test.
 
 
-Let $b$ be a target value and we wish to find $S\subseteq E$ such that $f^*(S)$ is, in some sense, better than $b$. Specifically, we consider the following two measures:
+Let $b$ be a target value and we wish to find $S\subseteq E$ such that $f^*(S)$ is better than $b$. In our motivating application, we let $b$ be the length of the shortest previously known desired peptide. Since $f^*(S)$ is an unknown random variable, we consider the following two probabilistic measures:
 \begin{equation} \label{eq:twomeasure}
   \begin{aligned}
     &\text{Probability of Improvement: }&\PI(S) = \mathbb{P}(f^*(S) < b)\\
     &\text{Expected Improvement: }&\EI(S) = \E [(b-f^*(S))^+]
   \end{aligned}
 \end{equation}
-Given constraint on the cardinality of $S$, we wish to find such $S$ that maximize one of these two measures. Let $g(S)$ be either $\PI(S)$ or $\EI(S)$, we can write our goal as
+Given constraint on the cardinality of $S$, we wish to find $S$ that maximizes one of these two measures. Let $g(S)$ be either $\PI(S)$ or $\EI(S)$, and we can write our goal as
 
 \begin{equation}
-  \max_{S \subseteq E: |S|<K} g(S). 
+  \max_{S \subseteq E: |S| \leq K} g(S). 
   \label{eq:opt}
 \end{equation}
 
 \section{Solution Method}
-We solve \eqref{eq:opt} using greedy heuristic, that is, starting with empty set $S=\emptyset$, iteratively find element $e$ such that 
+\eqref{eq:opt} is a combinatorial optimization problem with huge feasible region. This problem is considered NP-hard and yet there is no known algorithm that solves it quickly. We propose an approximation algorithm, which solves \eqref{eq:opt} using greedy heuristic, that is, starting with the empty set $S=\emptyset$, iteratively find element $e$ such that 
 \begin{equation} \label{eq:greedy}
   \underset{e \in E \backslash S}{\mathrm{arg}\max} \,g(S \cup \{e\}),
 \end{equation}
