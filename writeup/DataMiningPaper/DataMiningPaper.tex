@@ -143,13 +143,13 @@ a datapoint with a positive label and large value. We proposed two greedy algori
 
 % Text of your paper here
 
-\section{Introduction}
+\section{Introduction (NOT READY YET)}
 
 In many optimal search problems, we need to effectively collect information so as to make the best decisions under uncertainty. In this setting, we need to trade off the reward by sampling (i.e. exploitation) and the cost by aquiring this information (i.e. exploration). For example, in drug discovery, we need to search for a chemical derivative of the base molecule that best treats disease. To achive the goal, we choose molecules to test  to maximize the expected quality of the
 best compound discovered \citep{Negoescu2010}. Since the budget for testing is limited, we need to test the most informative and high quality molecules. To address this problem, Jones \& Schonlau proposed Expected Improvement algorithm to sample points sequentially \citep{Jones1998} . Ginsbourger used constant liar heuristic to extend Expected Improvement algorithm to parallel setting \citep{Ginsbourger2008} . There are quite a few papers about parallel sampling in active learning research
 community \citep{Chen2013, Hoi2006, Hoi2006a} , but they only aim to maximize information gain (i.e. pure exploration). In this paper, we consider an optimal search problem in parallel setting, and propose search algorithm using greedy heuristic. We also prove that, our greedy algorithm has a guarantee of performace compared with the optimal solution.
 
-\section{Motivation}
+\section{Problem Formulation}
 
 We first describe the application that motivates our research, and then we provide mathematical formalism to address a more general problem. In the last sub-section we derive our method in solving this problem.
 
@@ -187,16 +187,159 @@ Given constraint on the cardinality of $S$, we wish to find $S$ that maximizes o
   \label{eq:opt}
 \end{equation}
 
-\section{Solution Method}
+\section{Statistical model} \label{sec:stat model}
+We use Naive Bayes as the classification method, which, despite the name, has performed quite well in many cases. Let $X=(X_1,\ldots,X_n)$ be an instance with $n$ features and $Y$ be its label. By Bayes's Rule, we have:
+
+\begin{equation*}
+\Prob(Y=y|X=x)=\frac{\Prob(X=x|Y=y)\Prob(Y=y)}{\Prob(X=x)}=\frac{\Prob(X=x|Y=y)\Prob(Y=y)}{\sum_{y'}\Prob(X=x|Y=y')\Prob(Y=y')}
+\end{equation*}
+
+The Naive Bayes classifier assumes that the presence or absence of a particular feature is unrelated to the presence or absence of any other feature, given the class variable, i.e.
+
+\begin{equation*}
+\Prob(Y=y|X=x) = \frac{\prod_{j=1}^n\Prob(X_j=x_j|Y=y)\Prob(Y=y)}{\sum_{y'}\prod_{j=1}^n\Prob(X_j=x_j|Y=y)\Prob(Y=y)}
+\end{equation*}
+
+In our motivation application, we have a set of peptides, each with length less than or equal to $L$. Each peptide is a sequence of amino acids. We use a reduced alphabet for amino-acids, i.e., we group them into $K$ groups. For each peptide, let $A_i$ be the amino acid on position $j$, and let $X_i$ be the class of this amino acid. For a specific enzyme, let $Y(x)=1$ if peptide $x$ is a substrate for that enzyme and 0 if not.
+
+We let $\theta_{y,j}(k)=\Prob(X_i=k|Y(X)=y)$, for each $j=1,\ldots,L$, $k=1,\ldots,K$ and $y\in\{0,1\}$. We further assume some known prior distribution $\Prob(Y(x)=y)$, $y\in\{0,1\}$. Let $\theta$ be the full set of parameters $\theta_{y,j}(k)$, for $j=1,\ldots,L$, $k=1,\ldots,K$ and $y\in\{0,1\}$. Then, given an unlabeled peptide, we can calculate its probability being a substrate as:
+
+\begin{equation} \label{eq:model}
+  \Prob\left(Y(x) = 1 | \theta\right) =
+  \frac{\Prob(Y(x)=1) \prod_{j} \theta_{1,j}(x_j)}{
+  \left[ \Prob(Y(x)=1) \prod_{j} \theta_{1,j}(x_j)\right] +
+  \left[ \Prob(Y(x)=0) \prod_{j} \theta_{0,j}(x_j)\right]}
+\end{equation}
+
+We estimate the parameters $\theta_{y,j}(k)$ using Bayesian inference. We assume for each $j=1,\ldots,L$, $y\in\{0,1\}$, the vector $\theta_{y,j}\sim\Dir(\alpha_{y,j}(1),\ldots,\alpha_{y,j}(K))$. A good initial choice for the parameter vector $\alpha_{y,j} = (\alpha_{y,j}(1),\ldots,\alpha_{y,j}(6))$ can be choosing $\alpha_{y,j}(k)$ to be constant across $k$, and $y$, and to only depend upon $j$. Since amino acids further from the serine are less likely to have a strong influence on its activity, we choose this value to be $1$ in the positions next to the serine and to increase as $j$ moves further.
+
+We further assume two hyper parameters $\gamma_0$ and $\gamma_1$ that characterize the distribution for $y=0$ and $y=1$ respectively. Then, with the prior distribution and hyper parameters, our posterior distribution is also Dirichlet. In particular, it is 
+$\Dir( \alpha_{y,j}(1) + \gamma_yN_{y,j}(1), \ldots, \alpha_{y,j}(K) + \gamma_yN_{y,j}(K))$,
+where $N_{y,j}(k)$ counts how many peptides $x$ in the training data with $Y(x)=y$ had $x_j=k$.  That is, it counts how many peptides had amino acid $j$ in class $j$.
+
+Since our training data is expensive and highly skewed, we use the leave-one-out cross validation procedure to choose the optimal hyper parameters. For each setting of the hyper parameters, we obtain an receiver operating characteristic(ROC) curve using the result of the leave-one out procedure and choose the setting with highest AUC(area under curve).
+
+%[Put two ROC curves here, one for leave-one-out and one for using the 1st data set as training and 2nd data set as test, to be continued ...]
+
+\begin{figure}[hpt] 
+\center
+\begin{minipage}[b]{0.45\linewidth}
+\includegraphics[width=\textwidth]{pic/ROC_DS1_1000_025.pdf}
+\caption*{using data set \#0 \& \#1}
+\end{minipage}
+\begin{minipage}[b]{0.45\linewidth}
+\includegraphics[width=\textwidth]{pic/ROC_DS2_1000_025.pdf}
+\caption*{using data set \#0,\#1 \& \#2}
+\end{minipage}
+\caption{ ROC curve using leave-one-out cross validation}
+\label{fig:ROC}
+\end{figure}
+
+In Figure \ref{fig:ROC}, note ROC curve to the left is better than the one to the right. This is because data set \#2 was generated by our algorithm based on the previous two data sets, and due to the exploration manner of our algorithm, data set \#2 should lie in the region that is more challenging for the classifier. Thus it is reasonable that our classifer performs worse using all available data sets. 
+
+\section{Optimization Algorithm}
 \eqref{eq:opt} is a combinatorial optimization problem with huge feasible region. This problem is considered NP-hard and yet there is no known algorithm that solves it quickly. We propose an approximation algorithm, which solves \eqref{eq:opt} using greedy heuristic, that is, starting with the empty set $S=\emptyset$, iteratively find element $e$ such that 
 \begin{equation} \label{eq:greedy}
   \underset{e \in E \backslash S}{\mathrm{arg}\max} \,g(S \cup \{e\}),
 \end{equation}
-and incorporate it into $S$ until $|S|=K$ for some chosen K.
+and incorporate it into $S$ until $|S|=K$ for some chosen K. This approach reduces the size of search space dramatically from $|E|^{|S|}$ down to $|E| \times |S|$, and we prove that if objective function $g$ is either $\PI$ or $\EI$, the proposed greedy algorithm is guaranteed to be near-optimal with a lower bound. Additionally, we show that under the statistical model described in section \ref{sec:stat model}, we can formulate \eqref{eq:greedy} as Mixed-Integer Nonlinear Programming
+(MINLP) and solve it efficiently using a off-the-shelf MINLP solver.
+
+\subsection{Lower bound of greedy algorithm}
+In this subsection, we show that when the objective function $g$ in \eqref{eq:greedy} is either $\PI$ or $\EI$, the proposed greedy algorithm has performance guarantee. The result is stated in the following:
+\begin{theorem} 
+If objective function is probability of improvement (i.e $\PI(S)$) or expected improvement (i.e $\EI(S)$), the greedy algorithm is guaranteed to achieve a factor $(1-1/e) (\approx 63\%)$ of the optimal value.
+\end{theorem}
+We prove the theorem using the following three lemmas. Lemma 1 is a result from the analysis of greedy heuristic in combinatorial optimization by Nemhauser, which provides lower bound of greedy heuristic given that objective function satisfies certain conditions. Lemma 2 and 3 show $\PI$ and $\EI$ are the objective functions that satisfy conditions stated in Lemma 1, and thus greedy algorithm has a lower bound.
+\begin{lemma} \cite{Company1978}
+If $F(S)$ is submodular, nondecreasing and $F(\emptyset)=0$, the greedy heuristic always produces a solution whose value is at least $1-[(K-1)/K]^K$ times the optimal value, where $|S| \leq K$. This bound can be achieved for each $K$ and has a limiting value of $1-1/e$, where $e$ is the base of the natural logarithm.
+\end{lemma}
+
+\begin{lemma} 
+  Probability of improvement $\PI(S)$ is submodular, nondecreasing and $\PI(\emptyset)=0$.
+\end{lemma}
+\begin{lemma}
+  Expected improvement $\EI(S)$ is submodular, nondecreasing and $\EI(\emptyset)=0$.
+\end{lemma}
+
+\proof{Proof of Theorem 1.}
+From Lemma 2 and 3, we know that $\PI$ and $\EI$ are submodular, nondecreasing and their measure of the empty set is 0. From Lemma 1, we conclude that if the objective function $g$ in \eqref{eq:greedy} is $\PI$ or $\EI$, the greedy algorithm is guaranteed to achieve a factor of $(1-1/e)$ of the optimal value. \Halmos
+\endproof
+
+\proof{Proof of Lemma 2.}
+First we show $\PI(\emptyset) = 0$.
+\begin{equation*}
+  \PI(\emptyset) = \mathbb{P}(f^*(\emptyset)<b) = \mathbb{P}(\infty<b)=0.
+\end{equation*}
+
+To show $\PI(S)$ is nondecreasing, let $A \subseteq B \subseteq E$ where $E$ is a finite set, then
+\begin{equation*}
+\begin{split}
+\PI(B) &= \mathbb{P}(f^*(B)<b) \\
+       &= \mathbb{P}(f^*(B)<b |f^*(A) \geq b) \mathbb{P}(f^*(A) \geq b) + \mathbb{P}(f^*(B)<b |f^*(A)<b) \mathbb{P}(f^*(A)<b) \\
+       &= \mathbb{P}(f^*(B)<b |f^*(A) \geq b) \mathbb{P}(f^*(A) \geq b) + \mathbb{P}(f^*(A)<b) \\
+       &\geq \mathbb{P}(f^*(A)<b) \\
+       &= \PI(A)
+\end{split}
+\end{equation*}
+
+Lastly, we want to show $\PI(S)$ is submodular. For $e \in E\backslash B$,
+\begin{equation*}
+\begin{split}
+&\PI(A \cup \{e\}) - \PI(A) \\
+&= \mathbb{P}(f^*(A \cup \{e\})<b)-\mathbb{P}(f^*(A)<b)\\
+&= \mathbb{P}(f^*(A \cup \{e\})<b|f^*(A)<b)\mathbb{P}(f^*(A)<b) + \mathbb{P}(f^*(A \cup \{e\})<b|f^*(A)\geq b)\mathbb{P}(f^*(A)\geq b) -\mathbb{P}(f^*(A)<b) \\
+&=\mathbb{P}(f^*(A)<b) + \mathbb{P}(f^*(A \cup \{e\})<b|f^*(A)\geq b)\mathbb{P}(f^*(A)\geq b) -\mathbb{P}(f^*(A)<b)\\
+&= \mathbb{P}(f^*(A \cup \{e\})<b|f^*(A)\geq b)\mathbb{P}(f^*(A)\geq b) \\
+&= \mathbb{P}(f(e)<b, y(e)=1|f^*(A)\geq b)\mathbb{P}(f^*(A)\geq b) \\
+&= \mathbb{P}(f(e)<b, y(e)=1,f^*(A)\geq b)
+\end{split}
+\end{equation*}
+Using similar argument,
+\begin{equation*}
+\begin{split}
+&\PI(B \cup \{e\}) - \PI(B) \\
+&= \mathbb{P}(f(e)<b, y(e)=1,f^*(B)\geq b) \\
+&= \mathbb{P}(f(e)<b, y(e)=1,f^*(A)\geq b, f^*(B\backslash A) \geq b )
+\end{split}
+\end{equation*}
+Therefore, $\PI(A \cup \{e\}) - \PI(A) \geq \PI(B \cup \{e\}) - \PI(B)$, thus $\PI(S)$ is submodular. \Halmos
+\endproof
+
+
+\proof{Proof of Lemma 3.}
+First we show $\EI(\emptyset) = 0$.
+\begin{equation*}
+  \EI(\emptyset) = \E[(b-f^*(\emptyset))^+] = \E[0] = 0.
+\end{equation*}
+
+To show $\EI(S)$ is nondecreasing, let $A \subseteq B \subseteq E$ where $E$ is a finite set. Since $f^*(B) \leq f^*(A)$, $b-f^*(B) \geq b-f^*(A)$, and $(b-f^*(B))^+ \geq (b-f^*(A))^+$, therefore, $\E[(b-f^*(B))^+] \geq \E[(b-f^*(A))^+]$.
+
+Lastly, we want to show $\PI(S)$ is submodular. For $e \in E\backslash B$, consider $\E[(b-f^*(A \cup \{e\}))^+]-\E[(b-f^*(A))^+]$. We can write
+\begin{equation*}
+(b-f^*(A \cup \{e\}))^+ = \begin{dcases}
+                         (b-f^*(A))^+ & \text{if $y(e)=0$} \\
+                         (b-\min\{f(e),f^*(A)\})^+ & \text{if $y(e)=1$}
+                         \end{dcases}
+\end{equation*}
+Then 
+\begin{align*}
+&\E[(b-f^*(A \cup \{e\}))^+]-\E[(b-f^*(A))^+] \\
+&= \mathbb{P}(y(e)=1) \E[(b-\min\{f(e),f^*(A)\})^+ -(b-f^*(A))^+|y(e)=1]\\
+&= \mathbb{P}(y(e)=1) \mathbb{P}(f(e)<f^*(A)|y(e)=1) \E[(b-e)^+-(b-f^*(A))^+|y(e)=1, f(e)<f^*(A)]\\
+&= \E[ \mathbbm{1}_{y(e)=1, f(e)<f^*(A)} ((b-e)^+-(b-f^*(A))^+)]
+\end{align*}
+Since $f^*(A) \geq f^*(B)$, $\mathbbm{1}_{y(e)=1, f(e)<f^*(A)} ((b-e)^+-(b-f^*(A))^+)) \geq \mathbbm{1}_{y(e)=1, f(e)<f^*(B)} ((b-e)^+-(b-f^*(B))^+))$, thus
+\begin{equation*}
+\EI(A\cup \{e\})-\EI(A) \geq \EI(B\cup \{e\})-\EI(B)
+\end{equation*}
+$\EI(S)$ is submodular. \Halmos
+\endproof
 
 \subsection{Probability of Improvement}
+We first show in Proposition 1 that \eqref{eq:greedy} can be written into the form in which the objective function can be easily calculated using any statitical classifier. This is the general form of greedy algorithm for optimization over probability of improvement and can be used with any underlying statistical model. In addition, we show that, using the Naive Bayes classifier proposed in section \ref{sec:stat model}, we can further formulate \eqref{eq:greedy} as a MINLP, which can be solved efficiently using an off-the-shelf MINLP solver.
 \begin{proposition}
-  In the case that objective function is $\PI$, we can write \eqref{eq:greedy} as 
+  If the objective function $g$ is $\PI$, we can write \eqref{eq:greedy} as 
   \begin{equation} \label{eq:PI3}
     \underset{e \in E \backslash S, f(e)<b}{\mathrm{arg}\max} \, \mathbb{P}(y(e)=1|y(x)=0, \forall x \in S).
   \end{equation}
@@ -218,13 +361,66 @@ and incorporate it into $S$ until $|S|=K$ for some chosen K.
   \end{equation*}
 \endproof
 
-\begin{remark}
-  The objective in \eqref{eq:PI3} can be obtained using virtually any standard classification method. To solve \eqref{eq:PI3}, exaustive search can be used when search space of $e$ is not too large. In our motivating application, the search space of $e$ is huge, but we can formulate \eqref{eq:PI3} as a MINLP and solve it efficiently, which will be covered in the later section.
-\end{remark}
+In our motivating application, we use the Naive Bayes model described in section \ref{sec:stat model}, and we want to formulate \eqref{eq:PI3} as a MINLP. First write equation \eqref{eq:model} as
+\begin{equation} \label{model1}
+\Prob\left(Y(x) = 1 | \theta\right) =
+\frac{\prod_j \eta_j(x_j)}{\prod_j \eta_j(x_j) + \frac{\Prob(Y(x)=0)}{\Prob(Y(x)=1)}},
+\end{equation}
+where
+\begin{equation*}
+\eta_j(x_j) = \frac{\theta_{1,j}(x_j)}{\theta_{0,j}(x_j)} \text{\,\,\,for $\forall j \in \{1,\ldots,L\}$}. 
+\end{equation*}
+Then we can write equation \eqref{eq:PI3} as
+\begin{equation} \label{eq:PI4}
+\underset{e \in E \backslash S, f(e)<b}{\mathrm{arg}\max} \, \frac{\prod_j \eta_j(e_j)}{\prod_j \eta_j(e_j) + \frac{\Prob(Y(e)=0)}{\Prob(Y(e)=1)}},
+\end{equation}
+where 
+\begin{equation*}
+\eta_j(e_j)=\frac{\Prob(e_j|Y(e)=1,Y(x)=0, \forall x \in S)}{\Prob(e_j|Y(e)=0,Y(x)=0, \forall x \in S)}.
+\end{equation*}
+Now we can formulate equation \eqref{eq:PI4} as a MINLP,
+\begin{equation} \label{eq:PI5}
+\begin{split}
+\max \quad &\frac{\prod_j \Sigma_k x_j(k) \eta_j(k)}{\prod_j \Sigma_k x_j(k) \eta_j(k) + \frac{\Prob(Y(x)=0)}{\Prob(Y(x)=1)}} \\
+\text{s.t} \quad &k \in \{1,\ldots,K\} \\
+&x_j(k) \in \{0,1\}\\
+&\Sigma_k x_j(k)=1,
+\end{split}
+\end{equation}
+where
+\begin{equation*}
+x_j(k)=\begin{dcases}
+        1 & \text{if $e_j=k$}\\
+        0 & \text{else}.
+\end{dcases}
+\end{equation*}
+We summarize the algorithm in Algorithm \ref{algo1}.
+\begin{Algorithm}(Probability of Improvement) \label{algo1}
+\begin{algorithmic}[1]
+\REQUIRE Inputs $\text{M, J, K}$, data set D and prior distribution of $\theta_y \sim \text{Dirichlet} (\boldsymbol \alpha_y), y \in \{1,0\}$
+\STATE $S \leftarrow \emptyset $
+\STATE Calculate posterior distribution of $\theta_1 \sim \text{Dirichlet} (\boldsymbol \alpha_1|\{x|x \in D,y(x)=1\})$.
+\FOR{$m=1$ to $M$} 
+\STATE COUNT $\leftarrow 0$
+\STATE Calculate posterior distribution of $\theta_0 \sim \text{Dirichlet} (\boldsymbol \alpha_0|\{x|x \in D,y(x)=0\} \cup S)$.
+\LOOP 
+\STATE Sample $\theta_1$ from $\text{Dirichlet} (\boldsymbol \alpha_1|\{x|x \in D,y(x)=1\})$ and $\theta_0$ from $\text{Dirichlet} (\boldsymbol \alpha_0|\{x|x \in D,y(x)=0\} \cup S)$.
+\STATE $\eta \leftarrow \frac{\theta_1}{\theta_0}$
+\STATE Solve MINLP in equation \eqref{eq:PI5} to find $x$.
+\STATE COUNT $\leftarrow$ COUNT $+ x$.
+\ENDLOOP
+\FOR {$j=1$ to $J$}
+\STATE $e_j \leftarrow \underset{k \in \{1,\ldots,K\}}{\mathrm{arg}\max} \, \text{COUNT}_{kj}$
+\ENDFOR
+\STATE $S \leftarrow (S, e)$
+\ENDFOR
+\end{algorithmic}
+\end{Algorithm}
 
 \subsection{Expected Improvement}
+The formulation for the case of expected improvement is similar to that of probability of improvement, and for our motivating application, we can also formulate \eqref{eq:greedy} as a MINLP.
 \begin{proposition}
-  If objective function is $\EI$, we can write \eqref{eq:greedy} as 
+  If the objective function $g$ is $\EI$, we can write \eqref{eq:greedy} as 
   \begin{equation} \label{eq:EI1}
     \underset{e \in E \backslash S}{\mathrm{arg}\max} \, c_0 \mathbb{P}_0(e)(b-f(e))^+ + \sum_{i=1}^{|S|} c_i \mathbb{P}_i(e)(f(x_i)-f(e))^+,
   \end{equation}
@@ -279,221 +475,7 @@ where $L = \{f(x): x \in S\}$. If we rank elements in $S$ such that $f(x_i) \leq
 \end{equation}
 Substitute \eqref{eq:EI3} \eqref{eq:EI4} into \eqref{eq:EI2}, and note that $\mathbb{P}(y(e)=1, \mathcal{F}(x_1,\ldots,x_{|S|}) \propto \mathbb{P}(y(e)=1| \mathcal{F}(x_1,\ldots,x_{|S|})$ with known coefficient given $S$, we get \eqref{eq:EI1} in proposition 2. \Halmos
 \endproof
-\begin{remark}
-  The objective in \eqref{eq:EI1} can be obtained again using any classification method, and in our motivating application, we formulate \eqref{eq:EI1} as a MINLP and solve it using off-the-shelf MINLP solver.
-\end{remark}
 
-\subsection{Lower bound of greedy algorithm}
-\begin{claim}
-If objective function is probability of improvement (i.e $\PI(S)$) or expected improvement (i.e $\EI(S)$), the greedy algorithm is guaranteed to achieve a factor $(1-1/e) (\approx 63\%)$ of the optimal value.
-\end{claim}
-We prove the claim using the following theorems.
-\begin{theorem} 
-  Probability of improvement $\PI(S)$ is submodular, nondecreasing and $\PI(\emptyset)=0$.
-\end{theorem}
-\begin{theorem}
-  Expected improvement $\EI(S)$ is submodular, nondecreasing and $\EI(\emptyset)=0$.
-\end{theorem}
-\begin{theorem} \cite{Company1978}
-If $F(S)$ is submodular, nondecreasing and $F(\emptyset)=0$, the greedy heuristic always produces a solution whose value is at least $1-[(K-1)/K]^K$ times the optimal value, where $|S| \leq K$. This bound can be achieved for each $K$ and has a limiting value of $1-1/e$, where $e$ is the base of the natural logarithm.
-\end{theorem}
-
-\proof{Proof of Theorem 2.}
-~
-  \begin{itemize}
-    \item
-    $\PI(\emptyset) = \mathbb{P}(f^*(\emptyset)<b) = \mathbb{P}(\infty<b)=0$.
-
-    \item
-    Suppose $A \subseteq B \subseteq E$ where $E$ is a finite set.
-    \begin{equation*}
-    \begin{split}
-    \PI(B) &= \mathbb{P}(f^*(B)<b) \\
-           &= \mathbb{P}(f^*(B)<b |f^*(A) \geq b) \mathbb{P}(f^*(A) \geq b) + \mathbb{P}(f^*(B)<b |f^*(A)<b) \mathbb{P}(f^*(A)<b) \\
-           &= \mathbb{P}(f^*(B)<b |f^*(A) \geq b) \mathbb{P}(f^*(A) \geq b) + \mathbb{P}(f^*(A)<b) \\
-           &\geq \mathbb{P}(f^*(A)<b) \\
-           &= \PI(A)
-    \end{split}
-    \end{equation*}
-
-    \item
-    For $e \in E\backslash B$,
-    \begin{equation*}
-    \begin{split}
-    \PI(A \cup \{e\}) - \PI(A) &= \mathbb{P}(f^*(A \cup \{e\})<b)-\mathbb{P}(f^*(A)<b)\\
-                               &= \mathbb{P}(f^*(A \cup \{e\})<b|f^*(A)<b)\mathbb{P}(f^*(A)<b) + \\
-                               &\mathbb{P}(f^*(A \cup \{e\})<b|f^*(A)\geq b)\mathbb{P}(f^*(A)\geq b) -\mathbb{P}(f^*(A)<b) \\
-                               &=\mathbb{P}(f^*(A)<b) + \mathbb{P}(f^*(A \cup \{e\})<b|f^*(A)\geq b)\mathbb{P}(f^*(A)\geq b) -\\
-                               &\mathbb{P}(f^*(A)<b)\\
-                               &= \mathbb{P}(f^*(A \cup \{e\})<b|f^*(A)\geq b)\mathbb{P}(f^*(A)\geq b) \\
-                               &= \mathbb{P}(f(e)<b, y(e)=1|f^*(A)\geq b)\mathbb{P}(f^*(A)\geq b) \\
-                               &= \mathbb{P}(f(e)<b, y(e)=1,f^*(A)\geq b)
-    \end{split}
-    \end{equation*}
-    Using similar argument,
-    \begin{equation*}
-    \begin{split}
-    \PI(B \cup \{e\}) - \PI(B) &= \mathbb{P}(f(e)<b, y(e)=1,f^*(B)\geq b) \\
-                               &= \mathbb{P}(f(e)<b, y(e)=1,f^*(A)\geq b, f^*(B\backslash A) \geq b )
-    \end{split}
-    \end{equation*}
-    Therefore, $\PI(A \cup \{e\}) - \PI(A) \geq \PI(B \cup \{e\}) - \PI(B)$, thus we conclude that $\PI(S)$ is submodular. \Halmos
-  \end{itemize} 
-\endproof
-
-\proof{Proof of Theorem 3.}
-~
-\begin{itemize}
-\item
-$\EI(\emptyset) = \E[(b-f^*(\emptyset))^+] = \E[0] = 0$.
-\item
-Suppose $A \subseteq B \subseteq E$ where $E$ is a finite set. Since $f^*(B) \leq f^*(A)$, $b-f^*(B) \geq b-f^*(A)$, and $(b-f^*(B))^+ \geq (b-f^*(A))^+$, therefore, $\E[(b-f^*(B))^+] \geq \E[(b-f^*(A))^+]$.
-\item
-For $e \in E\backslash B$, consider $\E[(b-f^*(A \cup \{e\}))^+]-\E[(b-f^*(A))^+]$. We can write
-\begin{equation*}
-(b-f^*(A \cup \{e\}))^+ = \begin{dcases}
-                         (b-f^*(A))^+ & \text{if $y(e)=0$} \\
-                         (b-\min\{f(e),f^*(A)\})^+ & \text{if $y(e)=1$}
-                         \end{dcases}
-\end{equation*}
-Then 
-\begin{align*}
-&\E[(b-f^*(A \cup \{e\}))^+]-\E[(b-f^*(A))^+] \\
-&= \mathbb{P}(y(e)=1) \E[(b-\min\{f(e),f^*(A)\})^+ -(b-f^*(A))^+|y(e)=1]\\
-&= \mathbb{P}(y(e)=1) \mathbb{P}(f(e)<f^*(A)|y(e)=1) \E[(b-e)^+-(b-f^*(A))^+|y(e)=1, f(e)<f^*(A)]\\
-&= \E[ \mathbbm{1}_{y(e)=1, f(e)<f^*(A)} ((b-e)^+-(b-f^*(A))^+)]
-\end{align*}
-Since $f^*(A) \geq f^*(B)$, $\mathbbm{1}_{y(e)=1, f(e)<f^*(A)} ((b-e)^+-(b-f^*(A))^+)) \geq \mathbbm{1}_{y(e)=1, f(e)<f^*(B)} ((b-e)^+-(b-f^*(B))^+))$, thus
-\begin{equation*}
-\EI(A\cup \{e\})-\EI(A) \geq \EI(B\cup \{e\})-\EI(B)
-\end{equation*}
-$\EI(S)$ is submodular. \Halmos
-\end{itemize} 
-\endproof
-
-\section{Application}
-We apply our algorithm to finding minimally-sized peptide substrates. The problem has been described in \ref{sec: motivate app}.
-
-\subsection{Statistical model} \label{sec:stat model}
-We use Naive Bayes as the classification method, which, despite the name, has performed quite well in many cases. Let $X=(X_1,\ldots,X_n)$ be an instance with $n$ features and $Y$ be its label. By Bayes's Rule, we have:
-
-\begin{equation*}
-\Prob(Y=y|X=x)=\frac{\Prob(X=x|Y=y)\Prob(Y=y)}{\Prob(X=x)}=\frac{\Prob(X=x|Y=y)\Prob(Y=y)}{\sum_{y'}\Prob(X=x|Y=y')\Prob(Y=y')}
-\end{equation*}
-
-The Naive Bayes classifier assumes that the presence or absence of a particular feature is unrelated to the presence or absence of any other feature, given the class variable, i.e.
-
-\begin{equation*}
-\Prob(Y=y|X=x) = \frac{\prod_{j=1}^n\Prob(X_j=x_j|Y=y)\Prob(Y=y)}{\sum_{y'}\prod_{j=1}^n\Prob(X_j=x_j|Y=y)\Prob(Y=y)}
-\end{equation*}
-
-In our motivation application, we have a set of peptides, each with length less than or equal to $L$. Each peptide is a sequence of amino acids. We use a reduced alphabet for amino-acids, i.e., we group them into $K$ groups. For each peptide, let $A_i$ be the amino acid on position $j$, and let $X_i$ be the class of this amino acid. For a specific enzyme, let $Y(x)=1$ if peptide $x$ is a substrate for that enzyme and 0 if not.
-
-We let $\theta_{y,j}(k)=\Prob(X_i=k|Y(X)=y)$, for each $j=1,\ldots,L$, $k=1,\ldots,K$ and $y\in\{0,1\}$. We further assume some known prior distribution $\Prob(Y(x)=y)$, $y\in\{0,1\}$. Let $\theta$ be the full set of parameters $\theta_{y,j}(k)$, for $j=1,\ldots,L$, $k=1,\ldots,K$ and $y\in\{0,1\}$. Then, given an unlabeled peptide, we can calculate its probability being a substrate as:
-
-\begin{equation} \label{eq:model}
-  \Prob\left(Y(x) = 1 | \theta\right) =
-  \frac{\Prob(Y(x)=1) \prod_{j} \theta_{1,j}(x_j)}{
-  \left[ \Prob(Y(x)=1) \prod_{j} \theta_{1,j}(x_j)\right] +
-  \left[ \Prob(Y(x)=0) \prod_{j} \theta_{0,j}(x_j)\right]}
-\end{equation}
-
-We estimate the parameters $\theta_{y,j}(k)$ using Bayesian inference. We assume for each $j=1,\ldots,L$, $y\in\{0,1\}$, the vector $\theta_{y,j}\sim\Dir(\alpha_{y,j}(1),\ldots,\alpha_{y,j}(K))$. A good initial choice for the parameter vector $\alpha_{y,j} = (\alpha_{y,j}(1),\ldots,\alpha_{y,j}(6))$ can be choosing $\alpha_{y,j}(k)$ to be constant across $k$, and $y$, and to only depend upon $j$. Since amino acids further from the serine are less likely to have a strong influence on its activity, we choose this value to be $1$ in the positions next to the serine and to increase as $j$ moves further.
-
-We further assume two hyper parameters $\gamma_0$ and $\gamma_1$ that characterize the distribution for $y=0$ and $y=1$ respectively. Then, with the prior distribution and hyper parameters, our posterior distribution is also Dirichlet. In particular, it is 
-$\Dir( \alpha_{y,j}(1) + \gamma_yN_{y,j}(1), \ldots, \alpha_{y,j}(K) + \gamma_yN_{y,j}(K))$,
-where $N_{y,j}(k)$ counts how many peptides $x$ in the training data with $Y(x)=y$ had $x_j=k$.  That is, it counts how many peptides had amino acid $j$ in class $j$.
-
-Since our training data is expensive and highly skewed, we use the leave-one-out cross validation procedure to choose the optimal hyper parameters. For each setting of the hyper parameters, we obtain an receiver operating characteristic(ROC) curve using the result of the leave-one out procedure and choose the setting with highest AUC(area under curve).
-
-%[Put two ROC curves here, one for leave-one-out and one for using the 1st data set as training and 2nd data set as test, to be continued ...]
-
-\begin{figure}[hpt] 
-\center
-\begin{minipage}[b]{0.45\linewidth}
-\includegraphics[width=\textwidth]{pic/ROC_DS1_1000_025.pdf}
-\caption*{using data set \#0 \& \#1}
-\end{minipage}
-\begin{minipage}[b]{0.45\linewidth}
-\includegraphics[width=\textwidth]{pic/ROC_DS2_1000_025.pdf}
-\caption*{using data set \#0,\#1 \& \#2}
-\end{minipage}
-\caption{ ROC curve using leave-one-out cross validation}
-\label{fig:ROC}
-\end{figure}
-
-In Figure \ref{fig:ROC}, note ROC curve to the left is better than the one to the right. This is because data set \#2 was generated by our algorithm based on the previous two data sets, and due to the exploration manner of our algorithm, data set \#2 should lie in the region that is more challenging for the classifier. Thus it is reasonable that our classifer performs worse using all available data sets. 
-
-\subsection{Greedy Algorithm}
-\subsubsection{Probability of Improvement}
-We use equation \eqref{eq:PI3}, embeded in statistical model described in the previous section, to find peptides to sample next. 
-
-Write equation \eqref{eq:model} as
-\begin{equation} \label{model1}
-\Prob\left(Y(x) = 1 | \theta\right) =
-\frac{\prod_j \eta_j(x_j)}{\prod_j \eta_j(x_j) + \frac{\Prob(Y(x)=0)}{\Prob(Y(x)=1)}},
-\end{equation}
-where
-\begin{equation*}
-\eta_j(x_j) = \frac{\theta_{1,j}(x_j)}{\theta_{0,j}(x_j)} \text{\,\,\,for $\forall j \in \{1,\ldots,L\}$}. 
-\end{equation*}
-Then we can write equation \eqref{eq:PI3} as
-\begin{equation} \label{eq:PI4}
-\underset{e \in E \backslash S, f(e)<b}{\mathrm{arg}\max} \, \frac{\prod_j \eta_j(e_j)}{\prod_j \eta_j(e_j) + \frac{\Prob(Y(e)=0)}{\Prob(Y(e)=1)}},
-\end{equation}
-where 
-\begin{equation*}
-\eta_j(e_j)=\frac{\Prob(e_j|Y(e)=1,Y(x)=0, \forall x \in S)}{\Prob(e_j|Y(e)=0,Y(x)=0, \forall x \in S)}.
-\end{equation*}
-We can formulate equation \eqref{eq:PI4} as a Mixed-Integer Nonlinear Programming (MINLP),
-\begin{equation} \label{eq:PI5}
-\begin{split}
-\max \quad &\frac{\prod_j \Sigma_k x_j(k) \eta_j(k)}{\prod_j \Sigma_k x_j(k) \eta_j(k) + \frac{\Prob(Y(x)=0)}{\Prob(Y(x)=1)}} \\
-\text{s.t} \quad &k \in \{1,\ldots,K\} \\
-&x_j(k) \in \{0,1\}\\
-&\Sigma_k x_j(k)=1,
-\end{split}
-\end{equation}
-where
-\begin{equation*}
-x_j(k)=\begin{dcases}
-        1 & \text{if $e_j=k$}\\
-        0 & \text{else}.
-\end{dcases}
-\end{equation*}
-There are quite a few available software packages that can solve equation \eqref{eq:PI5} based on branch-and-bound. This is summarized in Algorithm \ref{algo1}.
-\begin{Algorithm}(Probability of Improvement) \label{algo1}
-\begin{algorithmic}[1]
-\REQUIRE Inputs $\text{M, J, K}$, data set D and prior distribution of $\theta_y \sim \text{Dirichlet} (\boldsymbol \alpha_y), y \in \{1,0\}$
-\STATE $S \leftarrow \emptyset $
-\STATE Calculate posterior distribution of $\theta_1 \sim \text{Dirichlet} (\boldsymbol \alpha_1|\{x|x \in D,y(x)=1\})$.
-\FOR{$m=1$ to $M$} 
-\STATE COUNT $\leftarrow 0$
-\STATE Calculate posterior distribution of $\theta_0 \sim \text{Dirichlet} (\boldsymbol \alpha_0|\{x|x \in D,y(x)=0\} \cup S)$.
-\LOOP 
-\STATE Sample $\theta_1$ from $\text{Dirichlet} (\boldsymbol \alpha_1|\{x|x \in D,y(x)=1\})$ and $\theta_0$ from $\text{Dirichlet} (\boldsymbol \alpha_0|\{x|x \in D,y(x)=0\} \cup S)$.
-\STATE $\eta \leftarrow \frac{\theta_1}{\theta_0}$
-\STATE Solve MINLP in equation \eqref{eq:PI5} to find $x$.
-\STATE COUNT $\leftarrow$ COUNT $+ x$.
-\ENDLOOP
-\FOR {$j=1$ to $J$}
-\STATE $e_j \leftarrow \underset{k \in \{1,\ldots,K\}}{\mathrm{arg}\max} \, \text{COUNT}_{kj}$
-\ENDFOR
-\STATE $S \leftarrow (S, e)$
-\ENDFOR
-\end{algorithmic}
-\end{Algorithm}
-We compare the performance of probability of improvement algorithm with two other methods: one method is to pick the most probable peptides based on posterior distribution, and the other is to randomly mutate known peptides $x$ such that $y(x)=1$ as our new recommendations. The benchmark was performed on a simulated dataset using the statistical model described in \ref{sec:stat model}, and we show the result in \ref{fig:PI}
-
-% We use probability that shortest peptide $x$ with $y(x)=1$ has length smaller or equal to 12 as a measure of quality, to do the benchmark, and we show the result in Figure \ref{fig:PI}.
-\begin{figure}[hpt] 
-\center
-\includegraphics[width=0.6\textwidth]{pic/to_add.pdf}
-\caption{Benchmark of probability of improvement algorithm}
-\label{fig:PI}
-\end{figure}
-
-\subsubsection{Expected Improvement}
 Note that each term in the summation of \eqref{eq:EI1} has a similar structure as \eqref{eq:PI3}. Let $S=\{p^1,\ldots,p^{|S|}\}$, we can write \eqref{eq:EI1} as a MINLP:
 \begin{equation} \label{eq:EI5}
 \begin{split}
@@ -544,12 +526,28 @@ and $c_i$'s are known coefficients. We summarize it in Algorithm \ref{algo2}.
 \ENDFOR
 \end{algorithmic}
 \end{Algorithm}
+
+\section{Performance and Validation (NOT READY YET)}
+
+\subsection{Greedy Algorithm}
+\subsubsection{Probability of Improvement}
+We compare the performance of probability of improvement algorithm with two other methods: one method is to pick the most probable peptides based on posterior distribution, and the other is to randomly mutate known peptides $x$ such that $y(x)=1$ as our new recommendations. The benchmark was performed on a simulated dataset using the statistical model described in \ref{sec:stat model}, and we show the result in \ref{fig:PI}
+
+% We use probability that shortest peptide $x$ with $y(x)=1$ has length smaller or equal to 12 as a measure of quality, to do the benchmark, and we show the result in Figure \ref{fig:PI}.
+\begin{figure}[hpt] 
+\center
+\includegraphics[width=0.6\textwidth]{pic/to_add.pdf}
+\caption{Benchmark of probability of improvement algorithm}
+\label{fig:PI}
+\end{figure}
+
+\subsubsection{Expected Improvement}
 Benchmark to be added here.
 
 \subsection{Performance on real experiment data.}
 Given the initial training data with size ?, we have performed two rounds of experiments using recommendations generated by Probability of Improvement algorithm. In the first round we performed experiments on 
 
-\section{Conclusion}
+\section{Conclusion (NOT READY YET)}
 We presented two greedy heuristic algorithms solving active learning problem described in \ref{sec:prob state}, and proved that both of these two algorithms guarantee to achieve at least a factor (1-1/e) of the optimal value. From benchmark results, we further showed that these two algorithms outperformed another two heuristic search methods. In addition to theoretic results, We demonstrated effectiveness of our methods by applying them to optimal experimental design problem in material science, in which we are searching for shortest peptides that act as a substrate for some specific enzymes. We developed a Naive Bayes classifier to model the problem, and used our algorithm to propose candidates for testing by experiment. From the preliminary testing result made by our experimental collaborator, we have found a few short peptides that are very likely to be substrate of target enzymes.
 
 % Appendix here
