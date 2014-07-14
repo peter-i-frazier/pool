@@ -143,24 +143,35 @@ a datapoint with a positive label and large value. We proposed two greedy algori
 
 % Text of your paper here
 
-\section{Introduction (NOT READY YET)}
+\section{Introduction}
 
-In many optimal search problems, we need to effectively collect information so as to make the best decisions under uncertainty. In this setting, we need to trade off the reward by sampling (i.e. exploitation) and the cost by aquiring this information (i.e. exploration). For example, in drug discovery, we need to search for a chemical derivative of the base molecule that best treats disease. To achive the goal, we choose molecules to test  to maximize the expected quality of the
-best compound discovered \citep{Negoescu2010}. Since the budget for testing is limited, we need to test the most informative and high quality molecules. To address this problem, Jones \& Schonlau proposed Expected Improvement algorithm to sample points sequentially \citep{Jones1998} . Ginsbourger used constant liar heuristic to extend Expected Improvement algorithm to parallel setting \citep{Ginsbourger2008} . There are quite a few papers about parallel sampling in active learning research
-community \citep{Chen2013, Hoi2006, Hoi2006a} , but they only aim to maximize information gain (i.e. pure exploration). In this paper, we consider an optimal search problem in parallel setting, and propose search algorithm using greedy heuristic. We also prove that, our greedy algorithm has a guarantee of performace compared with the optimal solution.
+In this paper we try to develop a method for helping our biochemist collaborators efficiently discover minimal peptide with particular biochemical property, which can be used as a powerful tool for biological studies as well as preparation of novel materials. Finding such peptides is very challenging, because there are very few of them exist in a huge peptide library, and laboratory constraints allow limited number of peptide candidates to be tested. We formulate this problem as an
+optimal search problem related to active learning.
 
-\section{Problem Formulation}
+There are two current approaches: One is to search peptides without quantitive help, and purely based on domain knowledge. This is likely to fail because the number of peptides with the desired property is small, and there is no clear direction to find minimal peptide with desired property. The other approach is to use available data to train a statistical model, and test the top N most likely hits and then stop. However, considering the small size of training set compared with the huge
+search space, the trained statistical model only has ``local'' knowledge while lack information about the rest part of the space, and this approach will only find local optimum.
+
+In this paper we develop a Bayesian classification model, with its prior distribution designed based on knowledge from domain expert, to predict whether a peptide has desired property. We also propose an optimal search algorithm using greedy heuristic, and prove its performance guarantee compared with the optimal solution.
+
+There are a number of methods for optimal search problems developed in the last a couple of years, and they all aim to effectively collect information so as to make the best decisions under uncertainty. In this setting, they need to trade off the reward by sampling (i.e. exploitation) and the cost by aquiring this information (i.e. exploration). For example, in drug discovery, people search for a chemical derivative of the base molecule that best treats disease. To achive this goal, they choose molecules to test  to maximize the expected quality of the
+best compound discovered \citep{Negoescu2010}. Since the budget for testing is limited, they need to test the most informative and high quality molecules. To address this problem, Jones \& Schonlau proposed Expected Improvement algorithm to sample points sequentially \citep{Jones1998} . Ginsbourger used constant liar heuristic to extend Expected Improvement algorithm to parallel setting \citep{Ginsbourger2008} . There are quite a few papers about parallel sampling in active learning research
+community \citep{Chen2013, Hoi2006, Hoi2006a} , but they only aim to maximize information gain (i.e. pure exploration).
+
+We propose a new optimal search algorithm motivated by a minimal peptide search problem in biochemistry. In section 2, we describe the biochemical problem in detail and mathematically formalize it into a more general problem. In section 3, we state the Bayesian classification model used for the problem. In section 4, we provide the formulation of the proposed optimization algorithm, prove its performance guarantee, and summarize the algorithm in pseudo code. In section 5, we use available real data to validate our statistical model, compare the performance of our proposed optimization method against
+other methods, and show progress of this biochemical application using our method.
+
+\section{Problem Formulation} \label{sec:problem}
 
 We first describe the application that motivates our research, and then we provide mathematical formalism to address a more general problem. In the last sub-section we derive our method in solving this problem.
 
 \subsection{Motivating application.} \label{sec: motivate app}
 Over the past decade, many chemistry-based tools have been developed for protein labeling, which have great use in biological studies and preparation of novel materials. In the recent years, focus has been moved to short peptide labeling techniques. Peptides are short chains of amino acid monomers, and they are much shorter than protein. Because of that, peptide labeling has minimal perturbation to native systems, which is a much desired feature.  Based on prevailing short peptide
-labeling methods, a biochemistry research group in UC San Diego takes a step further and aims to develop a novel method of selectively adding and removing the desired label. To support this goal, they need to find such peptide from an enormous peptide library ($\sim 10^{27}$ peptides) that only reacts with some specific enzymes, while stays inert to other enzymes. This is a challenging task because this kind of peptide is extremly rare in nature (less than 1 in $10^4$), and experiment cost
+labeling methods, a biochemistry research group in UC San Diego, who is also our collaborator, takes a step further and aims to develop a novel method of selectively adding and removing the desired label. To support this goal, they need to find such peptide from an enormous peptide library ($\sim 10^{27}$ peptides) that only reacts with some specific enzymes, while stays inert to other enzymes. This is a challenging task because this kind of peptide is extremly rare in nature (less than 1 in $10^4$), and experiment cost
 is so expensive that the project can only afford to test hundreds of peptide candidates.
 
 To design optimal experiments for this project is critical, because with so large search space, so rare the occurrence of target and so small amount of permitted evaluations, random sampling will almost surely lead to failure. The motivation for our work lies in developing robust prediction model given a small training dataset, and optimal search algorithm that finds target with least number of evaluations.
 
-\subsection{General problem statement.}
+\subsection{General problem statement.} 
 We now formalize and generalize our problem as an active learning problem, which includes but is not limited to our motivating application.
 
 Let $E$ be a generic search space of exemplars.  In our motivating application, $E$ is the search space of peptide candidates. Each element $x \in E$ has an unknown binary label $y(x)=\{0,1\}$.  A known deterministic function $f(x)$ measures the cost or disutility associated with $x$, which is length of the peptide candidate in the motivating application. Our goal is to perform experiments so as to find $x$ such that it has positive label and its cost function $f(x)$ is as small as
@@ -216,26 +227,6 @@ We estimate the parameters $\theta_{y,j}(k)$ using Bayesian inference. We assume
 We further assume two hyper parameters $\gamma_0$ and $\gamma_1$ that characterize the distribution for $y=0$ and $y=1$ respectively. Then, with the prior distribution and hyper parameters, our posterior distribution is also Dirichlet. In particular, it is 
 $\Dir( \alpha_{y,j}(1) + \gamma_yN_{y,j}(1), \ldots, \alpha_{y,j}(K) + \gamma_yN_{y,j}(K))$,
 where $N_{y,j}(k)$ counts how many peptides $x$ in the training data with $Y(x)=y$ had $x_j=k$.  That is, it counts how many peptides had amino acid $j$ in class $j$.
-
-Since our training data is expensive and highly skewed, we use the leave-one-out cross validation procedure to choose the optimal hyper parameters. For each setting of the hyper parameters, we obtain an receiver operating characteristic(ROC) curve using the result of the leave-one out procedure and choose the setting with highest AUC(area under curve).
-
-%[Put two ROC curves here, one for leave-one-out and one for using the 1st data set as training and 2nd data set as test, to be continued ...]
-
-\begin{figure}[hpt] 
-\center
-\begin{minipage}[b]{0.45\linewidth}
-\includegraphics[width=\textwidth]{pic/ROC_DS1_1000_025.pdf}
-\caption*{using data set \#0 \& \#1}
-\end{minipage}
-\begin{minipage}[b]{0.45\linewidth}
-\includegraphics[width=\textwidth]{pic/ROC_DS2_1000_025.pdf}
-\caption*{using data set \#0,\#1 \& \#2}
-\end{minipage}
-\caption{ ROC curve using leave-one-out cross validation}
-\label{fig:ROC}
-\end{figure}
-
-In Figure \ref{fig:ROC}, note ROC curve to the left is better than the one to the right. This is because data set \#2 was generated by our algorithm based on the previous two data sets, and due to the exploration manner of our algorithm, data set \#2 should lie in the region that is more challenging for the classifier. Thus it is reasonable that our classifer performs worse using all available data sets. 
 
 \section{Optimization Algorithm}
 \eqref{eq:opt} is a combinatorial optimization problem with huge feasible region. This problem is considered NP-hard and yet there is no known algorithm that solves it quickly. We propose an approximation algorithm, which solves \eqref{eq:opt} using greedy heuristic, that is, starting with the empty set $S=\emptyset$, iteratively find element $e$ such that 
@@ -527,29 +518,65 @@ and $c_i$'s are known coefficients. We summarize it in Algorithm \ref{algo2}.
 \end{algorithmic}
 \end{Algorithm}
 
-\section{Performance and Validation (NOT READY YET)}
+\section{Model Validation and Performance}
+In this section we validate our statistical model and evaluate the performance of our proposed optimization methods. For model validation, we use real experimental data as training data, and use the leave-one-out cross validation to produce receiver operating characteristic(ROC) curve. We show the plots in Section \ref{sec:NB classifier}. To evaluate the performance of our proposed algorithm, we compare it with two methods introduced in Section \ref{sec:comparison methods}, using either $\PI$ or $\EI$ as
+performance metrics. We show the performance results in Section \ref{sec:performance}. In Section \ref{sec:experiment} we show that after performing two rounds of experiments using the proposed algorithm to generate peptide candidates, we successfully found more short peptides with desired property.
 
-\subsection{Greedy Algorithm}
-\subsubsection{Probability of Improvement}
-We compare the performance of probability of improvement algorithm with two other methods: one method is to pick the most probable peptides based on posterior distribution, and the other is to randomly mutate known peptides $x$ such that $y(x)=1$ as our new recommendations. The benchmark was performed on a simulated dataset using the statistical model described in \ref{sec:stat model}, and we show the result in \ref{fig:PI}
+\subsection{Naive Bayes Classifier} \label{sec:NB classifier}
+Since our training data is expensive and highly skewed, we use the leave-one-out cross validation procedure to choose the optimal hyper parameters. For each setting of the hyper parameters, we obtain an receiver operating characteristic(ROC) curve using the result of the leave-one out procedure and choose the setting with highest AUC(area under curve).
+
+%[Put two ROC curves here, one for leave-one-out and one for using the 1st data set as training and 2nd data set as test, to be continued ...]
+
+\begin{figure}[hpt] 
+\center
+\begin{minipage}[b]{0.45\linewidth}
+\includegraphics[width=\textwidth]{pic/ROC_DS1_1000_025.pdf}
+\caption*{using data set \#0 \& \#1}
+\end{minipage}
+\begin{minipage}[b]{0.45\linewidth}
+\includegraphics[width=\textwidth]{pic/ROC_DS2_1000_025.pdf}
+\caption*{using data set \#0,\#1 \& \#2}
+\end{minipage}
+\caption{ ROC curve using leave-one-out cross validation}
+\label{fig:ROC}
+\end{figure}
+
+In Figure \ref{fig:ROC}, note ROC curve to the left is better than the one to the right. This is because data set \#2 was generated by our algorithm based on the previous two data sets, and due to the exploration manner of our algorithm, data set \#2 should lie in the region that is more challenging for the classifier. Thus it is reasonable that our classifer performs worse using all available data sets. 
+
+\subsection{Comparison Methods} \label{sec:comparison methods}
+We compare our proposed algorithm to the two methods that our biochemist collaborators originally considered to use: one is a typical biological evoluation approach, that is, mutate known peptides with positive label, and take N peptide candidates with highest predicted probability being positive for testing. The other method is to use the trained classifier to predict probability being positive for all peptides in the library, and select N most probable ones for testing. We show their
+performance in Section \ref{sec:performance}.
+
+\subsection{Performance Comparison} \label{sec:performance}
+The benchmark was performed on real experiment data. We use data set \#0 and \#1 to train the statistical model, and based on this model, we generate peptides for testing using our proposed algorithm and the other two comparison methods. Then we train the statistical model using data set \#0, \#1 and \#2, and treat it as oracle to evaluate the performance of the methods.
 
 % We use probability that shortest peptide $x$ with $y(x)=1$ has length smaller or equal to 12 as a measure of quality, to do the benchmark, and we show the result in Figure \ref{fig:PI}.
 \begin{figure}[hpt] 
 \center
-\includegraphics[width=0.6\textwidth]{pic/to_add.pdf}
-\caption{Benchmark of probability of improvement algorithm}
+\includegraphics[width=0.6\textwidth]{pic/PI.png}
+\caption{Benchmark of Probability of Improvement algorithm}
 \label{fig:PI}
 \end{figure}
 
-\subsubsection{Expected Improvement}
-Benchmark to be added here.
+In Figure \ref{fig:PI} we show the benchmark using $\PI$ as performance metric. We can see Probability of Improvement algorithm is significantly better than the other two methods. Part of the reason is that the Probability of Improvement algorithm is designed to make the best decisions under uncertainty and choose the best balance between exploitation and exploration. We can see the effect of uncertainty of the current model by noting that the ranking method performs the
+worst, because in this method it assumes the underlying statistical model is accurate and does pure exploitation.
 
-\subsection{Performance on real experiment data.}
-Given the initial training data with size ?, we have performed two rounds of experiments using recommendations generated by Probability of Improvement algorithm. In the first round we performed experiments on 
+We also plan to show the benchmark using $\EI$ as performance metric in the furture.
 
-\section{Conclusion (NOT READY YET)}
-We presented two greedy heuristic algorithms solving active learning problem described in \ref{sec:prob state}, and proved that both of these two algorithms guarantee to achieve at least a factor (1-1/e) of the optimal value. From benchmark results, we further showed that these two algorithms outperformed another two heuristic search methods. In addition to theoretic results, We demonstrated effectiveness of our methods by applying them to optimal experimental design problem in material science, in which we are searching for shortest peptides that act as a substrate for some specific enzymes. We developed a Naive Bayes classifier to model the problem, and used our algorithm to propose candidates for testing by experiment. From the preliminary testing result made by our experimental collaborator, we have found a few short peptides that are very likely to be substrate of target enzymes.
+\subsection{Progress on Real Experiments} \label{sec:experiment}
+Given the initial training data with size, we have performed two rounds of experiments using recommendations generated by Probability of Improvement algorithm. We show the histogram of length distribution of desired peptides found in Figure \ref{fig:experiment}.
+\begin{figure}[hpt] 
+\center
+\includegraphics[width=0.8\textwidth]{pic/experiment.png}
+\caption{Length distribution of target peptides.}
+\label{fig:experiment}
+\end{figure}
 
+From the histogram we conclude that the usage of Probability of Improvement algorithm did a great job in finding short desired peptides.
+
+\section{Conclusion}
+We proposed an optimal search algorithm based on greedy heuristic for solving the active learning problem motivated by a biochemistry problem, which is described in Section \ref{sec:problem}, and proved that the proposed algorithm guarantees to achieve at least a factor (1-1/e) of the optimal value. From benchmark results, we further showed that the proposed algorithm outperformed the other two heuristic search methods. In addition to theoretic results, We demonstrated
+effectiveness of our methods by applying them to the motivating problem, in which we have found a significant number of short peptides with desired property.
 % Appendix here
 % Options are (1) APPENDIX (with or without general title) or
 %             (2) APPENDICES (if it has more than one unrelated sections)
@@ -587,84 +614,8 @@ We presented two greedy heuristic algorithms solving active learning problem des
 
 %If you don't use BiBTex, you can manually itemize references as shown below.
 
-
-\begin{thebibliography}{}
-
-\bibitem[Chen et~al., 2013]{Chen2013}
-Chen, Y., Krause, A., and Zurich, E. T.~H. (2013).
-\newblock {Near-optimal Batch Mode Active Learning and Adaptive Submodular
-  Optimization}.
-\newblock 28.
-
-\bibitem[Ginsbourger et~al., 2008]{Ginsbourger2008}
-Ginsbourger, D., Riche, R.~L., and Carraro, L. (2008).
-\newblock {A multi-points criterion for deterministic parallel global
-  optimization based on Gaussian processes}.
-\newblock {\em In Intl. Conf. on Nonconvex Programming, NCP07, page ..., Rouen,
-  France.}, pages 1--30.
-
-\bibitem[Hoi et~al., 2006a]{Hoi2006a}
-Hoi, S. C.~H., Jin, R., and Lyu, M.~R. (2006a).
-\newblock {Large-scale text categorization by batch mode active learning}.
-\newblock {\em Proceedings of the 15th international conference on World Wide
-  Web - WWW '06}, page 633.
-
-\bibitem[Hoi et~al., 2006b]{Hoi2006}
-Hoi, S. C.~H., Jin, R., Zhu, J., and Lyu, M.~R. (2006b).
-\newblock {Batch mode active learning and its application to medical image
-  classification}.
-\newblock {\em Proceedings of the 23rd international conference on Machine
-  learning - ICML '06}, pages 417--424.
-
-\bibitem[Jones et~al., 1998]{Jones1998}
-Jones, D., Schonlau, M., and Welch, W. (1998).
-\newblock {Efficient global optimization of expensive black-box functions}.
-\newblock {\em Journal of Global optimization}, pages 455--492.
-
-\bibitem[Negoescu et~al., 2010]{Negoescu2010}
-Negoescu, D.~M., Frazier, P.~I., and Powell, W.~B. (2010).
-\newblock {The Knowledge-Gradient Algorithm for Sequencing Experiments in Drug
-  Discovery}.
-\newblock {\em INFORMS Journal on Computing}, 23(3):346--363.
-
-\bibitem[NemHauser et~al., 1978]{Company1978}
-NemHauser, G., Fisher, M., and Wolsey, L. (1978).
-\newblock {An Analysis of Approximations for Maximizing Submodular Set
-  Functions}.
-\newblock 14:265--294.
-
-\bibitem[{Feldman and Schwan(1990)}]{fs}
-Feldman D, Schwan K (1990) {\it Who Put the Butter in Butterfly
-and Other Fearless Investigations into Our Illogical Language}
-(HarperPerennial, New York).
-
-\bibitem[{Fontecha et~al.(2006)}]{fo}
-Fontecha J, Mayo I, Toledano G, Juarez M (2006)
-Triacylglycerol composition  of projected designation
-of origin cheeses during ripening. {\it J. Dairy Sci.} 89:882--887.
-
-\bibitem[{Geisel(1984)}]{g}
-Geisel TS (1984) {\it The Butter Battle Book\/} (Random House, New York).
-
-\bibitem[{Hodson et~al.(2001)}]{h}
-Hodson L, Skeaff CM, Chisholm W-AH (2001) The effect of
-replacing dietary saturated fat with polyunsaturated or
-monounsaturated fat on plasma lipids in free-living young adults.
-{\it Eur. J. Clinical Nutrition} 55(10):908--915.
-
-\bibitem[{Tholstrup et al.(2006)}]{trbn} 
-Tholstrup T, Raff M, Basu S, Nonboe P, Sejrsen K, Staarup EM (2006) 
-Effects of butter and mono\-un\-saturated fatty acids
-into lipid classes, plasma C-reactive protein, oxidative stress,
-hemostatic variables, and insulin in healthy young men. {\it Amer. J.
-Clinical Nutrition} 83:237--243.
-
-\bibitem[{Torbica et al.(2006)}]{tjp}
-Torbica A, Jovanovic O, Pajin B (2006) The advantages of solid
-fat content determination in cocoa butter and cocoa butter
-equivalents by the Karlshamns method. {\it Eur. Food Res. Techn.} 222:385--391.
-
-\end{thebibliography}
+\bibliography{DataMiningPaper}
+\bibliographystyle{apalike}
 %%%%%%%%%%%%%%%%%
 \end{document}
 %%%%%%%%%%%%%%%%%
