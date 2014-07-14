@@ -187,12 +187,13 @@ other methods, and show progress of this biochemical application using our metho
 
 \section{Problem Formulation} \label{sec:problem}
 
-We now formalize and generalize our problem as an active learning problem, which includes but is not limited to our motivating application.
+We now formalize and generalize our problem as an active learning problem, which includes but is not limited to our application.
 
-Let $E$ be a generic search space of exemplars.  In our motivating application, $E$ is the search space of peptide candidates. Each element $x \in E$ has an unknown binary label $y(x)=\{0,1\}$.  A known deterministic function $f(x)$ measures the cost or disutility associated with $x$, which is length of the peptide candidate in the motivating application. Our goal is to perform experiments so as to find $x$ such that it has positive label and its cost function $f(x)$ is as small as
+Let $E$ be a generic search space of exemplars.  In our application, $E$ is the search space of peptide candidates. Each element $x \in E$ has an unknown binary label $y(x)=\{0,1\}$.  In our application, $y(x)$ is 1 if $x$ is a hit, i.e., is a substrate for both enzymes, and 0 if not.
+A known deterministic function $f(x)$ measures the cost or disutility associated with $x$.  In our application, $f(x)$ is the length of the peptide, as longer peptides interfere more with the system being monitored. Our goal is to perform experiments so as to find $x$ with a positive label and a cost $f(x)$ that is as small as
 possible.
 
-To obtain labels of exemplars, we can do a batch of experiments, which evaluates the labels for a subset $S \subseteq E$. We let cardinality of $S$ be constrained by some number $K$ (i.e. $|S| \leq K$), because budget of doing experiments is usually limited. We measure the quality of $S$ by 
+To obtain labels of exemplars, we can do a batch of experiments, which evaluates the labels for a subset $S \subseteq E$. The cardinality of $S$ is constrained by some $K$ (i.e. $|S| \leq K$), modeling our budget for performing experiments. We measure the quality of $S$ by 
 \begin{equation} \label{eq:fS}
 f^*(S)= \underset{x \in S:y(x)=1}{\min} f(x),
 \end{equation}
