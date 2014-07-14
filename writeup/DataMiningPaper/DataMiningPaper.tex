@@ -97,7 +97,7 @@
 % Full title. Sample:
 % \TITLE{Bundling Information Goods of Decreasing Value}
 % Enter the full title:
-\TITLE{Bayesian Active Learning for Finding Maximally-valued Exemplars}
+\TITLE{Finding Short Peptide Substrates using \\ Bayesian Active Learning}
 
 % Block of authors and their affiliations starts here:
 % NOTE: Authors with same affiliation, if the order of authors allows,
@@ -110,12 +110,20 @@
 \AFF{School of Operations Research \& Information Engineering, Cornell University, Ithaca, NY 14853, \EMAIL{py75@cornell.edu}} %, \URL{}}
 \AUTHOR{Peter I. Frazier}
 \AFF{School of Operations Research \& Information Engineering, Cornell University, Ithaca, NY 14853, \EMAIL{pf98@cornell.edu}} %, \URL{}}
+\AUTHOR{Add authors: Lori, Mike B., Nathan, Mike G., Nick K., Mike R., anyone else that should be included.  Err on the side of inclusion.  In your letter, and with the affiliation, we can indicate who did what.}
 % Enter all authors
 } % end of the block
 
+
 \ABSTRACT{%
-We are motivated by a problem of searching short peptides with desired property in biochemistry, and generalize it as a Bayesian optimal search problem related to active learning. In active learning, we have training data with unknown binary labels. Obtaining labels is expensive, and we wish to obtain a small number of labels, so that the statistical classifier built from them is good. We consider a variant in which each datapoint has an associated known value, and our goal is to find
-a datapoint with a positive label and large value. We proposed two greedy algorithms to address this problem and proved lower bound of the algorithms that guarantees their performance. We also built a prediction model for our motivated problem, and use the proposed optimal search algorithm to find desired peptides. We showed our proposed method did significant better job than typical approach in biochemistry field.
+We consider a Bayesian active learning problem arising in biochemistry, in which we wish to find a peptide that (1) has a certain expensive-to-ascertain biochemical property (it is a substrate for two protein-modifying enzymes, phosphopantetheinyltransferase and ACP hydrolase); and (2) is as short as possible.
+Finding such a peptide would allow tracking protein interactions with great ease, and would support a number of innovations in medicine, biochemistry, and materials science.
+However, such peptides are difficult to find, because the set of peptides is large, only a small fraction have the desired property, and ascertaining whether or not a peptide has the desired property requires performing a time-consuming laboratory experiment.
+We present a machine learning method for choosing which peptides to test to find such a peptide as quickly as possible. 
+We prove theoretical bounds on its solution quality, 
+demonstrate in simulation that it outperforms two natural benchmark methods, 
+and then describe how it was used in practice to find a peptide with the desired property that is shorter than the shortest previously known.
+While our method was developed for this specific application in biochemistry, it can also be used in other Bayesian active learning problems in which we wish to find an exemplar whose expensive-to-obtain binary label is positive, and for which a secondary easy-to-evaluate cost objective is as small as possible. 
 % Enter your abstract
 }%
 
