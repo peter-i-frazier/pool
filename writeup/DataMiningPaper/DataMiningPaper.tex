@@ -87,12 +87,12 @@
 % \RUNAUTHOR{Jones, Miller, and Wilson}
 % \RUNAUTHOR{Jones et al.} % for four or more authors
 % Enter authors following the given pattern:
-\RUNAUTHOR{Jialei, Pu and Peter}
+%\RUNAUTHOR{Jialei, Pu and Peter}
 
 % Title or shortened title suitable for running heads. Sample:
 % \RUNTITLE{Bundling Information Goods of Decreasing Value}
 % Enter the (shortened) title:
-\RUNTITLE{Bayesian Active Learning for Finding Maximally-valued Exemplars}
+%\RUNTITLE{Bayesian Active Learning for Finding Maximally-valued Exemplars}
 
 % Full title. Sample:
 % \TITLE{Bundling Information Goods of Decreasing Value}
@@ -104,13 +104,19 @@
 %   should be entered in ONE field, separated by a comma.
 %   \EMAIL field can be repeated if more than one author
 \ARTICLEAUTHORS{%
-\AUTHOR{Jialei Wang}
-\AFF{School of Operations Research \& Information Engineering, Cornell University, Ithaca, NY 14853, \EMAIL{jw865@cornell.edu}} %, \URL{}}
-\AUTHOR{Pu Yang}
-\AFF{School of Operations Research \& Information Engineering, Cornell University, Ithaca, NY 14853, \EMAIL{py75@cornell.edu}} %, \URL{}}
-\AUTHOR{Peter I. Frazier}
-\AFF{School of Operations Research \& Information Engineering, Cornell University, Ithaca, NY 14853, \EMAIL{pf98@cornell.edu}} %, \URL{}}
-\AUTHOR{Add authors: Lori, Mike B., Nathan, Mike G., Nick K., Mike R., anyone else that should be included.  Err on the side of inclusion.  In your letter, and with the affiliation, we can indicate who did what.}
+\AUTHOR{Jialei Wang, Pu Yang, Peter I. Frazier}
+\AFF{School of Operations Research \& Information Engineering, Cornell University, Ithaca, NY 14853, \EMAIL{jw865@cornell.edu}, \EMAIL{py75@cornell.edu}, \EMAIL{pf98@cornell.edu}} %, \URL{}}
+
+\AUTHOR{Michael D. Burkart, Nathan Gianneschi, Lori Tallorin}
+\AFF{Department of Chemistry and Biochemistry, University of California, San Diego, La Jolla, CA 92093, \EMAIL{mburkart@ucsd.edu}, \EMAIL{ngianneschi@ucsd.edu}, \EMAIL{ltallorin@ucsd.edu}} %, \URL{}}
+
+\AUTHOR{Michael K. Gilson}
+\AFF{Skaggs School of Pharmacy and Pharmaceutical Sciences, University of California, San Diego, La Jolla, CA 92093, \EMAIL{mgilson@ucsd.edu}} %, \URL{}}
+
+\AUTHOR{Nick Kosa}
+\AFF{Bioo Scientific Corp, Austin, TX 78744} %, \URL{}}
+
+%\AUTHOR{Add authors: Lori, Mike B., Nathan, Mike G., Nick K., Mike R., anyone else that should be included.  Err on the side of inclusion.  In your letter, and with the affiliation, we can indicate who did what.}
 % Enter all authors
 } % end of the block
 
@@ -155,7 +161,14 @@ While our method was developed for this specific application in biochemistry, it
 
 In this paper, we use machine learning to address a specific instance of a problem common in medicine, materials science, chemistry, and other physical sciences.  In this class of problems, we wish to find a molecule with a particular biological or chemical property. While we have historical data on related molecules or related properties that can support predictive modeling, the only way that we can determine with certainty whether a particular molecule has the property of interest (in colloquial language, ``is a hit'') is to synthesize and test it in a time-consuming laboratory experiment. Success is hampered by the enormous search space, and the limits imposed by experimental cost on the number of molecules that can be tested.  Within this context, we wish to use mathematical methods to recommend which experiments to perform, so as to reliably find a hit within a given experimental budget. Common examples include drug discovery, in which we wish to find a molecule that can be effective in treating a particular disease, and materials discovery, in which we wish to find a molecule that has a particular material property.
 
-The instance of this problem that we consider in detail in this paper comes from biochemistry: we wish to find a peptide that is (1) as short as possible; and (2) is a substrate for two protein-modifying enzymes, phosphopantetheinyltransferase (PPTase) and ACP hydrolase (AcpH). These protein-modifying enzymes can be used to attach and detach arbitrary molecules to their substrates.  In particular, we can use PPTase to attach a fluorescent ``tag'' or ``label'' to peptides that we would discover that are substrates for both enzymes, allowing us to track the peptide, starting from a time of our choosing.  We can then use AcpH to remove the fluorescent tag at a time of our choosing.  If this peptide were short, then it could be inserted into a protein or peptide-based catalytic complex of our choosing without disrupting its activity, allowing monitoring of biological and catalytic systems.  This monitoring tool would have a number of applications in medicine, biology, and materials science.
+The instance of this problem that we consider in detail in this paper comes from biochemistry: we wish to find a peptide that is (1) as short as possible; and (2) is a substrate for two protein-modifying enzymes, phosphopantetheinyltransferase (PPTase) and ACP hydrolase (AcpH). These protein-modifying enzymes can be used to attach and detach arbitrary molecules to their substrates.  In particular, as shown in Figure \ref{fig:labeling}, we can use PPTase to attach a fluorescent ``tag'' or ``label'' to peptides that we would discover that are substrates for both enzymes, allowing us to track the peptide, starting from a time of our choosing.  We can then use AcpH to remove the fluorescent tag at a time of our choosing.  If this peptide were short, then it could be inserted into a protein or peptide-based catalytic complex of our choosing without disrupting its activity, allowing monitoring of biological and catalytic systems.  This monitoring tool would have a number of applications in medicine, biology, and materials science \citep{nick}.
+
+\begin{figure}[hpt] 
+\center
+\includegraphics[width=\textwidth]{pic/labeling.png}
+\caption{ ROC curve using leave-one-out cross validation}
+\label{fig:labeling}
+\end{figure}
 
 Finding such a peptide is challenging, because the number of peptides is large, and only a small fraction of them are substrates for both enzymes (i.e., are ``hits'').  A peptide is a string of amino acids, of which 20 occur in nature, so there are $20^n$ peptides of length $n$.  The typical length of the peptides under consideration is 15 amino acids long, and the number of peptides with length 15 is $20^{15} \approx 3.3 \times 10^{19}$.  Of these, we estimate that approximately $1$ in $10^4$ is a substrate. We can test peptides in batches of size approximately $300$, and each batch requires approximately one week of work, several thousand dollars in materials, and access to an expensive shared machine on which time can be reserved for a batch of experiments approximately once every two months. If we were to test peptides of length $15$ uniformly at random, then we would need to test $n = \log(1/2) / \log(1-10^{-4}) \approx 6931$ peptides to ensure a probability of $1/2$ of finding at least one hit, which would in turn require 23 batches of experiments, and roughly four years' time.
 
@@ -173,7 +186,7 @@ Finding such a peptide is challenging, because the number of peptides is large, 
 
 % If we want to talk more about existing techniques, we could also describe phage display.
 
-To address this challenge, we formulate this problem as a Bayesian active learning problem.  We first develop a Bayesian classification method, which combines Naive Bayes, a prior distribution encoding knowledge from domain experts, and training data from naturally occurring and longer peptide substrates, to predict whether a short peptide is a hit. We then use the joint probability distributed over unobserved labels (``hit'' or ``miss'') of all peptides created by this classification method within a combinatorial optimization framework to find a {\it set} of peptides to test that, when taken together, are most likely to produce a hit.  We provide a theoretical performance guarantee on the quality of the resulting set of peptides to test, and using simulation, we show that this combination of prediction and optimization provides robust results that are better than a more naive use of the predictive model that considers only marginal probabilities, and a benchmark method of truncating and mutating known hits at random. We then describe laboratory results in which this method was used to discover peptide substrates that are shorter than the shortest previously known (cite YBBR paper).
+To address this challenge, we formulate this problem as a Bayesian active learning problem.  We first develop a Bayesian classification method, which combines Naive Bayes, a prior distribution encoding knowledge from domain experts, and training data from naturally occurring and longer peptide substrates, to predict whether a short peptide is a hit. We then use the joint probability distributed over unobserved labels (``hit'' or ``miss'') of all peptides created by this classification method within a combinatorial optimization framework to find a {\it set} of peptides to test that, when taken together, are most likely to produce a hit.  We provide a theoretical performance guarantee on the quality of the resulting set of peptides to test, and using simulation, we show that this combination of prediction and optimization provides robust results that are better than a more naive use of the predictive model that considers only marginal probabilities, and a benchmark method of truncating and mutating known hits at random. We then describe laboratory results in which this method was used to discover peptide substrates that are shorter than the shortest previously known \citep{ybbr}.
 
 
 % The accuracy of this classification model is, however, too low to simply take the single peptide most likely to be a hit, or even the top 300 most likely to be a hit, and have it provide reliable results. We then use combinatorial optimization to post-process the output of this classification method to find a set of peptides to test that, when taken together, are most likely to produce a hit.  We show that this method provides robust results that are better than more naive use of the predictive model
@@ -197,10 +210,10 @@ To obtain labels of exemplars, we can do a batch of experiments, which evaluates
 \begin{equation} \label{eq:fS}
 f^*(S)= \underset{x \in S:y(x)=1}{\min} f(x),
 \end{equation}
-where we assume $\min \emptyset = \infty$. $f^*(S)$ measures the smallest cost function for positive labeled elements in the set $S$, and in our motivating application, that means the shortest length of desired peptides in the set of peptides to test.
+where we assume $\min \emptyset = \infty$. $f^*(S)$ measures the smallest cost function for positive labeled elements in the set $S$, and in our motivation application, that means the shortest length of desired peptides in the set of peptides to test.
 
 
-Let $b$ be a target value and we wish to find $S\subseteq E$ such that $f^*(S)$ is better than $b$. In our motivating application, we let $b$ be the length of the shortest previously known desired peptide. Since $f^*(S)$ is an unknown random variable, we consider the following two probabilistic measures:
+Let $b$ be a target value and we wish to find $S\subseteq E$ such that $f^*(S)$ is better than $b$. In our motivation application, we let $b$ be the length of the shortest previously known desired peptide. $f^*(S)$ is unknown because we do not know the label $y(x)$ for $x \in S$ yet. We assume a joint probability distribution over $y(x): x \in E$, which is determined by the underlying statistical model for a particular problem, and for our motivation application, the model is described in Section \ref{sec:stat model}. Based on the probability distribution we consider the following two quality measures for $S$:
 \begin{equation} \label{eq:twomeasure}
   \begin{aligned}
     &\text{Probability of Improvement: }&\PI(S) = \mathbb{P}(f^*(S) < b)\\
@@ -215,7 +228,7 @@ Given constraint on the cardinality of $S$, we wish to find $S$ that maximizes o
 \end{equation}
 
 \section{Statistical model} \label{sec:stat model}
-We use Naive Bayes as the classification method, which, despite the name, has performed quite well in many cases. Let $X=(X_1,\ldots,X_n)$ be an instance with $n$ features and $Y$ be its label. By Bayes's Rule, we have:
+To construct the joint probability distribution over $y(x): x \in E$, which is needed by calculating \eqref{eq:twomeasure} and as a prerequisite for designing experiments, we develop a Bayesian classification method for our motivation application, which combines Naive Bayes and a prior distribution encoding knowledge from domain experts. Let $X=(X_1,\ldots,X_n)$ be an instance with $n$ features and $Y$ be its label. Using Bayes's Rule, we have:
 
 \begin{equation*}
 \Prob(Y=y|X=x)=\frac{\Prob(X=x|Y=y)\Prob(Y=y)}{\Prob(X=x)}=\frac{\Prob(X=x|Y=y)\Prob(Y=y)}{\sum_{y'}\Prob(X=x|Y=y')\Prob(Y=y')}
@@ -244,6 +257,24 @@ We further assume two hyper parameters $\gamma_0$ and $\gamma_1$ that characteri
 $\Dir( \alpha_{y,j}(1) + \gamma_yN_{y,j}(1), \ldots, \alpha_{y,j}(K) + \gamma_yN_{y,j}(K))$,
 where $N_{y,j}(k)$ counts how many peptides $x$ in the training data with $Y(x)=y$ had $x_j=k$.  That is, it counts how many peptides had amino acid $j$ in class $j$.
 
+Since our training data is expensive and highly skewed, we use the leave-one-out cross validation procedure to choose the optimal hyper parameters. For each setting of the hyper parameters, we obtain an receiver operating characteristic(ROC) curve using the result of the leave-one out procedure and choose the setting with highest AUC(area under curve).
+
+%[Put two ROC curves here, one for leave-one-out and one for using the 1st data set as training and 2nd data set as test, to be continued ...]
+
+\begin{figure}[hpt] 
+\center
+\begin{minipage}[b]{0.45\linewidth}
+\includegraphics[width=\textwidth]{pic/ROC_DS1_1000_025.pdf}
+\end{minipage}
+\begin{minipage}[b]{0.45\linewidth}
+\includegraphics[width=\textwidth]{pic/ROC_DS2_1000_025.pdf}
+\end{minipage}
+\caption{ ROC curve using leave-one-out cross validation}
+\label{fig:ROC}
+\end{figure}
+
+We also use leave-one-out cross validation to plot ROC curve and validate our model. Currently we have three sets of data: data set \#0 is the preliminary data obtained from biochemistry literature and has 36 data points; data set \#1 contains 258 data points evaluated in the first round of experiments using our algorithm; data set \#2 has 580 data points evaluated in the second round of experiments. In Figure \ref{fig:ROC}, we compare the performance of our model using different combinations of data sets, and observe that ROC curve to the left is better than the one to the right. We think that this is because data set \#2 was generated by our algorithm based on the previous two data sets, and due to the exploration manner of our algorithm, data set \#2 should lie in the region that is more challenging for the classifier. Thus it is reasonable that our classifer performs worse using all three data sets. 
+
 \section{Optimization Algorithm}
 \eqref{eq:opt} is a combinatorial optimization problem with huge feasible region. This problem is considered NP-hard and yet there is no known algorithm that solves it quickly. We propose an approximation algorithm, which solves \eqref{eq:opt} using greedy heuristic, that is, starting with the empty set $S=\emptyset$, iteratively find element $e$ such that 
 \begin{equation} \label{eq:greedy}
@@ -258,7 +289,7 @@ In this subsection, we show that when the objective function $g$ in \eqref{eq:gr
 If objective function is probability of improvement (i.e $\PI(S)$) or expected improvement (i.e $\EI(S)$), the greedy algorithm is guaranteed to achieve a factor $(1-1/e) (\approx 63\%)$ of the optimal value.
 \end{theorem}
 We prove the theorem using the following three lemmas. Lemma 1 is a result from the analysis of greedy heuristic in combinatorial optimization by Nemhauser, which provides lower bound of greedy heuristic given that objective function satisfies certain conditions. Lemma 2 and 3 show $\PI$ and $\EI$ are the objective functions that satisfy conditions stated in Lemma 1, and thus greedy algorithm has a lower bound.
-\begin{lemma} \cite{Company1978}
+\begin{lemma} \citep{Company1978}
 If $F(S)$ is submodular, nondecreasing and $F(\emptyset)=0$, the greedy heuristic always produces a solution whose value is at least $1-[(K-1)/K]^K$ times the optimal value, where $|S| \leq K$. This bound can be achieved for each $K$ and has a limiting value of $1-1/e$, where $e$ is the base of the natural logarithm.
 \end{lemma}
 
@@ -273,6 +304,185 @@ If $F(S)$ is submodular, nondecreasing and $F(\emptyset)=0$, the greedy heuristi
 From Lemma 2 and 3, we know that $\PI$ and $\EI$ are submodular, nondecreasing and their measure of the empty set is 0. From Lemma 1, we conclude that if the objective function $g$ in \eqref{eq:greedy} is $\PI$ or $\EI$, the greedy algorithm is guaranteed to achieve a factor of $(1-1/e)$ of the optimal value. \Halmos
 \endproof
 
+\subsection{Probability of Improvement}
+We first show in Proposition 1 that \eqref{eq:greedy} can be written into the form in which the objective function can be easily calculated using any statitical classifier. This is the general form of greedy algorithm for optimization over probability of improvement and can be used with any underlying statistical model. In addition, we show that, using the Naive Bayes classifier proposed in section \ref{sec:stat model}, we can further formulate \eqref{eq:greedy} as a MINLP, which can be solved efficiently using an off-the-shelf MINLP solver.
+\begin{proposition}
+  If the objective function $g$ is $\PI$, we can write \eqref{eq:greedy} as 
+  \begin{equation} \label{eq:PI3}
+    \underset{e \in E \backslash S, f(e)<b}{\mathrm{arg}\max} \, \mathbb{P}(y(e)=1|y(x)=0, \forall x \in S).
+  \end{equation}
+\end{proposition}
+
+In our motivation application, using the Bayesian classification model described in section \ref{sec:stat model}, we can formulate \eqref{eq:PI3} as a MINLP. First we write equation \eqref{eq:model} as
+\begin{equation} \label{model1}
+\Prob\left(Y(x) = 1 | \theta\right) =
+\frac{\prod_j \eta_j(x_j)}{\prod_j \eta_j(x_j) + \frac{\Prob(Y(x)=0)}{\Prob(Y(x)=1)}},
+\end{equation}
+where
+\begin{equation*}
+\eta_j(x_j) = \frac{\theta_{1,j}(x_j)}{\theta_{0,j}(x_j)} \text{\,\,\,for $\forall j \in \{1,\ldots,L\}$}. 
+\end{equation*}
+Then we can write equation \eqref{eq:PI3} as
+\begin{equation} \label{eq:PI4}
+\underset{e \in E \backslash S, f(e)<b}{\mathrm{arg}\max} \, \frac{\prod_j \eta_j(e_j)}{\prod_j \eta_j(e_j) + \frac{\Prob(Y(e)=0)}{\Prob(Y(e)=1)}},
+\end{equation}
+where 
+\begin{equation*}
+\eta_j(e_j)=\frac{\Prob(e_j|Y(e)=1,Y(x)=0, \forall x \in S)}{\Prob(e_j|Y(e)=0,Y(x)=0, \forall x \in S)}.
+\end{equation*}
+Now we can formulate equation \eqref{eq:PI4} as a MINLP,
+\begin{equation} \label{eq:PI5}
+\begin{split}
+\max \quad &\frac{\prod_j \Sigma_k x_j(k) \eta_j(k)}{\prod_j \Sigma_k x_j(k) \eta_j(k) + \frac{\Prob(Y(x)=0)}{\Prob(Y(x)=1)}} \\
+\text{s.t} \quad &k \in \{1,\ldots,K\} \\
+&x_j(k) \in \{0,1\}\\
+&\Sigma_k x_j(k)=1,
+\end{split}
+\end{equation}
+where
+\begin{equation*}
+x_j(k)=\begin{dcases}
+        1 & \text{if $e_j=k$}\\
+        0 & \text{else}.
+\end{dcases}
+\end{equation*}
+We summarize the algorithm in Algorithm \ref{algo1}.
+\begin{Algorithm}(Probability of Improvement) \label{algo1}
+\begin{algorithmic}[1]
+\REQUIRE Inputs $\text{M, J, K}$, data set D and prior distribution of $\theta_y \sim \text{Dirichlet} (\boldsymbol \alpha_y), y \in \{1,0\}$
+\STATE $S \leftarrow \emptyset $
+\STATE Calculate posterior distribution of $\theta_1 \sim \text{Dirichlet} (\boldsymbol \alpha_1|\{x|x \in D,y(x)=1\})$.
+\FOR{$m=1$ to $M$} 
+\STATE COUNT $\leftarrow 0$
+\STATE Calculate posterior distribution of $\theta_0 \sim \text{Dirichlet} (\boldsymbol \alpha_0|\{x|x \in D,y(x)=0\} \cup S)$.
+\LOOP 
+\STATE Sample $\theta_1$ from $\text{Dirichlet} (\boldsymbol \alpha_1|\{x|x \in D,y(x)=1\})$ and $\theta_0$ from $\text{Dirichlet} (\boldsymbol \alpha_0|\{x|x \in D,y(x)=0\} \cup S)$.
+\STATE $\eta \leftarrow \frac{\theta_1}{\theta_0}$
+\STATE Solve MINLP in equation \eqref{eq:PI5} to find $x$.
+\STATE COUNT $\leftarrow$ COUNT $+ x$.
+\ENDLOOP
+\FOR {$j=1$ to $J$}
+\STATE $e_j \leftarrow \underset{k \in \{1,\ldots,K\}}{\mathrm{arg}\max} \, \text{COUNT}_{kj}$
+\ENDFOR
+\STATE $S \leftarrow (S, e)$
+\ENDFOR
+\end{algorithmic}
+\end{Algorithm}
+
+\subsection{Expected Improvement}
+The formulation for expected improvement is similar to probability of improvement, and for our motivation application, we can also formulate \eqref{eq:greedy} as a MINLP.
+\begin{proposition}
+  If the objective function $g$ is $\EI$, we can write \eqref{eq:greedy} as 
+  \begin{equation} \label{eq:EI1}
+    \underset{e \in E \backslash S}{\mathrm{arg}\max} \, c_0 \mathbb{P}_0(e)(b-f(e))^+ + \sum_{i=1}^{|S|} c_i \mathbb{P}_i(e)(f(x_i)-f(e))^+,
+  \end{equation}
+  where
+  \begin{equation*}
+    \begin{split}
+      &\mathbb{P}_0(e)=\mathbb{P}(y(e)=1|y(x)=0, \forall x \in S), \\
+      &\mathbb{P}_i(e)=\mathbb{P}(y(e)=1|y(x_i)=1, y(x_j)=0, \forall j<i, x_i,x_j \in S),
+    \end{split}
+  \end{equation*}
+  and $c_i (i=0,\ldots,|S|)$ are known coefficients.
+\end{proposition}
+
+Note that each term in the summation of \eqref{eq:EI1} has a similar structure as \eqref{eq:PI3}. Let $S=\{p^1,\ldots,p^{|S|}\}$, we can write \eqref{eq:EI1} as a MINLP:
+\begin{equation} \label{eq:EI5}
+\begin{split}
+\max \quad &\Sigma_{i=0}^{|S|} c_i \frac{\prod_j \Sigma_k x_j(k) \eta_j^i(k)}{\prod_j \Sigma_k x_j(k) \eta_j^i(k) + \frac{\Prob(Y(x)=0)}{\Prob(Y(x)=1)}} (f_i-f(e))^+ \\
+\text{s.t} \quad &k \in \{1,\ldots,K\} \\
+&x_j(k) \in \{0,1\}\\
+&\Sigma_k x_j(k)=1,
+\end{split}
+\end{equation}
+where
+\begin{equation*}
+x_j(k)=\begin{dcases}
+        1 & \text{if $e_j=k$}\\
+        0 & \text{else},
+\end{dcases}
+\end{equation*}
+\begin{equation*}
+f_i=\begin{dcases}
+        b & \text{if $i=0$}\\
+        f(p^i)  & \text{else},
+\end{dcases}
+\end{equation*}
+and $c_i$'s are known coefficients. We summarize it in Algorithm \ref{algo2}.
+
+\begin{Algorithm}(Expected Improvement) \label{algo2}
+\begin{algorithmic}[1]
+\REQUIRE Inputs $\text{M, J, K}$, data set D and prior distribution of $\theta_y \sim \text{Dirichlet} (\boldsymbol \alpha_y), y \in \{1,0\}$
+\STATE $S \leftarrow \emptyset $
+\FOR{$m=1$ to $M$} 
+\STATE COUNT $\leftarrow 0$
+\IF{$S$ is not empty}
+\STATE Sort elements in $S$ as $\{p^1,\ldots,p^{|S|}\}$ such that $f(p^i) \leq f(p^j), \forall i<j$.
+\ENDIF
+\STATE Calculate posterior distribution of $\theta_1^0 \sim \text{Dirichlet} (\boldsymbol \alpha_1|\{x|x \in D,y(x)=1\})$ and $\theta_0^0 \sim \text{Dirichlet} (\boldsymbol \alpha_0|\{x|x \in D,y(x)=0\} \cup S)$.
+\FOR{$i=1$ to $|S|$}
+\STATE Calculate posterior distribution of $\theta_1^i \sim \text{Dirichlet} (\boldsymbol \alpha_1|\{x|x \in D,y(x)=1\} \cup \{p^i\})$ and $\theta_0^i \sim \text{Dirichlet} (\boldsymbol \alpha_0|\{x|x \in D,y(x)=0\} \cup \{p^j|j<i\})$.
+\ENDFOR
+\LOOP 
+\STATE Sample $\theta_1^{i=0:|S|}$ and $\theta_0^{i=0:|S|}$ from posterior distribution.
+\STATE $\eta^{i=0:|S|} \leftarrow \frac{\theta_1^{i=0:|S|}}{\theta_0^{i=0:|S|}}$
+\STATE Solve MINLP in equation \eqref{eq:EI5} to find $x$.
+\STATE COUNT $\leftarrow$ COUNT $+ x$.
+\ENDLOOP
+\FOR {$j=1$ to $J$}
+\STATE $e_j \leftarrow \underset{k \in \{1,\ldots,K\}}{\mathrm{arg}\max} \, \text{COUNT}_{kj}$
+\ENDFOR
+\STATE $S \leftarrow (S, e)$
+\ENDFOR
+\end{algorithmic}
+\end{Algorithm}
+
+\section{Model Validation and Performance}
+In this section we evaluate the performance of our proposed optimization methods by comparing it with two methods introduced in Section \ref{sec:comparison methods}. We show the performance results in Section \ref{sec:performance}. In Section \ref{sec:experiment} we show our algorithm helped find a peptide with the desired property that is shorter than the shortest previous known in our motivation application.
+
+\subsection{Comparison Methods} \label{sec:comparison methods}
+We compare our proposed algorithm to the two methods that our biochemist collaborators originally considered to use: one is a typical biological evoluation approach, that is, mutate known peptides with positive label, and take N peptide candidates with highest predicted probability being positive for testing. We call it mutation method from now on. The other method is to use the trained classifier to predict probability being positive for all peptides in the library, and select N most probable ones for testing. We call it ranking method. We show their performance comparison in Section \ref{sec:performance}.
+
+\subsection{Performance Comparison} \label{sec:performance}
+The benchmark was performed on real experiment data. We use data set \#0 and \#1 to train the statistical model, and based on this model, we generate peptides for testing using our proposed algorithm and the other two comparison methods. Then we train another statistical model using data set \#0, \#1 and \#2, and we evaluate the performance of the methods using both trained models.
+
+% We use probability that shortest peptide $x$ with $y(x)=1$ has length smaller or equal to 12 as a measure of quality, to do the benchmark, and we show the result in Figure \ref{fig:PI}.
+\begin{figure}[hpt] 
+\center
+\begin{minipage}{0.48\linewidth}
+\includegraphics[width=\textwidth]{pic/PI2.png}
+\end{minipage}
+\begin{minipage}{0.47\linewidth}
+\includegraphics[width=\textwidth]{pic/PI.png}
+\end{minipage}
+\caption{Benchmark of Probability of Improvement algorithm}
+\label{fig:PI}
+\end{figure}
+
+
+In Figure \ref{fig:PI} we show the benchmark using $\PI$ as performance metric. The plot to the left is calculated using the model trained on data set \#0 and \#1, and the plot to the right is obtained using the model trained on all three datasets. We notice that the performance of ranking method changes drastically across the two plots.This is because the pure exploitation behavior of ranking method makes it heavily dependent on the accuracy of underlying model. If you recall the ROC curve in Figure \ref{fig:ROC}, it shows that the statistical model is not very accurate considering limited size of training data. Since ranking method finds the ``best'' peptides based on the current model, which are  likely to be very similar to each other, in reality, if one of these peptides is not hit, then all the others are likely to be nonhits, and this is the case shown in the plot to the right. On the other hand, Probability of Improvement algorithm performs consistently well, especially in the plot to the right, where the performance is calculated using the model that the algorithm has not ``seen'', it outperforms the other two methods significantly. The reason is that the Probability of Improvement algorithm is designed to make the best decisions given the model is not perfect and tends to explore the space while generating probable hits. The diversity of the recommendation set generated by this algorithm ensures its good performance even when the underlying model is not good.
+
+We also plan to show the benchmark using $\EI$ as performance metric in the furture.
+
+\subsection{Performance on Real Experiments} \label{sec:experiment}
+Given the preliminary data, we have performed two rounds of experiments using recommendations generated by Probability of Improvement algorithm. We show the histogram of length distribution of peptide hits in Figure \ref{fig:experiment} and explain how the algorithm worked to find a shorter peptide hit than the shortest peptide previously known: Ybbr sequence. Observe that all the new peptide hits found have length less than 20, this is because we set the target length $b = 20$ for our algorithm, which made the algorithm only generate peptide candidates with length less than 20. We did not set target length as the shortest length previously known, because we only have 2 short peptides from the preliminary data set and all the others have length greater than 40. Our goal for the first two rounds of experiments was to find a number of reasonably short peptide hits. After one round of experiment, we found additional 38 peptide hits, with most of them having length 19 and a few short peptides. This is expected because we have more information of long peptides than that of short peptides from the preliminary data set. To generate the second round of recommendations, we trained the statistical model using both preliminary data set and data from the first round of experiment, which contain more information on the short peptides, and we hoped to get more short peptide hits. As expected, after the second round of experiment, we can see from the histogram that there are many more short peptide hits found in this round, and we even found a peptide hit with length 10, which is shorter than Ybbr sequence! We conclude that Probability of Improvement algorithm did a great job in finding short desired peptides.
+
+\begin{figure}[hpt] 
+\center
+\includegraphics[width=0.8\textwidth]{pic/experiment.png}
+\caption{Length distribution of target peptides.}
+\label{fig:experiment}
+\end{figure}
+
+
+\section{Conclusion}
+We proposed an optimal search algorithm based on greedy heuristic for solving the active learning problem motivated by finding short peptide substrates problem, and proved that the proposed algorithm guarantees to achieve at least a factor (1-1/e) of the optimal value. From benchmark results, we further showed that the proposed algorithm outperformed the other two heuristic search methods. In addition to theoretical results, we demonstrated effectiveness of our method in practice, by applying it to the motivation application: so far we have performed two rounds of evaluations by doing experiments. The first round of experiments tested 258 peptides recommended by our algorithm, which is based on the statistical classifier trained using 36 preliminary data points, and the experiments took about 2 weeks to complete. As demonstrated in Figure \ref{fig:experiment}, we found 38 new peptide hits with shortest length 11. A month later, the second round of experiments tested 580 peptides and took another 2 weeks, in which we found 43 new hits and a peptide hit with length 10, which is shorter than the previously known shortest length. 
+% Appendix here
+% Options are (1) APPENDIX (with or without general title) or
+%             (2) APPENDICES (if it has more than one unrelated sections)
+% Outcomment the appropriate case if necessary
+%
+\begin{APPENDIX}{Proof}
 \proof{Proof of Lemma 2.}
 First we show $\PI(\emptyset) = 0$.
 \begin{equation*}
@@ -343,14 +553,6 @@ Since $f^*(A) \geq f^*(B)$, $\mathbbm{1}_{y(e)=1, f(e)<f^*(A)} ((b-e)^+-(b-f^*(A
 $\EI(S)$ is submodular. \Halmos
 \endproof
 
-\subsection{Probability of Improvement}
-We first show in Proposition 1 that \eqref{eq:greedy} can be written into the form in which the objective function can be easily calculated using any statitical classifier. This is the general form of greedy algorithm for optimization over probability of improvement and can be used with any underlying statistical model. In addition, we show that, using the Naive Bayes classifier proposed in section \ref{sec:stat model}, we can further formulate \eqref{eq:greedy} as a MINLP, which can be solved efficiently using an off-the-shelf MINLP solver.
-\begin{proposition}
-  If the objective function $g$ is $\PI$, we can write \eqref{eq:greedy} as 
-  \begin{equation} \label{eq:PI3}
-    \underset{e \in E \backslash S, f(e)<b}{\mathrm{arg}\max} \, \mathbb{P}(y(e)=1|y(x)=0, \forall x \in S).
-  \end{equation}
-\end{proposition}
 \proof {Proof of proposition 1.}
   \begin{equation*}
     \begin{split}
@@ -368,78 +570,6 @@ We first show in Proposition 1 that \eqref{eq:greedy} can be written into the fo
   \end{equation*}
 \endproof
 
-In our motivating application, we use the Naive Bayes model described in section \ref{sec:stat model}, and we want to formulate \eqref{eq:PI3} as a MINLP. First write equation \eqref{eq:model} as
-\begin{equation} \label{model1}
-\Prob\left(Y(x) = 1 | \theta\right) =
-\frac{\prod_j \eta_j(x_j)}{\prod_j \eta_j(x_j) + \frac{\Prob(Y(x)=0)}{\Prob(Y(x)=1)}},
-\end{equation}
-where
-\begin{equation*}
-\eta_j(x_j) = \frac{\theta_{1,j}(x_j)}{\theta_{0,j}(x_j)} \text{\,\,\,for $\forall j \in \{1,\ldots,L\}$}. 
-\end{equation*}
-Then we can write equation \eqref{eq:PI3} as
-\begin{equation} \label{eq:PI4}
-\underset{e \in E \backslash S, f(e)<b}{\mathrm{arg}\max} \, \frac{\prod_j \eta_j(e_j)}{\prod_j \eta_j(e_j) + \frac{\Prob(Y(e)=0)}{\Prob(Y(e)=1)}},
-\end{equation}
-where 
-\begin{equation*}
-\eta_j(e_j)=\frac{\Prob(e_j|Y(e)=1,Y(x)=0, \forall x \in S)}{\Prob(e_j|Y(e)=0,Y(x)=0, \forall x \in S)}.
-\end{equation*}
-Now we can formulate equation \eqref{eq:PI4} as a MINLP,
-\begin{equation} \label{eq:PI5}
-\begin{split}
-\max \quad &\frac{\prod_j \Sigma_k x_j(k) \eta_j(k)}{\prod_j \Sigma_k x_j(k) \eta_j(k) + \frac{\Prob(Y(x)=0)}{\Prob(Y(x)=1)}} \\
-\text{s.t} \quad &k \in \{1,\ldots,K\} \\
-&x_j(k) \in \{0,1\}\\
-&\Sigma_k x_j(k)=1,
-\end{split}
-\end{equation}
-where
-\begin{equation*}
-x_j(k)=\begin{dcases}
-        1 & \text{if $e_j=k$}\\
-        0 & \text{else}.
-\end{dcases}
-\end{equation*}
-We summarize the algorithm in Algorithm \ref{algo1}.
-\begin{Algorithm}(Probability of Improvement) \label{algo1}
-\begin{algorithmic}[1]
-\REQUIRE Inputs $\text{M, J, K}$, data set D and prior distribution of $\theta_y \sim \text{Dirichlet} (\boldsymbol \alpha_y), y \in \{1,0\}$
-\STATE $S \leftarrow \emptyset $
-\STATE Calculate posterior distribution of $\theta_1 \sim \text{Dirichlet} (\boldsymbol \alpha_1|\{x|x \in D,y(x)=1\})$.
-\FOR{$m=1$ to $M$} 
-\STATE COUNT $\leftarrow 0$
-\STATE Calculate posterior distribution of $\theta_0 \sim \text{Dirichlet} (\boldsymbol \alpha_0|\{x|x \in D,y(x)=0\} \cup S)$.
-\LOOP 
-\STATE Sample $\theta_1$ from $\text{Dirichlet} (\boldsymbol \alpha_1|\{x|x \in D,y(x)=1\})$ and $\theta_0$ from $\text{Dirichlet} (\boldsymbol \alpha_0|\{x|x \in D,y(x)=0\} \cup S)$.
-\STATE $\eta \leftarrow \frac{\theta_1}{\theta_0}$
-\STATE Solve MINLP in equation \eqref{eq:PI5} to find $x$.
-\STATE COUNT $\leftarrow$ COUNT $+ x$.
-\ENDLOOP
-\FOR {$j=1$ to $J$}
-\STATE $e_j \leftarrow \underset{k \in \{1,\ldots,K\}}{\mathrm{arg}\max} \, \text{COUNT}_{kj}$
-\ENDFOR
-\STATE $S \leftarrow (S, e)$
-\ENDFOR
-\end{algorithmic}
-\end{Algorithm}
-
-\subsection{Expected Improvement}
-The formulation for the case of expected improvement is similar to that of probability of improvement, and for our motivating application, we can also formulate \eqref{eq:greedy} as a MINLP.
-\begin{proposition}
-  If the objective function $g$ is $\EI$, we can write \eqref{eq:greedy} as 
-  \begin{equation} \label{eq:EI1}
-    \underset{e \in E \backslash S}{\mathrm{arg}\max} \, c_0 \mathbb{P}_0(e)(b-f(e))^+ + \sum_{i=1}^{|S|} c_i \mathbb{P}_i(e)(f(x_i)-f(e))^+,
-  \end{equation}
-  where
-  \begin{equation*}
-    \begin{split}
-      &\mathbb{P}_0(e)=\mathbb{P}(y(e)=1|y(x)=0, \forall x \in S), \\
-      &\mathbb{P}_i(e)=\mathbb{P}(y(e)=1|y(x_i)=1, y(x_j)=0, \forall j<i, x_i,x_j \in S),
-    \end{split}
-  \end{equation*}
-  and $c_i (i=0,\ldots,|S|)$ are known coefficients.
-\end{proposition}
 \proof{Proof of proposition 2.}
 Since choosing $e$ such that $f(e) \geq b$ has no contribution to the objective function, by using similar argument as dealing with probability of improvement, we argue that $f(x)<b$ for $\forall x \in S$. Thus
 \begin{equation*}
@@ -482,132 +612,17 @@ where $L = \{f(x): x \in S\}$. If we rank elements in $S$ such that $f(x_i) \leq
 \end{equation}
 Substitute \eqref{eq:EI3} \eqref{eq:EI4} into \eqref{eq:EI2}, and note that $\mathbb{P}(y(e)=1, \mathcal{F}(x_1,\ldots,x_{|S|}) \propto \mathbb{P}(y(e)=1| \mathcal{F}(x_1,\ldots,x_{|S|})$ with known coefficient given $S$, we get \eqref{eq:EI1} in proposition 2. \Halmos
 \endproof
-
-Note that each term in the summation of \eqref{eq:EI1} has a similar structure as \eqref{eq:PI3}. Let $S=\{p^1,\ldots,p^{|S|}\}$, we can write \eqref{eq:EI1} as a MINLP:
-\begin{equation} \label{eq:EI5}
-\begin{split}
-\max \quad &\Sigma_{i=0}^{|S|} c_i \frac{\prod_j \Sigma_k x_j(k) \eta_j^i(k)}{\prod_j \Sigma_k x_j(k) \eta_j^i(k) + \frac{\Prob(Y(x)=0)}{\Prob(Y(x)=1)}} (f_i-f(e))^+ \\
-\text{s.t} \quad &k \in \{1,\ldots,K\} \\
-&x_j(k) \in \{0,1\}\\
-&\Sigma_k x_j(k)=1,
-\end{split}
-\end{equation}
-where
-\begin{equation*}
-x_j(k)=\begin{dcases}
-        1 & \text{if $e_j=k$}\\
-        0 & \text{else},
-\end{dcases}
-\end{equation*}
-\begin{equation*}
-f_i=\begin{dcases}
-        b & \text{if $i=0$}\\
-        f(p^i)  & \text{else},
-\end{dcases}
-\end{equation*}
-and $c_i$'s are known coefficients. We summarize it in Algorithm \ref{algo2}.
-
-\begin{Algorithm}(Expected Improvement) \label{algo2}
-\begin{algorithmic}[1]
-\REQUIRE Inputs $\text{M, J, K}$, data set D and prior distribution of $\theta_y \sim \text{Dirichlet} (\boldsymbol \alpha_y), y \in \{1,0\}$
-\STATE $S \leftarrow \emptyset $
-\FOR{$m=1$ to $M$} 
-\STATE COUNT $\leftarrow 0$
-\IF{$S$ is not empty}
-\STATE Sort elements in $S$ as $\{p^1,\ldots,p^{|S|}\}$ such that $f(p^i) \leq f(p^j), \forall i<j$.
-\ENDIF
-\STATE Calculate posterior distribution of $\theta_1^0 \sim \text{Dirichlet} (\boldsymbol \alpha_1|\{x|x \in D,y(x)=1\})$ and $\theta_0^0 \sim \text{Dirichlet} (\boldsymbol \alpha_0|\{x|x \in D,y(x)=0\} \cup S)$.
-\FOR{$i=1$ to $|S|$}
-\STATE Calculate posterior distribution of $\theta_1^i \sim \text{Dirichlet} (\boldsymbol \alpha_1|\{x|x \in D,y(x)=1\} \cup \{p^i\})$ and $\theta_0^i \sim \text{Dirichlet} (\boldsymbol \alpha_0|\{x|x \in D,y(x)=0\} \cup \{p^j|j<i\})$.
-\ENDFOR
-\LOOP 
-\STATE Sample $\theta_1^{i=0:|S|}$ and $\theta_0^{i=0:|S|}$ from posterior distribution.
-\STATE $\eta^{i=0:|S|} \leftarrow \frac{\theta_1^{i=0:|S|}}{\theta_0^{i=0:|S|}}$
-\STATE Solve MINLP in equation \eqref{eq:EI5} to find $x$.
-\STATE COUNT $\leftarrow$ COUNT $+ x$.
-\ENDLOOP
-\FOR {$j=1$ to $J$}
-\STATE $e_j \leftarrow \underset{k \in \{1,\ldots,K\}}{\mathrm{arg}\max} \, \text{COUNT}_{kj}$
-\ENDFOR
-\STATE $S \leftarrow (S, e)$
-\ENDFOR
-\end{algorithmic}
-\end{Algorithm}
-
-\section{Model Validation and Performance}
-In this section we validate our statistical model and evaluate the performance of our proposed optimization methods. For model validation, we use real experimental data as training data, and use the leave-one-out cross validation to produce receiver operating characteristic(ROC) curve. We show the plots in Section \ref{sec:NB classifier}. To evaluate the performance of our proposed algorithm, we compare it with two methods introduced in Section \ref{sec:comparison methods}, using either $\PI$ or $\EI$ as
-performance metrics. We show the performance results in Section \ref{sec:performance}. In Section \ref{sec:experiment} we show that after performing two rounds of experiments using the proposed algorithm to generate peptide candidates, we successfully found more short peptides with desired property.
-
-\subsection{Naive Bayes Classifier} \label{sec:NB classifier}
-Since our training data is expensive and highly skewed, we use the leave-one-out cross validation procedure to choose the optimal hyper parameters. For each setting of the hyper parameters, we obtain an receiver operating characteristic(ROC) curve using the result of the leave-one out procedure and choose the setting with highest AUC(area under curve).
-
-%[Put two ROC curves here, one for leave-one-out and one for using the 1st data set as training and 2nd data set as test, to be continued ...]
-
-\begin{figure}[hpt] 
-\center
-\begin{minipage}[b]{0.45\linewidth}
-\includegraphics[width=\textwidth]{pic/ROC_DS1_1000_025.pdf}
-\caption*{using data set \#0 \& \#1}
-\end{minipage}
-\begin{minipage}[b]{0.45\linewidth}
-\includegraphics[width=\textwidth]{pic/ROC_DS2_1000_025.pdf}
-\caption*{using data set \#0,\#1 \& \#2}
-\end{minipage}
-\caption{ ROC curve using leave-one-out cross validation}
-\label{fig:ROC}
-\end{figure}
-
-In Figure \ref{fig:ROC}, note ROC curve to the left is better than the one to the right. This is because data set \#2 was generated by our algorithm based on the previous two data sets, and due to the exploration manner of our algorithm, data set \#2 should lie in the region that is more challenging for the classifier. Thus it is reasonable that our classifer performs worse using all available data sets. 
-
-\subsection{Comparison Methods} \label{sec:comparison methods}
-We compare our proposed algorithm to the two methods that our biochemist collaborators originally considered to use: one is a typical biological evoluation approach, that is, mutate known peptides with positive label, and take N peptide candidates with highest predicted probability being positive for testing. The other method is to use the trained classifier to predict probability being positive for all peptides in the library, and select N most probable ones for testing. We show their
-performance in Section \ref{sec:performance}.
-
-\subsection{Performance Comparison} \label{sec:performance}
-The benchmark was performed on real experiment data. We use data set \#0 and \#1 to train the statistical model, and based on this model, we generate peptides for testing using our proposed algorithm and the other two comparison methods. Then we train the statistical model using data set \#0, \#1 and \#2, and treat it as oracle to evaluate the performance of the methods.
-
-% We use probability that shortest peptide $x$ with $y(x)=1$ has length smaller or equal to 12 as a measure of quality, to do the benchmark, and we show the result in Figure \ref{fig:PI}.
-\begin{figure}[hpt] 
-\center
-\includegraphics[width=0.6\textwidth]{pic/PI.png}
-\caption{Benchmark of Probability of Improvement algorithm}
-\label{fig:PI}
-\end{figure}
-
-In Figure \ref{fig:PI} we show the benchmark using $\PI$ as performance metric. We can see Probability of Improvement algorithm is significantly better than the other two methods. Part of the reason is that the Probability of Improvement algorithm is designed to make the best decisions under uncertainty and choose the best balance between exploitation and exploration. We can see the effect of uncertainty of the current model by noting that the ranking method performs the
-worst, because in this method it assumes the underlying statistical model is accurate and does pure exploitation.
-
-We also plan to show the benchmark using $\EI$ as performance metric in the furture.
-
-\subsection{Progress on Real Experiments} \label{sec:experiment}
-Given the initial training data with size, we have performed two rounds of experiments using recommendations generated by Probability of Improvement algorithm. We show the histogram of length distribution of desired peptides found in Figure \ref{fig:experiment}.
-\begin{figure}[hpt] 
-\center
-\includegraphics[width=0.8\textwidth]{pic/experiment.png}
-\caption{Length distribution of target peptides.}
-\label{fig:experiment}
-\end{figure}
-
-From the histogram we conclude that the usage of Probability of Improvement algorithm did a great job in finding short desired peptides.
-
-\section{Conclusion}
-We proposed an optimal search algorithm based on greedy heuristic for solving the active learning problem motivated by a biochemistry problem, which is described in Section \ref{sec:problem}, and proved that the proposed algorithm guarantees to achieve at least a factor (1-1/e) of the optimal value. From benchmark results, we further showed that the proposed algorithm outperformed the other two heuristic search methods. In addition to theoretic results, We demonstrated
-effectiveness of our methods by applying them to the motivating problem, in which we have found a significant number of short peptides with desired property.
-% Appendix here
-% Options are (1) APPENDIX (with or without general title) or
-%             (2) APPENDICES (if it has more than one unrelated sections)
-% Outcomment the appropriate case if necessary
-%
-% \begin{APPENDIX}{<Title of the Appendix>}
-% \end{APPENDIX}
+\end{APPENDIX}
 %
 %   or
 %
-% \begin{APPENDICES}
-% \section{<Title of Section A>}
-% \section{<Title of Section B>}
-% etc
-% \end{APPENDICES}
+%\begin{APPENDICES}
+%\section{Proof in Section }
+%
+%\section{<Title of Section B>}
+%
+%
+%\end{APPENDICES}
 
 %%
 % \theendnotes
