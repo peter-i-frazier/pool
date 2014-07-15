@@ -1,43 +1,26 @@
-%\documentclass[opre,blindrev]{informs3}
-\documentclass[opre,nonblindrev]{informs3} % current default for manuscript submission
+\documentclass[12pt]{article}
+%\usepackage[T1]{fontenc}
+%\usepackage[latin9]{inputenc}
+\usepackage[margin=1in]{geometry}
 
-%%\DoubleSpacedXI % Made default 4/4/2014 at request
-\OneAndAHalfSpacedXI % current default line spacing
-%%\OneAndAHalfSpacedXII
-%%\DoubleSpacedXII
-%%\SingleSpacedXI
-%%\SingleSpacedXII
+% To compile in Times New Roman, use the following two lines.
+% You'll need to compile with xelatex or lualatex.
+% If you don't have these compilers, you can outcomment these two lines,
+% but it won't be in Times New Roman.
+\usepackage{fontspec}
+\setmainfont{Times New Roman}
 
-% If hyperref is used, dvi-to-ps driver of choice must be declared as
-%   an additional option to the \documentclass. For example
-%\documentclass[dvips,opre]{informs3}      % if dvips is used
-%\documentclass[dvipsone,opre]{informs3}   % if dvipsone is used, etc.
-
-%%% OPRE uses endnotes. If you do not use them, put a percent sign before
-%%% the \theendnotes command. This template does show how to use them.
-% \usepackage{endnotes}
-% \let\footnote=\endnote
-% \let\enotesize=\normalsize
-% \def\notesname{Endnotes}%
-% \def\makeenmark{$^{\theenmark}$}
-% \def\enoteformat{\rightskip0pt\leftskip0pt\parindent=1.75em
-%   \leavevmode\llap{\theenmark.\enskip}}
-
-% Private macros here (check that there is no clash with the style)
-
-% Natbib setup for author-year style
+\usepackage{sectsty} % to get the section headings to be smaller
 \usepackage{natbib}
- \bibpunct[, ]{(}{)}{,}{a}{}{,}%
- \def\bibfont{\small}%
- \def\bibsep{\smallskipamount}%
- \def\bibhang{24pt}%
- \def\newblock{\ }%
- \def\BIBand{and}%
-
 \usepackage{bbm}
-\usepackage{amsmath,amssymb,mathtools}
+\usepackage{amsmath,amssymb,amsthm,mathtools}
 \usepackage{caption}
 \usepackage{algorithmic}
+\usepackage{authblk} % if you are using texlive on macports, install texlive-latex-extra to get this
+
+% Uses the sectsty package to make section headings smaller.
+\sectionfont{\fontsize{12}{15}\selectfont}
+\subsectionfont{\fontsize{12}{15}\selectfont}
 
 \newcommand{\Prob}{\mathbb{P}}
 \newcommand{\E}{\mathbb{E}}
@@ -46,82 +29,42 @@
 \newcommand{\PI}{\text{P}^*}
 \newcommand{\mb}{\mathbf}
 \newtheorem{Algorithm}{Algorithm}
+\newtheorem{theorem}{Theorem}
+\newtheorem{lemma}{Lemma}
+\newtheorem{proposition}{Proposition}
 
-%% Setup of theorem styles. Outcomment only one.
-%% Preferred default is the first option.
-\TheoremsNumberedThrough     % Preferred (Theorem 1, Lemma 1, Theorem 2)
-%\TheoremsNumberedByChapter  % (Theorem 1.1, Lema 1.1, Theorem 1.2)
-\ECRepeatTheorems
-
-%% Setup of the equation numbering system. Outcomment only one.
-%% Preferred default is the first option.
-\EquationsNumberedThrough    % Default: (1), (2), ...
-%\EquationsNumberedBySection % (1.1), (1.2), ...
-
-% In the reviewing and copyediting stage enter the manuscript number.
-%\MANUSCRIPTNO{} % When the article is logged in and DOI assigned to it,
-                 %   this manuscript number is no longer necessary
-
-%%%%%%%%%%%%%%%%
 \begin{document}
-%%%%%%%%%%%%%%%%
 
-% Outcomment only when entries are known. Otherwise leave as is and
-%   default values will be used.
-%\setcounter{page}{1}
-%\VOLUME{00}%
-%\NO{0}%
-%\MONTH{Xxxxx}% (month or a similar seasonal id)
-%\YEAR{0000}% e.g., 2005
-%\FIRSTPAGE{000}%
-%\LASTPAGE{000}%
-%\SHORTYEAR{00}% shortened year (two-digit)
-%\ISSUE{0000} %
-%\LONGFIRSTPAGE{0001} %
-%\DOI{10.1287/xxxx.0000.0000}%
+\title{Finding Short Peptide Substrates using \\ Bayesian Active Learning}
 
-% Author's names for the running heads
-% Sample depending on the number of authors;
-% \RUNAUTHOR{Jones}
-% \RUNAUTHOR{Jones and Wilson}
-% \RUNAUTHOR{Jones, Miller, and Wilson}
-% \RUNAUTHOR{Jones et al.} % for four or more authors
-% Enter authors following the given pattern:
-%\RUNAUTHOR{Jialei, Pu and Peter}
+\author[1]{Jialei Wang}
+\author[2]{Michael D. Burkart}
+\author[1]{Peter I. Frazier}
+\author[2]{Nathan Gianneschi}
+\author[3]{Michael K. Gilson}
+\author[4]{Nicholas Kosa}
+\author[2]{Lorillee Tallorin} % Lori's full name has two ll's in it.
+\author[1]{Pu Yang\thanks{Author order is alphabetical, except for first author Jialei Wang.}}
 
-% Title or shortened title suitable for running heads. Sample:
-% \RUNTITLE{Bundling Information Goods of Decreasing Value}
-% Enter the (shortened) title:
-%\RUNTITLE{Bayesian Active Learning for Finding Maximally-valued Exemplars}
+\affil[1]{School of Operations Research \& Information Engineering, Cornell University}
+\affil[2]{Department of Chemistry and Biochemistry, UC San Diego}
+\affil[3]{Skaggs School of Pharmacy and Pharmaceutical Sciences, UC San D}
+\affil[4]{Bioo Scientific Corp, Austin TX} %, \URL{}}
 
-% Full title. Sample:
-% \TITLE{Bundling Information Goods of Decreasing Value}
-% Enter the full title:
-\TITLE{Finding Short Peptide Substrates using \\ Bayesian Active Learning}
-
-% Block of authors and their affiliations starts here:
-% NOTE: Authors with same affiliation, if the order of authors allows,
-%   should be entered in ONE field, separated by a comma.
-%   \EMAIL field can be repeated if more than one author
-\ARTICLEAUTHORS{%
-\AUTHOR{Jialei Wang, Pu Yang, Peter I. Frazier}
-\AFF{School of Operations Research \& Information Engineering, Cornell University, Ithaca, NY 14853, \EMAIL{jw865@cornell.edu}, \EMAIL{py75@cornell.edu}, \EMAIL{pf98@cornell.edu}} %, \URL{}}
-
-\AUTHOR{Michael D. Burkart, Nathan Gianneschi, Lori Tallorin}
-\AFF{Department of Chemistry and Biochemistry, University of California, San Diego, La Jolla, CA 92093, \EMAIL{mburkart@ucsd.edu}, \EMAIL{ngianneschi@ucsd.edu}, \EMAIL{ltallorin@ucsd.edu}} %, \URL{}}
-
-\AUTHOR{Michael K. Gilson}
-\AFF{Skaggs School of Pharmacy and Pharmaceutical Sciences, University of California, San Diego, La Jolla, CA 92093, \EMAIL{mgilson@ucsd.edu}} %, \URL{}}
-
-\AUTHOR{Nick Kosa}
-\AFF{Bioo Scientific Corp, Austin, TX 78744} %, \URL{}}
-
-%\AUTHOR{Add authors: Lori, Mike B., Nathan, Mike G., Nick K., Mike R., anyone else that should be included.  Err on the side of inclusion.  In your letter, and with the affiliation, we can indicate who did what.}
-% Enter all authors
-} % end of the block
+%\affil[1]{School of Operations Research \& Information Engineering, Cornell University, Ithaca, NY 14853}
+%\affil[2]{Department of Chemistry and Biochemistry, University of California, San Diego, La Jolla, CA 92093}
+%\affil[3]{Skaggs School of Pharmacy and Pharmaceutical Sciences, University of California, San Diego, La Jolla, CA 92093}
+%\affil[4]{Bioo Scientific Corp, Austin, TX 78744} %, \URL{}}
 
 
-\ABSTRACT{%
+%\EMAIL{mburkart@ucsd.edu}, \EMAIL{ngianneschi@ucsd.edu}, \EMAIL{ltallorin@ucsd.edu}, \EMAIL{mgilson@ucsd.edu}}
+
+\date{\vspace{-5ex}} % Remove the date, and the space it takes
+
+\maketitle
+
+
+\abstract{%
 We consider a Bayesian active learning problem arising in biochemistry, in which we wish to find a peptide that (1) has a certain expensive-to-ascertain biochemical property (it is a substrate for two protein-modifying enzymes, phosphopantetheinyltransferase and ACP hydrolase); and (2) is as short as possible.
 Finding such a peptide would allow tracking protein interactions with great ease, and would support a number of innovations in medicine, biochemistry, and materials science.
 However, such peptides are difficult to find, because the set of peptides is large, only a small fraction have the desired property, and ascertaining whether or not a peptide has the desired property requires performing a time-consuming laboratory experiment.
@@ -140,35 +83,22 @@ While our method was developed for this specific application in biochemistry, it
 % Fill in data. If unknown, outcomment the field
 % \KEYWORDS{Bayesian, Active Learning, Naive Bayes} 
 
-\maketitle
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
-% Samples of sectioning (and labeling) in OPRE
-% NOTE: (1) \section and \subsection do NOT end with a period
-%       (2) \subsubsection and lower need end punctuation
-%       (3) capitalization is as shown (title style).
-%
-%\section{Introduction.}\label{intro} %%1.
-%\subsection{Duality and the Classical EOQ Problem.}\label{class-EOQ} %% 1.1.
-%\subsection{Outline.}\label{outline1} %% 1.2.
-%\subsubsection{Cyclic Schedules for the General Deterministic SMDP.}
-%  \label{cyclic-schedules} %% 1.2.1
-%\section{Problem Description.}\label{problemdescription} %% 2.
-
-% Text of your paper here
-
 \section{Introduction}
 
 In this paper, we use machine learning to address a specific instance of a problem common in medicine, materials science, chemistry, and other physical sciences.  In this class of problems, we wish to find a molecule with a particular biological or chemical property. While we have historical data on related molecules or related properties that can support predictive modeling, the only way that we can determine with certainty whether a particular molecule has the property of interest (in colloquial language, ``is a hit'') is to synthesize and test it in a time-consuming laboratory experiment. Success is hampered by the enormous search space, and the limits imposed by experimental cost on the number of molecules that can be tested.  Within this context, we wish to use mathematical methods to recommend which experiments to perform, so as to reliably find a hit within a given experimental budget. Common examples include drug discovery, in which we wish to find a molecule that can be effective in treating a particular disease, and materials discovery, in which we wish to find a molecule that has a particular material property.
 
-The instance of this problem that we consider in detail in this paper comes from biochemistry: we wish to find a peptide that is (1) as short as possible; and (2) is a substrate for two protein-modifying enzymes, phosphopantetheinyltransferase (PPTase) and ACP hydrolase (AcpH). These protein-modifying enzymes can be used to attach and detach arbitrary molecules to their substrates.  In particular, as shown in Figure \ref{fig:labeling}, we can use PPTase to attach a fluorescent ``tag'' or ``label'' to peptides that we would discover that are substrates for both enzymes, allowing us to track the peptide, starting from a time of our choosing.  We can then use AcpH to remove the fluorescent tag at a time of our choosing.  If this peptide were short, then it could be inserted into a protein or peptide-based catalytic complex of our choosing without disrupting its activity, allowing monitoring of biological and catalytic systems.  This monitoring tool would have a number of applications in medicine, biology, and materials science \citep{nick}.
+The instance of this problem that we consider in detail in this paper comes from biochemistry: we wish to find a peptide that is (1) as short as possible; and (2) is a substrate for two protein-modifying enzymes, phosphopantetheinyltransferase (PPTase) and ACP hydrolase (AcpH). These protein-modifying enzymes can be used to attach and detach arbitrary molecules to their substrates.  In particular, 
+% as shown in Figure \ref{fig:labeling}, 
+we can use PPTase to attach a fluorescent ``tag'' or ``label'' to peptides that we would discover that are substrates for both enzymes, allowing us to track the peptide, starting from a time of our choosing.  We can then use AcpH to remove the fluorescent tag at a time of our choosing.  If this peptide were short, then it could be inserted into a protein or peptide-based catalytic complex of our choosing without disrupting its activity, allowing monitoring of biological and catalytic systems.  This monitoring tool would have a number of applications in medicine, biology, and materials science \citep{nick}.
 
-\begin{figure}[hpt] 
-\center
-\includegraphics[width=\textwidth]{pic/labeling.png}
-\caption{ Peptide labeling and unlabeling}
-\label{fig:labeling}
-\end{figure}
+
+% Commented out due to lack of space
+%\begin{figure}[hpt] 
+%\center
+%\includegraphics[width=\textwidth]{pic/labeling.png}
+%\caption{ Peptide labeling and unlabeling}
+%\label{fig:labeling}
+%\end{figure}
 
 Finding such a peptide is challenging, because the number of peptides is large, and only a small fraction of them are substrates for both enzymes (i.e., are ``hits'').  A peptide is a string of amino acids, of which 20 occur in nature, so there are $20^n$ peptides of length $n$.  The typical length of the peptides under consideration is 15 amino acids long, and the number of peptides with length 15 is $20^{15} \approx 3.3 \times 10^{19}$.  Of these, we estimate that approximately $1$ in $10^4$ is a substrate. We can test peptides in batches of size approximately $300$, and each batch requires approximately one week of work, several thousand dollars in materials, and access to an expensive shared machine on which time can be reserved for a batch of experiments approximately once every two months. If we were to test peptides of length $15$ uniformly at random, then we would need to test $n = \log(1/2) / \log(1-10^{-4}) \approx 6931$ peptides to ensure a probability of $1/2$ of finding at least one hit, which would in turn require 23 batches of experiments, and roughly four years' time.
 
@@ -191,6 +121,8 @@ To address this challenge, we formulate this problem as a Bayesian active learni
 
 % The accuracy of this classification model is, however, too low to simply take the single peptide most likely to be a hit, or even the top 300 most likely to be a hit, and have it provide reliable results. We then use combinatorial optimization to post-process the output of this classification method to find a set of peptides to test that, when taken together, are most likely to produce a hit.  We show that this method provides robust results that are better than more naive use of the predictive model
 
+While the methods we develop were designed to address a particular problem arising in biochemistry, the formal model we propose is general, and can be used whenever we have a large collection of exemplars with expensive-to-obtain labels, and we wish to choose exemplars to evaluate so as to find one with both a positive label and a small secondary cost objective, within a limited budget.
+
 This paper builds on a number of recently developed methods for optimal search, all of which aim to effectively collect information so as to make the best decisions under uncertainty. In this setting, they need to trade off the reward by sampling (i.e. exploitation) and the cost by acquiring this information (i.e. exploration). For example, in drug discovery, people search for a chemical derivative of the base molecule that best treats disease. To achieve this goal, they choose molecules to test to maximize the expected quality of the
 best compound discovered \citep{Negoescu2010}. Since the budget for testing is limited, they need to test the most informative and high quality molecules. To address this problem, Jones \& Schonlau proposed Expected Improvement algorithm to sample points sequentially \citep{Jones1998}. Ginsbourger used constant liar heuristic to extend Expected Improvement algorithm to parallel setting \citep{Ginsbourger2008}. There are quite a few papers about parallel sampling in active learning research
 community \citep{Chen2013, Hoi2006, Hoi2006a} , but they only aim to maximize information gain (i.e. pure exploration).
@@ -200,20 +132,18 @@ other methods, and show progress of this biochemical application using our metho
 
 \section{Problem Formulation} \label{sec:problem}
 
-We now formalize and generalize our problem as an active learning problem, which includes but is not limited to our application.
+We now formulate our applied problem as an active learning problem.  
+Let $E$ be a generic space of exemplars.  In our application, $E$ is the space of peptides. Each element $x \in E$ has an unknown binary label $y(x)=\{0,1\}$.  In our application, $y(x)$ is 1 if $x$ is a hit, i.e., is a substrate for both enzymes, and 0 if not.
+A known deterministic function $f(x)$ measures the cost or disutility associated with $x$.  In our application, $f(x)$ is the length of the peptide, as longer peptides interfere more with the system being monitored. Our goal is to perform experiments so as to find $x$ with a positive label and a cost $f(x)$ that is as small as possible.
 
-Let $E$ be a generic search space of exemplars.  In our application, $E$ is the search space of peptide candidates. Each element $x \in E$ has an unknown binary label $y(x)=\{0,1\}$.  In our application, $y(x)$ is 1 if $x$ is a hit, i.e., is a substrate for both enzymes, and 0 if not.
-A known deterministic function $f(x)$ measures the cost or disutility associated with $x$.  In our application, $f(x)$ is the length of the peptide, as longer peptides interfere more with the system being monitored. Our goal is to perform experiments so as to find $x$ with a positive label and a cost $f(x)$ that is as small as
-possible.
-
-To obtain labels of exemplars, we can do a batch of experiments, which evaluates the labels for a subset $S \subseteq E$. The cardinality of $S$ is constrained by some $K$ (i.e. $|S| \leq K$), modeling our budget for performing experiments. We measure the quality of $S$ by 
+To obtain labels of exemplars, we can do experiments in batches, which evaluate the labels for a subset $S \subseteq E$. The cardinality of $S$ is constrained by some $K$ (i.e. $|S| \leq K$), modeling our budget for performing experiments. We measure the quality of $S$ by 
 \begin{equation} \label{eq:fS}
 f^*(S)= \underset{x \in S:y(x)=1}{\min} f(x),
 \end{equation}
-where we assume $\min \emptyset = \infty$. $f^*(S)$ measures the smallest cost function for positive labeled elements in the set $S$, and in our motivation application, that means the shortest length of desired peptides in the set of peptides to test.
+where we assume $\min \emptyset = \infty$. $f^*(S)$ measures the smallest cost function for positive labeled elements in the set $S$, and in our application, that means the shortest length of desired peptides in the set of peptides to test.
 
 
-Let $b$ be a target value and we wish to find $S\subseteq E$ such that $f^*(S)$ is better than $b$. In our motivation application, we let $b$ be the length of the shortest previously known desired peptide. $f^*(S)$ is unknown because we do not know the label $y(x)$ for $x \in S$ yet. We assume a joint probability distribution over $y(x): x \in E$, which is determined by the underlying statistical model for a particular problem, and for our motivation application, the model is described in Section \ref{sec:stat model}. Based on the probability distribution we consider the following two quality measures for $S$:
+Let $b$ be a target value and we wish to find $S\subseteq E$ such that $f^*(S)$ is better than $b$. In our application, we let $b$ be the length of the shortest previously known desired peptide. $f^*(S)$ is unknown because we do not know the label $y(x)$ for $x \in S$ yet. We assume a joint probability distribution over $y(x): x \in E$, which is determined by the underlying statistical model for a particular problem, and for our application, the model is described in Section \ref{sec:stat model}. Based on the probability distribution we consider the following two quality measures for $S$:
 \begin{equation} \label{eq:twomeasure}
   \begin{aligned}
     &\text{Probability of Improvement: }&\PI(S) = \mathbb{P}(f^*(S) < b)\\
@@ -228,7 +158,7 @@ Given constraint on the cardinality of $S$, we wish to find $S$ that maximizes o
 \end{equation}
 
 \section{Statistical model} \label{sec:stat model}
-To construct the joint probability distribution over $y(x): x \in E$, which is needed by calculating \eqref{eq:twomeasure} and as a prerequisite for designing experiments, we develop a Bayesian classification method for our motivation application, which combines Naive Bayes and a prior distribution encoding knowledge from domain experts. Let $X=(X_1,\ldots,X_n)$ be an instance with $n$ features and $Y$ be its label. Using Bayes's Rule, we have:
+To construct the joint probability distribution over $y(x): x \in E$, which is needed to calculate \eqref{eq:twomeasure} and to choose which peptides to test, we develop a Bayesian classification method for our application, which combines Naive Bayes and a prior distribution encoding knowledge from domain experts. Let $X=(X_1,\ldots,X_n)$ be an instance with $n$ features and $Y$ be its label. Using Bayes's Rule, we have:
 
 \begin{equation*}
 \Prob(Y=y|X=x)=\frac{\Prob(X=x|Y=y)\Prob(Y=y)}{\Prob(X=x)}=\frac{\Prob(X=x|Y=y)\Prob(Y=y)}{\sum_{y'}\Prob(X=x|Y=y')\Prob(Y=y')}
@@ -240,9 +170,9 @@ The Naive Bayes classifier assumes that the presence or absence of a particular 
 \Prob(Y=y|X=x) = \frac{\prod_{j=1}^n\Prob(X_j=x_j|Y=y)\Prob(Y=y)}{\sum_{y'}\prod_{j=1}^n\Prob(X_j=x_j|Y=y)\Prob(Y=y)}
 \end{equation*}
 
-In our motivation application, we have a set of peptides, each with length less than or equal to $L$. Each peptide is a sequence of amino acids. We use a reduced alphabet for amino-acids, i.e., we group them into $K$ groups. For each peptide, let $A_i$ be the amino acid on position $j$, and let $X_i$ be the class of this amino acid. For a specific enzyme, let $Y(x)=1$ if peptide $x$ is a substrate for that enzyme and 0 if not.
+In our application, we have a set of peptides, each with length less than or equal to $L$. Each peptide is a sequence of amino acids. We use a reduced alphabet for amino-acids, i.e., we group them into $K$ groups. For each peptide, let $A_i$ be the amino acid on position $j$, and let $X_i$ be the class of this amino acid. For a specific enzyme, let $Y(x)=1$ if peptide $x$ is a substrate for that enzyme and 0 if not.
 
-We let $\theta_{y,j}(k)=\Prob(X_i=k|Y(X)=y)$, for each $j=1,\ldots,L$, $k=1,\ldots,K$ and $y\in\{0,1\}$. We further assume some known prior distribution $\Prob(Y(x)=y)$, $y\in\{0,1\}$. Let $\theta$ be the full set of parameters $\theta_{y,j}(k)$, for $j=1,\ldots,L$, $k=1,\ldots,K$ and $y\in\{0,1\}$. Then, given an unlabeled peptide, we can calculate its probability being a substrate as:
+We let $\theta_{y,j}(k)=\Prob(X_i=k|Y(X)=y)$, for each $j=1,\ldots,L$, $k=1,\ldots,K$ and $y\in\{0,1\}$. We further assume some known prior distribution $\Prob(Y(x)=y)$, $y\in\{0,1\}$. Let $\theta$ be the full set of parameters $\theta_{y,j}(k)$, for $j=1,\ldots,L$, $k=1,\ldots,K$ and $y\in\{0,1\}$. Then, given an unlabeled peptide, we can calculate its probability of being a substrate as:
 
 \begin{equation} \label{eq:model}
   \Prob\left(Y(x) = 1 | \theta\right) =
@@ -283,7 +213,7 @@ We also use leave-one-out cross validation to plot ROC curve and validate our mo
 and incorporate it into $S$ until $|S|=K$ for some chosen K. This approach reduces the size of search space dramatically from $|E|^{|S|}$ down to $|E| \times |S|$, and we prove that if objective function $g$ is either $\PI$ or $\EI$, the proposed greedy algorithm is guaranteed to be near-optimal with a lower bound. Additionally, we show that under the statistical model described in section \ref{sec:stat model}, we can formulate \eqref{eq:greedy} as Mixed-Integer Nonlinear Programming
 (MINLP) and solve it efficiently using a off-the-shelf MINLP solver.
 
-\subsection{Lower bound of greedy algorithm}
+\subsection{Performance guarantee for the greedy algorithm}
 In this subsection, we show that when the objective function $g$ in \eqref{eq:greedy} is either $\PI$ or $\EI$, the proposed greedy algorithm has performance guarantee. The result is stated in the following:
 \begin{theorem} 
 If objective function is probability of improvement (i.e $\PI(S)$) or expected improvement (i.e $\EI(S)$), the greedy algorithm is guaranteed to achieve a factor $(1-1/e) (\approx 63\%)$ of the optimal value.
@@ -300,9 +230,9 @@ If $F(S)$ is submodular, nondecreasing and $F(\emptyset)=0$, the greedy heuristi
   Expected improvement $\EI(S)$ is submodular, nondecreasing and $\EI(\emptyset)=0$.
 \end{lemma}
 
-\proof{Proof of Theorem 1.}
-From Lemma 2 and 3, we know that $\PI$ and $\EI$ are submodular, nondecreasing and their measure of the empty set is 0. From Lemma 1, we conclude that if the objective function $g$ in \eqref{eq:greedy} is $\PI$ or $\EI$, the greedy algorithm is guaranteed to achieve a factor of $(1-1/e)$ of the optimal value. \Halmos
-\endproof
+\begin{proof}[Proof of Theorem 1.]
+From Lemma 2 and 3, we know that $\PI$ and $\EI$ are submodular, nondecreasing and their measure of the empty set is 0. From Lemma 1, we conclude that if the objective function $g$ in \eqref{eq:greedy} is $\PI$ or $\EI$, the greedy algorithm is guaranteed to achieve a factor of $(1-1/e)$ of the optimal value. \qedhere
+\end{proof}
 
 \subsection{Probability of Improvement}
 We first show in Proposition 1 that \eqref{eq:greedy} can be written into the form in which the objective function can be easily calculated using any statitical classifier. This is the general form of greedy algorithm for optimization over probability of improvement and can be used with any underlying statistical model. In addition, we show that, using the Naive Bayes classifier proposed in section \ref{sec:stat model}, we can further formulate \eqref{eq:greedy} as a MINLP, which can be solved efficiently using an off-the-shelf MINLP solver.
@@ -313,7 +243,7 @@ We first show in Proposition 1 that \eqref{eq:greedy} can be written into the fo
   \end{equation}
 \end{proposition}
 
-In our motivation application, using the Bayesian classification model described in section \ref{sec:stat model}, we can formulate \eqref{eq:PI3} as a MINLP. First we write equation \eqref{eq:model} as
+In our application, using the Bayesian classification model described in section \ref{sec:stat model}, we can formulate \eqref{eq:PI3} as a MINLP. First we write equation \eqref{eq:model} as
 \begin{equation} \label{model1}
 \Prob\left(Y(x) = 1 | \theta\right) =
 \frac{\prod_j \eta_j(x_j)}{\prod_j \eta_j(x_j) + \frac{\Prob(Y(x)=0)}{\Prob(Y(x)=1)}},
@@ -370,7 +300,7 @@ We summarize the algorithm in Algorithm \ref{algo1}.
 \end{Algorithm}
 
 \subsection{Expected Improvement}
-The formulation for expected improvement is similar to probability of improvement, and for our motivation application, we can also formulate \eqref{eq:greedy} as a MINLP.
+The formulation for expected improvement is similar to probability of improvement, and for our application, we can also formulate \eqref{eq:greedy} as a MINLP.
 \begin{proposition}
   If the objective function $g$ is $\EI$, we can write \eqref{eq:greedy} as 
   \begin{equation} \label{eq:EI1}
@@ -438,13 +368,18 @@ and $c_i$'s are known coefficients. We summarize it in Algorithm \ref{algo2}.
 \end{Algorithm}
 
 \section{Model Validation and Performance}
-In this section we evaluate the performance of our proposed optimization methods by comparing it with two methods introduced in Section \ref{sec:comparison methods}. We show the performance results in Section \ref{sec:performance}. In Section \ref{sec:experiment} we show our algorithm helped find a peptide with the desired property that is shorter than the shortest previous known in our motivation application.
+In this section we evaluate the performance of our proposed optimization methods by comparing it with two benchmark methods, in simulation, and by using it in practice.  We show our algorithm helped find a peptide with the desired property that is shorter than the shortest previously known.
 
-\subsection{Comparison Methods} \label{sec:comparison methods}
-We compare our proposed algorithm to the two methods that our biochemist collaborators originally considered to use: one is a typical biological evoluation approach, that is, mutate known peptides with positive label, and take N peptide candidates with highest predicted probability being positive for testing. We call it mutation method from now on. The other method is to use the trained classifier to predict probability being positive for all peptides in the library, and select N most probable ones for testing. We call it ranking method. We show their performance comparison in Section \ref{sec:performance}.
+% The following version was shortened.
+% In this section we evaluate the performance of our proposed optimization methods by comparing it with two benchmark methods introduced in Section \ref{sec:comparison methods}. We show the performance results in Section \ref{sec:performance}. In Section \ref{sec:experiment} we show our algorithm helped find a peptide with the desired property that is shorter than the shortest previous known in our application.
 
-\subsection{Performance Comparison} \label{sec:performance}
-The benchmark was performed on real experiment data. We use data set \#0 and \#1 to train the statistical model, and based on this model, we generate peptides for testing using our proposed algorithm and the other two comparison methods. Then we train another statistical model using data set \#0, \#1 and \#2, and we evaluate the performance of the methods using both trained models.
+%\subsection{Comparison Methods} \label{sec:comparison methods}
+\paragraph{Comparison Methods}
+We compare our proposed algorithm to two benchmark methods that our biochemist collaborators originally considered using: one is a typical biological evoluation approach, that is, mutate known peptides with positive label, and take N peptide candidates with highest predicted probability being positive for testing. We call it mutation method from now on. The other method is to use the trained classifier to predict probability being positive for all peptides in the library, and select N most probable ones for testing. We call it ranking method. We compare their performance below. % in Section \ref{sec:performance}.
+
+%\subsection{Simulation Results} \label{sec:performance}
+\paragraph{Simulation Results with Historical Data}
+The benchmark was performed on data from previously performed experiments. We use data set \#0 and \#1 to train the statistical model, and based on this model, we generate peptides for testing using our proposed algorithm and the other two comparison methods. Then we train another statistical model using data set \#0, \#1 and \#2, and we evaluate the performance of the methods using both trained models.
 
 % We use probability that shortest peptide $x$ with $y(x)=1$ has length smaller or equal to 12 as a measure of quality, to do the benchmark, and we show the result in Figure \ref{fig:PI}.
 \begin{figure}[hpt] 
@@ -464,7 +399,8 @@ In Figure \ref{fig:PI} we show the benchmark using $\PI$ as performance metric. 
 
 We also plan to show the benchmark using $\EI$ as performance metric in the furture.
 
-\subsection{Performance on Real Experiments} \label{sec:experiment}
+%\subsection{Performance on Real Experiments} \label{sec:experiment}
+\paragraph{Performance in Practice} \label{sec:experiment}
 Given the preliminary data, we have performed two rounds of experiments using recommendations generated by Probability of Improvement algorithm. We show the histogram of length distribution of peptide hits in Figure \ref{fig:experiment} and explain how the algorithm worked to find a shorter peptide hit than the shortest peptide previously known: Ybbr sequence. Observe that all the new peptide hits found have length less than 20, this is because we set the target length $b = 20$ for our algorithm, which made the algorithm only generate peptide candidates with length less than 20. We did not set target length as the shortest length previously known, because we only have 2 short peptides from the preliminary data set and all the others have length greater than 40. Our goal for the first two rounds of experiments was to find a number of reasonably short peptide hits. After one round of experiment, we found additional 38 peptide hits, with most of them having length 19 and a few short peptides. This is expected because we have more information of long peptides than that of short peptides from the preliminary data set. To generate the second round of recommendations, we trained the statistical model using both preliminary data set and data from the first round of experiment, which contain more information on the short peptides, and we hoped to get more short peptide hits. As expected, after the second round of experiment, we can see from the histogram that there are many more short peptide hits found in this round, and we even found a peptide hit with length 10, which is shorter than Ybbr sequence! We conclude that Probability of Improvement algorithm did a great job in finding short desired peptides.
 
 \begin{figure}[hpt] 
@@ -476,14 +412,14 @@ Given the preliminary data, we have performed two rounds of experiments using re
 
 
 \section{Conclusion}
-We proposed an optimal search algorithm based on greedy heuristic for solving the active learning problem motivated by finding short peptide substrates problem, and proved that the proposed algorithm guarantees to achieve at least a factor (1-1/e) of the optimal value. From benchmark results, we further showed that the proposed algorithm outperformed the other two heuristic search methods. In addition to theoretical results, we demonstrated effectiveness of our method in practice, by applying it to the motivation application: so far we have performed two rounds of evaluations by doing experiments. The first round of experiments tested 258 peptides recommended by our algorithm, which is based on the statistical classifier trained using 36 preliminary data points, and the experiments took about 2 weeks to complete. As demonstrated in Figure \ref{fig:experiment}, we found 38 new peptide hits with shortest length 11. A month later, the second round of experiments tested 580 peptides and took another 2 weeks, in which we found 43 new hits and a peptide hit with length 10, which is shorter than the previously known shortest length. 
+We proposed an optimal search algorithm based on greedy heuristic for solving the active learning problem motivated by finding short peptide substrates problem, and proved that the proposed algorithm guarantees to achieve at least a factor (1-1/e) of the optimal value. From benchmark results, we further showed that the proposed algorithm outperformed the other two heuristic search methods. In addition to theoretical results, we demonstrated effectiveness of our method in practice: so far we have performed two rounds of evaluations by doing experiments. The first round of experiments tested 258 peptides recommended by our algorithm, which is based on the statistical classifier trained using 36 preliminary data points, and the experiments took about 2 weeks to complete. As demonstrated in Figure \ref{fig:experiment}, we found 38 new peptide hits with shortest length 11. A month later, the second round of experiments tested 580 peptides and took another 2 weeks, in which we found 43 new hits and a peptide hit with length 10, which is shorter than the previously known shortest length. 
 % Appendix here
 % Options are (1) APPENDIX (with or without general title) or
 %             (2) APPENDICES (if it has more than one unrelated sections)
 % Outcomment the appropriate case if necessary
 %
-\begin{APPENDIX}{Proof}
-\proof{Proof of Lemma 2.}
+\section*{Appendix: Mathematical Proofs}
+\begin{proof}[Proof of Lemma 2.]
 First we show $\PI(\emptyset) = 0$.
 \begin{equation*}
   \PI(\emptyset) = \mathbb{P}(f^*(\emptyset)<b) = \mathbb{P}(\infty<b)=0.
@@ -520,11 +456,11 @@ Using similar argument,
 &= \mathbb{P}(f(e)<b, y(e)=1,f^*(A)\geq b, f^*(B\backslash A) \geq b )
 \end{split}
 \end{equation*}
-Therefore, $\PI(A \cup \{e\}) - \PI(A) \geq \PI(B \cup \{e\}) - \PI(B)$, thus $\PI(S)$ is submodular. \Halmos
-\endproof
+Therefore, $\PI(A \cup \{e\}) - \PI(A) \geq \PI(B \cup \{e\}) - \PI(B)$, thus $\PI(S)$ is submodular. \qedhere
+\end{proof}
 
 
-\proof{Proof of Lemma 3.}
+\begin{proof}[Proof of Lemma 3.]
 First we show $\EI(\emptyset) = 0$.
 \begin{equation*}
   \EI(\emptyset) = \E[(b-f^*(\emptyset))^+] = \E[0] = 0.
@@ -550,10 +486,10 @@ Since $f^*(A) \geq f^*(B)$, $\mathbbm{1}_{y(e)=1, f(e)<f^*(A)} ((b-e)^+-(b-f^*(A
 \begin{equation*}
 \EI(A\cup \{e\})-\EI(A) \geq \EI(B\cup \{e\})-\EI(B)
 \end{equation*}
-$\EI(S)$ is submodular. \Halmos
-\endproof
+$\EI(S)$ is submodular. 
+\end{proof}
 
-\proof {Proof of proposition 1.}
+\begin{proof}[Proof of proposition 1.]
   \begin{equation*}
     \begin{split}
       &\PI(S \cup \{e\}) = \mathbb{P}(f^*(S\cup \{e\})<b)\\
@@ -566,11 +502,11 @@ $\EI(S)$ is submodular. \Halmos
   \end{equation}
   Note that when $f(e) \geq b$, $\mathbb{P}(f(e)<b, y(e)=1|f^*(S)\geq b)=0$, thus our algorithm will always propose $e$ such that $f(e)<b$. Therefore, it is reasonable to assume that $f(x)<b$ for $\forall x \in S$, and $f^*(S)\geq b$ is equivalent to $y(x)=0$ for $\forall x \in S$. Now we can write \eqref{eq:PI1} as 
   \begin{equation*}
-    \underset{e \in E \backslash S, f(e) < b}{\max} \, \mathbb{P} (y(e) = 1 \mid y(x) = 0, \forall x \in S). \Halmos
+    \underset{e \in E \backslash S, f(e) < b}{\max} \, \mathbb{P} (y(e) = 1 \mid y(x) = 0, \forall x \in S). 
   \end{equation*}
-\endproof
+\end{proof}
 
-\proof{Proof of proposition 2.}
+\begin{proof}[Proof of proposition 2.]
 Since choosing $e$ such that $f(e) \geq b$ has no contribution to the objective function, by using similar argument as dealing with probability of improvement, we argue that $f(x)<b$ for $\forall x \in S$. Thus
 \begin{equation*}
 f^*(S)  \begin{dcases}
@@ -610,40 +546,13 @@ where $L = \{f(x): x \in S\}$. If we rank elements in $S$ such that $f(x_i) \leq
   \sum_{i=1}^{|S|} \mathbb{P}(y(e)=1, y(x_i)=1, y(x_j)=0, \forall j<i, x_i,x_j \in S)(f(x_i)-f(e))^+.
   \label{eq:EI4}
 \end{equation}
-Substitute \eqref{eq:EI3} \eqref{eq:EI4} into \eqref{eq:EI2}, and note that $\mathbb{P}(y(e)=1, \mathcal{F}(x_1,\ldots,x_{|S|}) \propto \mathbb{P}(y(e)=1| \mathcal{F}(x_1,\ldots,x_{|S|})$ with known coefficient given $S$, we get \eqref{eq:EI1} in proposition 2. \Halmos
-\endproof
-\end{APPENDIX}
-%
-%   or
-%
-%\begin{APPENDICES}
-%\section{Proof in Section }
-%
-%\section{<Title of Section B>}
-%
-%
-%\end{APPENDICES}
-
-%%
-% \theendnotes
+Substitute \eqref{eq:EI3} \eqref{eq:EI4} into \eqref{eq:EI2}, and note that $\mathbb{P}(y(e)=1, \mathcal{F}(x_1,\ldots,x_{|S|}) \propto \mathbb{P}(y(e)=1| \mathcal{F}(x_1,\ldots,x_{|S|})$ with known coefficient given $S$, we get \eqref{eq:EI1} in proposition 2. 
+\end{proof}
 
 % Acknowledgments here
-% \ACKNOWLEDGMENT{The authors gratefully acknowledge the existence of
+% \acknowledgment{The authors gratefully acknowledge the existence of
 % the Journal of Irreproducible Results and the support of the Society
 % for the Preservation of Inane Research.}
-
-
-% References here (outcomment the appropriate case)
-
-% CASE 1: BiBTeX used to constantly update the references
-%   (while the paper is being written).
-%\bibliographystyle{ormsv080} % outcomment this and next line in Case 1
-%\bibliography{<your bib file(s)>} % if more than one, comma separated
-
-% CASE 2: BiBTeX used to generate mypaper.bbl (to be further fine tuned)
-%\input{mypaper.bbl} % outcomment this line in Case 2
-
-%If you don't use BiBTex, you can manually itemize references as shown below.
 
 \bibliography{DataMiningPaper}
 \bibliographystyle{apalike}
