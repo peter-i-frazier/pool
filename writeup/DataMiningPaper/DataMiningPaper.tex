@@ -116,7 +116,7 @@ Finding such a peptide is challenging, because the number of peptides is large, 
 
 % If we want to talk more about existing techniques, we could also describe phage display.
 
-To address this challenge, we formulate this problem as a Bayesian active learning problem.  We first develop a Bayesian classification method, which combines Naive Bayes, a prior distribution encoding knowledge from domain experts, and training data from naturally occurring and longer peptide substrates, to predict whether a short peptide is a hit. We then use the joint probability distributed over unobserved labels (``hit'' or ``miss'') of all peptides created by this classification method within a combinatorial optimization framework to find a {\it set} of peptides to test that, when taken together, are most likely to produce a hit.  We provide a theoretical performance guarantee on the quality of the resulting set of peptides to test, and using simulation, we show that this combination of prediction and optimization provides robust results that are better than a more naive use of the predictive model that considers only marginal probabilities, and a benchmark method of truncating and mutating known hits at random. We then describe laboratory results in which this method was used to discover peptide substrates that are shorter than the shortest previously known \citep{ybbr}.
+To address this challenge, we formulate this problem as a Bayesian active learning problem.  We first develop a Bayesian classification method, which combines Naive Bayes, a prior distribution encoding knowledge from domain experts, and training data from naturally occurring and longer peptide substrates, to predict whether a short peptide is a hit. We then use the joint probability distributed over unobserved labels (``hit'' or ``miss'') of all peptides created by this classification method within a combinatorial optimization framework to find a {\it set} of peptides to test that, when taken together, are most likely to produce a hit.  We provide a theoretical performance guarantee on the quality of the resulting set of peptides to test, and using simulation, we show that this combination of prediction and optimization provides robust results that are better than a more naive use of the predictive model that considers only marginal probabilities, and a benchmark method of truncating and mutating known hits at random. We then describe laboratory results in which this method was used to discover peptide substrates that are shorter than the shortest previously known: the ybbR sequence \citep{ybbr}.
 
 
 % The accuracy of this classification model is, however, too low to simply take the single peptide most likely to be a hit, or even the top 300 most likely to be a hit, and have it provide reliable results. We then use combinatorial optimization to post-process the output of this classification method to find a set of peptides to test that, when taken together, are most likely to produce a hit.  We show that this method provides robust results that are better than more naive use of the predictive model
@@ -243,7 +243,7 @@ We first show in Proposition 1 that \eqref{eq:greedy} can be written into the fo
   \end{equation}
 \end{proposition}
 
-In our application, using the Bayesian classification model described in section \ref{sec:stat model}, we can formulate \eqref{eq:PI3} as a MINLP. First we write equation \eqref{eq:model} as
+In our motivation application, using the Bayesian classification model described in section \ref{sec:stat model}, we can formulate \eqref{eq:PI3} as a MINLP. First we write equation \eqref{eq:model} as
 \begin{equation} \label{model1}
 \Prob\left(Y(x) = 1 | \theta\right) =
 \frac{\prod_j \eta_j(x_j)}{\prod_j \eta_j(x_j) + \frac{\Prob(Y(x)=0)}{\Prob(Y(x)=1)}},
@@ -276,28 +276,8 @@ x_j(k)=\begin{dcases}
         0 & \text{else}.
 \end{dcases}
 \end{equation*}
-We summarize the algorithm in Algorithm \ref{algo1}.
-\begin{Algorithm}(Probability of Improvement) \label{algo1}
-\begin{algorithmic}[1]
-\REQUIRE Inputs $\text{M, J, K}$, data set D and prior distribution of $\theta_y \sim \text{Dirichlet} (\boldsymbol \alpha_y), y \in \{1,0\}$
-\STATE $S \leftarrow \emptyset $
-\STATE Calculate posterior distribution of $\theta_1 \sim \text{Dirichlet} (\boldsymbol \alpha_1|\{x|x \in D,y(x)=1\})$.
-\FOR{$m=1$ to $M$} 
-\STATE COUNT $\leftarrow 0$
-\STATE Calculate posterior distribution of $\theta_0 \sim \text{Dirichlet} (\boldsymbol \alpha_0|\{x|x \in D,y(x)=0\} \cup S)$.
-\LOOP 
-\STATE Sample $\theta_1$ from $\text{Dirichlet} (\boldsymbol \alpha_1|\{x|x \in D,y(x)=1\})$ and $\theta_0$ from $\text{Dirichlet} (\boldsymbol \alpha_0|\{x|x \in D,y(x)=0\} \cup S)$.
-\STATE $\eta \leftarrow \frac{\theta_1}{\theta_0}$
-\STATE Solve MINLP in equation \eqref{eq:PI5} to find $x$.
-\STATE COUNT $\leftarrow$ COUNT $+ x$.
-\ENDLOOP
-\FOR {$j=1$ to $J$}
-\STATE $e_j \leftarrow \underset{k \in \{1,\ldots,K\}}{\mathrm{arg}\max} \, \text{COUNT}_{kj}$
-\ENDFOR
-\STATE $S \leftarrow (S, e)$
-\ENDFOR
-\end{algorithmic}
-\end{Algorithm}
+We summarize the algorithm in the appendix.
+
 
 \subsection{Expected Improvement}
 The formulation for expected improvement is similar to probability of improvement, and for our application, we can also formulate \eqref{eq:greedy} as a MINLP.
@@ -338,34 +318,8 @@ f_i=\begin{dcases}
         f(p^i)  & \text{else},
 \end{dcases}
 \end{equation*}
-and $c_i$'s are known coefficients. We summarize it in Algorithm \ref{algo2}.
+and $c_i$'s are known coefficients. We summarize the algorithm in the appendix.
 
-\begin{Algorithm}(Expected Improvement) \label{algo2}
-\begin{algorithmic}[1]
-\REQUIRE Inputs $\text{M, J, K}$, data set D and prior distribution of $\theta_y \sim \text{Dirichlet} (\boldsymbol \alpha_y), y \in \{1,0\}$
-\STATE $S \leftarrow \emptyset $
-\FOR{$m=1$ to $M$} 
-\STATE COUNT $\leftarrow 0$
-\IF{$S$ is not empty}
-\STATE Sort elements in $S$ as $\{p^1,\ldots,p^{|S|}\}$ such that $f(p^i) \leq f(p^j), \forall i<j$.
-\ENDIF
-\STATE Calculate posterior distribution of $\theta_1^0 \sim \text{Dirichlet} (\boldsymbol \alpha_1|\{x|x \in D,y(x)=1\})$ and $\theta_0^0 \sim \text{Dirichlet} (\boldsymbol \alpha_0|\{x|x \in D,y(x)=0\} \cup S)$.
-\FOR{$i=1$ to $|S|$}
-\STATE Calculate posterior distribution of $\theta_1^i \sim \text{Dirichlet} (\boldsymbol \alpha_1|\{x|x \in D,y(x)=1\} \cup \{p^i\})$ and $\theta_0^i \sim \text{Dirichlet} (\boldsymbol \alpha_0|\{x|x \in D,y(x)=0\} \cup \{p^j|j<i\})$.
-\ENDFOR
-\LOOP 
-\STATE Sample $\theta_1^{i=0:|S|}$ and $\theta_0^{i=0:|S|}$ from posterior distribution.
-\STATE $\eta^{i=0:|S|} \leftarrow \frac{\theta_1^{i=0:|S|}}{\theta_0^{i=0:|S|}}$
-\STATE Solve MINLP in equation \eqref{eq:EI5} to find $x$.
-\STATE COUNT $\leftarrow$ COUNT $+ x$.
-\ENDLOOP
-\FOR {$j=1$ to $J$}
-\STATE $e_j \leftarrow \underset{k \in \{1,\ldots,K\}}{\mathrm{arg}\max} \, \text{COUNT}_{kj}$
-\ENDFOR
-\STATE $S \leftarrow (S, e)$
-\ENDFOR
-\end{algorithmic}
-\end{Algorithm}
 
 \section{Model Validation and Performance}
 In this section we evaluate the performance of our proposed optimization methods by comparing it with two benchmark methods, in simulation, and by using it in practice.  We show our algorithm helped find a peptide with the desired property that is shorter than the shortest previously known.
@@ -375,7 +329,7 @@ In this section we evaluate the performance of our proposed optimization methods
 
 %\subsection{Comparison Methods} \label{sec:comparison methods}
 \paragraph{Comparison Methods}
-We compare our proposed algorithm to two benchmark methods that our biochemist collaborators originally considered using: one is a typical biological evoluation approach, that is, mutate known peptides with positive label, and take N peptide candidates with highest predicted probability being positive for testing. We call it mutation method from now on. The other method is to use the trained classifier to predict probability being positive for all peptides in the library, and select N most probable ones for testing. We call it ranking method. We compare their performance below. % in Section \ref{sec:performance}.
+We compare our proposed algorithm to two benchmark methods that our biochemist collaborators originally considered using: one is a typical biological evolution approach, that is, mutate known peptides with positive label, and take N peptide candidates with highest predicted probability being positive for testing. We call it mutation method. The other method is to use the trained classifier to predict probability being positive for all peptides in the library, and select N most probable ones for testing. We call it ranking method. We compare their performance below. % in Section \ref{sec:performance}.
 
 %\subsection{Simulation Results} \label{sec:performance}
 \paragraph{Simulation Results with Historical Data}
@@ -401,159 +355,205 @@ We also plan to show the benchmark using $\EI$ as performance metric in the furt
 
 %\subsection{Performance on Real Experiments} \label{sec:experiment}
 \paragraph{Performance in Practice} \label{sec:experiment}
-Given the preliminary data, we have performed two rounds of experiments using recommendations generated by Probability of Improvement algorithm. We show the histogram of length distribution of peptide hits in Figure \ref{fig:experiment} and explain how the algorithm worked to find a shorter peptide hit than the shortest peptide previously known: Ybbr sequence. Observe that all the new peptide hits found have length less than 20, this is because we set the target length $b = 20$ for our algorithm, which made the algorithm only generate peptide candidates with length less than 20. We did not set target length as the shortest length previously known, because we only have 2 short peptides from the preliminary data set and all the others have length greater than 40. Our goal for the first two rounds of experiments was to find a number of reasonably short peptide hits. After one round of experiment, we found additional 38 peptide hits, with most of them having length 19 and a few short peptides. This is expected because we have more information of long peptides than that of short peptides from the preliminary data set. To generate the second round of recommendations, we trained the statistical model using both preliminary data set and data from the first round of experiment, which contain more information on the short peptides, and we hoped to get more short peptide hits. As expected, after the second round of experiment, we can see from the histogram that there are many more short peptide hits found in this round, and we even found a peptide hit with length 10, which is shorter than Ybbr sequence! We conclude that Probability of Improvement algorithm did a great job in finding short desired peptides.
+Given the preliminary data, we have performed two rounds of experiments using recommendations generated by Probability of Improvement algorithm. We show the histogram of length distribution of peptide hits in Figure \ref{fig:experiment} and explain how the algorithm worked to find a shorter peptide hit than the shortest peptide previously known: Ybbr sequence. Observe that all the new peptide hits found have length less than 20, this is because we set the target length $b = 20$ for our algorithm, which made the algorithm only generate peptide candidates with length less than 20. We did not set target length as the shortest length previously known, because we only have 2 short peptides from the preliminary data set and all the others have length greater than 40. Our goal for the first two rounds of experiments was to find a number of reasonably short peptide hits. After one round of experiment, we found additional 38 peptide hits, with most of them having length 19 and a few short peptides. This is expected because we have more information of long peptides than that of short peptides from the preliminary data set. To generate the second round of recommendations, we trained the statistical model using both preliminary data set and data from the first round of experiment, which contain more information on the short peptides, and we hoped to get more short peptide hits. As expected, after the second round of experiment, we can see from the histogram that there are many more short peptide hits found in this round, and we even found a peptide hit with length 10, which is shorter than ybbR sequence! We conclude that Probability of Improvement algorithm did a great job in finding short desired peptides.
 
 \begin{figure}[hpt] 
 \center
-\includegraphics[width=0.8\textwidth]{pic/experiment.png}
+\includegraphics[width=0.6\textwidth]{pic/experiment.png}
 \caption{Length distribution of target peptides.}
 \label{fig:experiment}
 \end{figure}
 
 
 \section{Conclusion}
-We proposed an optimal search algorithm based on greedy heuristic for solving the active learning problem motivated by finding short peptide substrates problem, and proved that the proposed algorithm guarantees to achieve at least a factor (1-1/e) of the optimal value. From benchmark results, we further showed that the proposed algorithm outperformed the other two heuristic search methods. In addition to theoretical results, we demonstrated effectiveness of our method in practice: so far we have performed two rounds of evaluations by doing experiments. The first round of experiments tested 258 peptides recommended by our algorithm, which is based on the statistical classifier trained using 36 preliminary data points, and the experiments took about 2 weeks to complete. As demonstrated in Figure \ref{fig:experiment}, we found 38 new peptide hits with shortest length 11. A month later, the second round of experiments tested 580 peptides and took another 2 weeks, in which we found 43 new hits and a peptide hit with length 10, which is shorter than the previously known shortest length. 
-% Appendix here
-% Options are (1) APPENDIX (with or without general title) or
-%             (2) APPENDICES (if it has more than one unrelated sections)
-% Outcomment the appropriate case if necessary
+We proposed an optimal search algorithm based on greedy heuristic for solving the active learning problem motivated by finding short peptide substrates problem, and proved that the proposed algorithm guarantees to achieve at least a factor (1-1/e) of the optimal value. From benchmark results, we further showed that the proposed algorithm outperformed the other two heuristic search methods. In addition to theoretical results, we demonstrated effectiveness of our method in practice: so far we have performed two rounds of evaluations by doing experiments. The first round of experiments tested 258 peptides recommended by our algorithm, which is based on the statistical classifier trained using 36 preliminary data points, and the experiments took about 2 weeks to complete. As demonstrated in Figure \ref{fig:experiment}, we found 38 new peptide hits with shortest length 11. A month later, the second round of experiments tested 580 peptides and took another 2 weeks, in which we found 43 new hits and a peptide hit with length 10, which is shorter than the shortest previously known. 
+
+%\section*{Appendix A: Algorithms}
 %
-\section*{Appendix: Mathematical Proofs}
-\begin{proof}[Proof of Lemma 2.]
-First we show $\PI(\emptyset) = 0$.
-\begin{equation*}
-  \PI(\emptyset) = \mathbb{P}(f^*(\emptyset)<b) = \mathbb{P}(\infty<b)=0.
-\end{equation*}
-
-To show $\PI(S)$ is nondecreasing, let $A \subseteq B \subseteq E$ where $E$ is a finite set, then
-\begin{equation*}
-\begin{split}
-\PI(B) &= \mathbb{P}(f^*(B)<b) \\
-       &= \mathbb{P}(f^*(B)<b |f^*(A) \geq b) \mathbb{P}(f^*(A) \geq b) + \mathbb{P}(f^*(B)<b |f^*(A)<b) \mathbb{P}(f^*(A)<b) \\
-       &= \mathbb{P}(f^*(B)<b |f^*(A) \geq b) \mathbb{P}(f^*(A) \geq b) + \mathbb{P}(f^*(A)<b) \\
-       &\geq \mathbb{P}(f^*(A)<b) \\
-       &= \PI(A)
-\end{split}
-\end{equation*}
-
-Lastly, we want to show $\PI(S)$ is submodular. For $e \in E\backslash B$,
-\begin{equation*}
-\begin{split}
-&\PI(A \cup \{e\}) - \PI(A) \\
-&= \mathbb{P}(f^*(A \cup \{e\})<b)-\mathbb{P}(f^*(A)<b)\\
-&= \mathbb{P}(f^*(A \cup \{e\})<b|f^*(A)<b)\mathbb{P}(f^*(A)<b) + \mathbb{P}(f^*(A \cup \{e\})<b|f^*(A)\geq b)\mathbb{P}(f^*(A)\geq b) -\mathbb{P}(f^*(A)<b) \\
-&=\mathbb{P}(f^*(A)<b) + \mathbb{P}(f^*(A \cup \{e\})<b|f^*(A)\geq b)\mathbb{P}(f^*(A)\geq b) -\mathbb{P}(f^*(A)<b)\\
-&= \mathbb{P}(f^*(A \cup \{e\})<b|f^*(A)\geq b)\mathbb{P}(f^*(A)\geq b) \\
-&= \mathbb{P}(f(e)<b, y(e)=1|f^*(A)\geq b)\mathbb{P}(f^*(A)\geq b) \\
-&= \mathbb{P}(f(e)<b, y(e)=1,f^*(A)\geq b)
-\end{split}
-\end{equation*}
-Using similar argument,
-\begin{equation*}
-\begin{split}
-&\PI(B \cup \{e\}) - \PI(B) \\
-&= \mathbb{P}(f(e)<b, y(e)=1,f^*(B)\geq b) \\
-&= \mathbb{P}(f(e)<b, y(e)=1,f^*(A)\geq b, f^*(B\backslash A) \geq b )
-\end{split}
-\end{equation*}
-Therefore, $\PI(A \cup \{e\}) - \PI(A) \geq \PI(B \cup \{e\}) - \PI(B)$, thus $\PI(S)$ is submodular. \qedhere
-\end{proof}
-
-
-\begin{proof}[Proof of Lemma 3.]
-First we show $\EI(\emptyset) = 0$.
-\begin{equation*}
-  \EI(\emptyset) = \E[(b-f^*(\emptyset))^+] = \E[0] = 0.
-\end{equation*}
-
-To show $\EI(S)$ is nondecreasing, let $A \subseteq B \subseteq E$ where $E$ is a finite set. Since $f^*(B) \leq f^*(A)$, $b-f^*(B) \geq b-f^*(A)$, and $(b-f^*(B))^+ \geq (b-f^*(A))^+$, therefore, $\E[(b-f^*(B))^+] \geq \E[(b-f^*(A))^+]$.
-
-Lastly, we want to show $\PI(S)$ is submodular. For $e \in E\backslash B$, consider $\E[(b-f^*(A \cup \{e\}))^+]-\E[(b-f^*(A))^+]$. We can write
-\begin{equation*}
-(b-f^*(A \cup \{e\}))^+ = \begin{dcases}
-                         (b-f^*(A))^+ & \text{if $y(e)=0$} \\
-                         (b-\min\{f(e),f^*(A)\})^+ & \text{if $y(e)=1$}
-                         \end{dcases}
-\end{equation*}
-Then 
-\begin{align*}
-&\E[(b-f^*(A \cup \{e\}))^+]-\E[(b-f^*(A))^+] \\
-&= \mathbb{P}(y(e)=1) \E[(b-\min\{f(e),f^*(A)\})^+ -(b-f^*(A))^+|y(e)=1]\\
-&= \mathbb{P}(y(e)=1) \mathbb{P}(f(e)<f^*(A)|y(e)=1) \E[(b-e)^+-(b-f^*(A))^+|y(e)=1, f(e)<f^*(A)]\\
-&= \E[ \mathbbm{1}_{y(e)=1, f(e)<f^*(A)} ((b-e)^+-(b-f^*(A))^+)]
-\end{align*}
-Since $f^*(A) \geq f^*(B)$, $\mathbbm{1}_{y(e)=1, f(e)<f^*(A)} ((b-e)^+-(b-f^*(A))^+)) \geq \mathbbm{1}_{y(e)=1, f(e)<f^*(B)} ((b-e)^+-(b-f^*(B))^+))$, thus
-\begin{equation*}
-\EI(A\cup \{e\})-\EI(A) \geq \EI(B\cup \{e\})-\EI(B)
-\end{equation*}
-$\EI(S)$ is submodular. 
-\end{proof}
-
-\begin{proof}[Proof of proposition 1.]
-  \begin{equation*}
-    \begin{split}
-      &\PI(S \cup \{e\}) = \mathbb{P}(f^*(S\cup \{e\})<b)\\
-      &= \mathbb{P}(f^*(S)<b) + \mathbb{P}(f^*(S)\geq b) \mathbb{P}(f(e)<b, y(e)=1|f^*(S)\geq b),
-    \end{split}
-  \end{equation*}
-  so \eqref{eq:greedy} becomes
-  \begin{equation} \label{eq:PI1} 
-    \underset{e \in E \backslash S}{\max} \, \PI(S \cup \{e\}) = \underset{e \in E \backslash S}{\max} \, \mathbb{P}(f(e)<b, y(e)=1|f^*(S)\geq b).
-  \end{equation}
-  Note that when $f(e) \geq b$, $\mathbb{P}(f(e)<b, y(e)=1|f^*(S)\geq b)=0$, thus our algorithm will always propose $e$ such that $f(e)<b$. Therefore, it is reasonable to assume that $f(x)<b$ for $\forall x \in S$, and $f^*(S)\geq b$ is equivalent to $y(x)=0$ for $\forall x \in S$. Now we can write \eqref{eq:PI1} as 
-  \begin{equation*}
-    \underset{e \in E \backslash S, f(e) < b}{\max} \, \mathbb{P} (y(e) = 1 \mid y(x) = 0, \forall x \in S). 
-  \end{equation*}
-\end{proof}
-
-\begin{proof}[Proof of proposition 2.]
-Since choosing $e$ such that $f(e) \geq b$ has no contribution to the objective function, by using similar argument as dealing with probability of improvement, we argue that $f(x)<b$ for $\forall x \in S$. Thus
-\begin{equation*}
-f^*(S)  \begin{dcases}
-         =\infty & \text{if $y(x)=0$ for $\forall x \in S$},\\
-         < b & \text{else}.
- \end{dcases}
-\end{equation*}
-Now objective function we want to maximize becomes
-\begin{equation*}
-  \begin{split}
-    &\E \left[ (b-f^*(S \cup \{e\}))^+ \right] \\
-    &= \E[(b-f(e))^+ \mathbbm{1}_{f^*(S)=\infty, y(e)=1}]+ \E[ (b-f^*(S \cup \{e\}))^+ \mathbbm{1}_{f^*(S)<b}] \\
-    &= \E[(b-f(e))^+ \mathbbm{1}_{f^*(S)=\infty, y(e)=1}]+ \E[ (b-f^*(S)) \mathbbm{1}_{f^*(S)<b}] + \E[(f^*(S)-f(e)) \mathbbm{1}_{y(e)=1, f(e)<f^*(S)<b}].
-  \end{split}
-\end{equation*}
-so
-\begin{equation} \label{eq:EI2}
-  \begin{split}
-    &\underset{e \in E \backslash S}{\max} \, \E \left[ (b-f^*(S \cup \{e\}))^+ \right], \\
-    &= \underset{e \in E \backslash S, f(e)<b}{\max} \, \E[(b-f(e)) \mathbbm{1}_{f^*(S)=\infty, y(e)=1}]+\E[(f^*(S)-f(e)) \mathbbm{1}_{y(e)=1, f(e)<f^*(S)<b}].
-  \end{split}
-\end{equation}
-For $e \in E \backslash S, f(e)<b$,
-\begin{equation}
-    \E[(b-f(e)) \mathbbm{1}_{f^*(S)=\infty, y(e)=1}] = \mathbb{P}(y(e)=1, y(x)=0, \forall x \in S)(b-f(e)), 
-  \label{eq:EI3}
-\end{equation}
-\begin{equation*}
-  \begin{split}
-    &\E[(f^*(S)-f(e)) \mathbbm{1}_{y(e)=1, f(e)<f^*(S)<b}], \\
-    &=\E[\E[(f^*(S)-f(e)) \mathbbm{1}_{y(e)=1, f(e)<f^*(S)<b}]|f^*(S)=l], \\
-    &= \sum_{l \in L, f(e)<l} \mathbb{P}(y(e)=1|f^*(S)=l)(l-f(e))\mathbb{P}(f^*(S)=l),\\
-  \end{split}
-\end{equation*}
-where $L = \{f(x): x \in S\}$. If we rank elements in $S$ such that $f(x_i) \leq f(x_j), \forall i<j, x_i,x_j \in S$, we can write equation above as
-\begin{equation}
-  \sum_{i=1}^{|S|} \mathbb{P}(y(e)=1, y(x_i)=1, y(x_j)=0, \forall j<i, x_i,x_j \in S)(f(x_i)-f(e))^+.
-  \label{eq:EI4}
-\end{equation}
-Substitute \eqref{eq:EI3} \eqref{eq:EI4} into \eqref{eq:EI2}, and note that $\mathbb{P}(y(e)=1, \mathcal{F}(x_1,\ldots,x_{|S|}) \propto \mathbb{P}(y(e)=1| \mathcal{F}(x_1,\ldots,x_{|S|})$ with known coefficient given $S$, we get \eqref{eq:EI1} in proposition 2. 
-\end{proof}
+%\begin{Algorithm}(Probability of Improvement) \label{algo1}
+%\begin{algorithmic}[1]
+%\REQUIRE Inputs $\text{M, J, K}$, data set D and prior distribution of $\theta_y \sim \text{Dirichlet} (\boldsymbol \alpha_y), y \in \{1,0\}$
+%\STATE $S \leftarrow \emptyset $
+%\STATE Calculate posterior distribution of $\theta_1 \sim \text{Dirichlet} (\boldsymbol \alpha_1|\{x|x \in D,y(x)=1\})$.
+%\FOR{$m=1$ to $M$} 
+%\STATE COUNT $\leftarrow 0$
+%\STATE Calculate posterior distribution of $\theta_0 \sim \text{Dirichlet} (\boldsymbol \alpha_0|\{x|x \in D,y(x)=0\} \cup S)$.
+%\LOOP 
+%\STATE Sample $\theta_1$ from $\text{Dirichlet} (\boldsymbol \alpha_1|\{x|x \in D,y(x)=1\})$ and $\theta_0$ from $\text{Dirichlet} (\boldsymbol \alpha_0|\{x|x \in D,y(x)=0\} \cup S)$.
+%\STATE $\eta \leftarrow \frac{\theta_1}{\theta_0}$
+%\STATE Solve MINLP in equation \eqref{eq:PI5} to find $x$.
+%\STATE COUNT $\leftarrow$ COUNT $+ x$.
+%\ENDLOOP
+%\FOR {$j=1$ to $J$}
+%\STATE $e_j \leftarrow \underset{k \in \{1,\ldots,K\}}{\mathrm{arg}\max} \, \text{COUNT}_{kj}$
+%\ENDFOR
+%\STATE $S \leftarrow (S, e)$
+%\ENDFOR
+%\end{algorithmic}
+%\end{Algorithm}
+%
+%\begin{Algorithm}(Expected Improvement) \label{algo2}
+%\begin{algorithmic}[1]
+%\REQUIRE Inputs $\text{M, J, K}$, data set D and prior distribution of $\theta_y \sim \text{Dirichlet} (\boldsymbol \alpha_y), y \in \{1,0\}$
+%\STATE $S \leftarrow \emptyset $
+%\FOR{$m=1$ to $M$} 
+%\STATE COUNT $\leftarrow 0$
+%\IF{$S$ is not empty}
+%\STATE Sort elements in $S$ as $\{p^1,\ldots,p^{|S|}\}$ such that $f(p^i) \leq f(p^j), \forall i<j$.
+%\ENDIF
+%\STATE Calculate posterior distribution of $\theta_1^0 \sim \text{Dirichlet} (\boldsymbol \alpha_1|\{x|x \in D,y(x)=1\})$ and $\theta_0^0 \sim \text{Dirichlet} (\boldsymbol \alpha_0|\{x|x \in D,y(x)=0\} \cup S)$.
+%\FOR{$i=1$ to $|S|$}
+%\STATE Calculate posterior distribution of $\theta_1^i \sim \text{Dirichlet} (\boldsymbol \alpha_1|\{x|x \in D,y(x)=1\} \cup \{p^i\})$ and $\theta_0^i \sim \text{Dirichlet} (\boldsymbol \alpha_0|\{x|x \in D,y(x)=0\} \cup \{p^j|j<i\})$.
+%\ENDFOR
+%\LOOP 
+%\STATE Sample $\theta_1^{i=0:|S|}$ and $\theta_0^{i=0:|S|}$ from posterior distribution.
+%\STATE $\eta^{i=0:|S|} \leftarrow \frac{\theta_1^{i=0:|S|}}{\theta_0^{i=0:|S|}}$
+%\STATE Solve MINLP in equation \eqref{eq:EI5} to find $x$.
+%\STATE COUNT $\leftarrow$ COUNT $+ x$.
+%\ENDLOOP
+%\FOR {$j=1$ to $J$}
+%\STATE $e_j \leftarrow \underset{k \in \{1,\ldots,K\}}{\mathrm{arg}\max} \, \text{COUNT}_{kj}$
+%\ENDFOR
+%\STATE $S \leftarrow (S, e)$
+%\ENDFOR
+%\end{algorithmic}
+%\end{Algorithm}
+%
+%\section*{Appendix B: Mathematical Proofs}
+%\begin{proof}[\bf{Proof of Lemma 2.}]
+%First we show $\PI(\emptyset) = 0$.
+%\begin{equation*}
+%  \PI(\emptyset) = \mathbb{P}(f^*(\emptyset)<b) = \mathbb{P}(\infty<b)=0.
+%\end{equation*}
+%
+%To show $\PI(S)$ is nondecreasing, let $A \subseteq B \subseteq E$ where $E$ is a finite set, then
+%\begin{equation*}
+%\begin{split}
+%\PI(B) &= \mathbb{P}(f^*(B)<b) \\
+%       &= \mathbb{P}(f^*(B)<b |f^*(A) \geq b) \mathbb{P}(f^*(A) \geq b) + \mathbb{P}(f^*(B)<b |f^*(A)<b) \mathbb{P}(f^*(A)<b) \\
+%       &= \mathbb{P}(f^*(B)<b |f^*(A) \geq b) \mathbb{P}(f^*(A) \geq b) + \mathbb{P}(f^*(A)<b) \\
+%       &\geq \mathbb{P}(f^*(A)<b) \\
+%       &= \PI(A)
+%\end{split}
+%\end{equation*}
+%
+%Lastly, we want to show $\PI(S)$ is submodular. For $e \in E\backslash B$,
+%\begin{equation*}
+%\begin{split}
+%&\PI(A \cup \{e\}) - \PI(A) \\
+%&= \mathbb{P}(f^*(A \cup \{e\})<b)-\mathbb{P}(f^*(A)<b)\\
+%&= \mathbb{P}(f^*(A \cup \{e\})<b|f^*(A)<b)\mathbb{P}(f^*(A)<b) + \mathbb{P}(f^*(A \cup \{e\})<b|f^*(A)\geq b)\mathbb{P}(f^*(A)\geq b) -\mathbb{P}(f^*(A)<b) \\
+%&=\mathbb{P}(f^*(A)<b) + \mathbb{P}(f^*(A \cup \{e\})<b|f^*(A)\geq b)\mathbb{P}(f^*(A)\geq b) -\mathbb{P}(f^*(A)<b)\\
+%&= \mathbb{P}(f^*(A \cup \{e\})<b|f^*(A)\geq b)\mathbb{P}(f^*(A)\geq b) \\
+%&= \mathbb{P}(f(e)<b, y(e)=1|f^*(A)\geq b)\mathbb{P}(f^*(A)\geq b) \\
+%&= \mathbb{P}(f(e)<b, y(e)=1,f^*(A)\geq b)
+%\end{split}
+%\end{equation*}
+%Using similar argument,
+%\begin{equation*}
+%\begin{split}
+%&\PI(B \cup \{e\}) - \PI(B) \\
+%&= \mathbb{P}(f(e)<b, y(e)=1,f^*(B)\geq b) \\
+%&= \mathbb{P}(f(e)<b, y(e)=1,f^*(A)\geq b, f^*(B\backslash A) \geq b )
+%\end{split}
+%\end{equation*}
+%Therefore, $\PI(A \cup \{e\}) - \PI(A) \geq \PI(B \cup \{e\}) - \PI(B)$, thus $\PI(S)$ is submodular. \qedhere
+%\end{proof}
+%
+%
+%\begin{proof}[\bf{Proof of Lemma 3.}]
+%First we show $\EI(\emptyset) = 0$.
+%\begin{equation*}
+%  \EI(\emptyset) = \E[(b-f^*(\emptyset))^+] = \E[0] = 0.
+%\end{equation*}
+%
+%To show $\EI(S)$ is nondecreasing, let $A \subseteq B \subseteq E$ where $E$ is a finite set. Since $f^*(B) \leq f^*(A)$, $b-f^*(B) \geq b-f^*(A)$, and $(b-f^*(B))^+ \geq (b-f^*(A))^+$, therefore, $\E[(b-f^*(B))^+] \geq \E[(b-f^*(A))^+]$.
+%
+%Lastly, we want to show $\PI(S)$ is submodular. For $e \in E\backslash B$, consider $\E[(b-f^*(A \cup \{e\}))^+]-\E[(b-f^*(A))^+]$. We can write
+%\begin{equation*}
+%(b-f^*(A \cup \{e\}))^+ = \begin{dcases}
+%                         (b-f^*(A))^+ & \text{if $y(e)=0$} \\
+%                         (b-\min\{f(e),f^*(A)\})^+ & \text{if $y(e)=1$}
+%                         \end{dcases}
+%\end{equation*}
+%Then 
+%\begin{align*}
+%&\E[(b-f^*(A \cup \{e\}))^+]-\E[(b-f^*(A))^+] \\
+%&= \mathbb{P}(y(e)=1) \E[(b-\min\{f(e),f^*(A)\})^+ -(b-f^*(A))^+|y(e)=1]\\
+%&= \mathbb{P}(y(e)=1) \mathbb{P}(f(e)<f^*(A)|y(e)=1) \E[(b-e)^+-(b-f^*(A))^+|y(e)=1, f(e)<f^*(A)]\\
+%&= \E[ \mathbbm{1}_{y(e)=1, f(e)<f^*(A)} ((b-e)^+-(b-f^*(A))^+)]
+%\end{align*}
+%Since $f^*(A) \geq f^*(B)$, $\mathbbm{1}_{y(e)=1, f(e)<f^*(A)} ((b-e)^+-(b-f^*(A))^+)) \geq \mathbbm{1}_{y(e)=1, f(e)<f^*(B)} ((b-e)^+-(b-f^*(B))^+))$, thus
+%\begin{equation*}
+%\EI(A\cup \{e\})-\EI(A) \geq \EI(B\cup \{e\})-\EI(B)
+%\end{equation*}
+%$\EI(S)$ is submodular. 
+%\end{proof}
+%
+%\begin{proof}[\bf{Proof of proposition 1.}]
+%  \begin{equation*}
+%    \begin{split}
+%      &\PI(S \cup \{e\}) = \mathbb{P}(f^*(S\cup \{e\})<b)\\
+%      &= \mathbb{P}(f^*(S)<b) + \mathbb{P}(f^*(S)\geq b) \mathbb{P}(f(e)<b, y(e)=1|f^*(S)\geq b),
+%    \end{split}
+%  \end{equation*}
+%  so \eqref{eq:greedy} becomes
+%  \begin{equation} \label{eq:PI1} 
+%    \underset{e \in E \backslash S}{\max} \, \PI(S \cup \{e\}) = \underset{e \in E \backslash S}{\max} \, \mathbb{P}(f(e)<b, y(e)=1|f^*(S)\geq b).
+%  \end{equation}
+%  Note that when $f(e) \geq b$, $\mathbb{P}(f(e)<b, y(e)=1|f^*(S)\geq b)=0$, thus our algorithm will always propose $e$ such that $f(e)<b$. Therefore, it is reasonable to assume that $f(x)<b$ for $\forall x \in S$, and $f^*(S)\geq b$ is equivalent to $y(x)=0$ for $\forall x \in S$. Now we can write \eqref{eq:PI1} as 
+%  \begin{equation*}
+%    \underset{e \in E \backslash S, f(e) < b}{\max} \, \mathbb{P} (y(e) = 1 \mid y(x) = 0, \forall x \in S). 
+%  \end{equation*}
+%\end{proof}
+%
+%\begin{proof}[\bf{Proof of proposition 2.}]
+%Since choosing $e$ such that $f(e) \geq b$ has no contribution to the objective function, by using similar argument as dealing with probability of improvement, we argue that $f(x)<b$ for $\forall x \in S$. Thus
+%\begin{equation*}
+%f^*(S)  \begin{dcases}
+%         =\infty & \text{if $y(x)=0$ for $\forall x \in S$},\\
+%         < b & \text{else}.
+% \end{dcases}
+%\end{equation*}
+%Now objective function we want to maximize becomes
+%\begin{equation*}
+%  \begin{split}
+%    &\E \left[ (b-f^*(S \cup \{e\}))^+ \right] \\
+%    &= \E[(b-f(e))^+ \mathbbm{1}_{f^*(S)=\infty, y(e)=1}]+ \E[ (b-f^*(S \cup \{e\}))^+ \mathbbm{1}_{f^*(S)<b}] \\
+%    &= \E[(b-f(e))^+ \mathbbm{1}_{f^*(S)=\infty, y(e)=1}]+ \E[ (b-f^*(S)) \mathbbm{1}_{f^*(S)<b}] + \E[(f^*(S)-f(e)) \mathbbm{1}_{y(e)=1, f(e)<f^*(S)<b}].
+%  \end{split}
+%\end{equation*}
+%so
+%\begin{equation} \label{eq:EI2}
+%  \begin{split}
+%    &\underset{e \in E \backslash S}{\max} \, \E \left[ (b-f^*(S \cup \{e\}))^+ \right], \\
+%    &= \underset{e \in E \backslash S, f(e)<b}{\max} \, \E[(b-f(e)) \mathbbm{1}_{f^*(S)=\infty, y(e)=1}]+\E[(f^*(S)-f(e)) \mathbbm{1}_{y(e)=1, f(e)<f^*(S)<b}].
+%  \end{split}
+%\end{equation}
+%For $e \in E \backslash S, f(e)<b$,
+%\begin{equation}
+%    \E[(b-f(e)) \mathbbm{1}_{f^*(S)=\infty, y(e)=1}] = \mathbb{P}(y(e)=1, y(x)=0, \forall x \in S)(b-f(e)), 
+%  \label{eq:EI3}
+%\end{equation}
+%\begin{equation*}
+%  \begin{split}
+%    &\E[(f^*(S)-f(e)) \mathbbm{1}_{y(e)=1, f(e)<f^*(S)<b}], \\
+%    &=\E[\E[(f^*(S)-f(e)) \mathbbm{1}_{y(e)=1, f(e)<f^*(S)<b}]|f^*(S)=l], \\
+%    &= \sum_{l \in L, f(e)<l} \mathbb{P}(y(e)=1|f^*(S)=l)(l-f(e))\mathbb{P}(f^*(S)=l),\\
+%  \end{split}
+%\end{equation*}
+%where $L = \{f(x): x \in S\}$. If we rank elements in $S$ such that $f(x_i) \leq f(x_j), \forall i<j, x_i,x_j \in S$, we can write equation above as
+%\begin{equation}
+%  \sum_{i=1}^{|S|} \mathbb{P}(y(e)=1, y(x_i)=1, y(x_j)=0, \forall j<i, x_i,x_j \in S)(f(x_i)-f(e))^+.
+%  \label{eq:EI4}
+%\end{equation}
+%Substitute \eqref{eq:EI3} \eqref{eq:EI4} into \eqref{eq:EI2}, and note that $\mathbb{P}(y(e)=1, \mathcal{F}(x_1,\ldots,x_{|S|}) \propto \mathbb{P}(y(e)=1| \mathcal{F}(x_1,\ldots,x_{|S|})$ with known coefficient given $S$, we get \eqref{eq:EI1} in proposition 2. 
+%\end{proof}
 
 % Acknowledgments here
 % \acknowledgment{The authors gratefully acknowledge the existence of
 % the Journal of Irreproducible Results and the support of the Society
 % for the Preservation of Inane Research.}
-
 \bibliography{DataMiningPaper}
 \bibliographystyle{apalike}
 %%%%%%%%%%%%%%%%%
