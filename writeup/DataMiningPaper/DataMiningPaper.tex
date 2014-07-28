@@ -8,7 +8,7 @@
 % If you don't have these compilers, you can outcomment these two lines,
 % but it won't be in Times New Roman.
 \usepackage{fontspec}
-\setmainfont{Times New Roman}
+%\setmainfont{Times New Roman}
 
 \usepackage{sectsty} % to get the section headings to be smaller
 \usepackage{natbib}
@@ -93,12 +93,12 @@ we can use PPTase to attach a fluorescent ``tag'' or ``label'' to peptides that 
 
 
 % Commented out due to lack of space
-%\begin{figure}[hpt] 
-%\center
-%\includegraphics[width=\textwidth]{pic/labeling.png}
-%\caption{ Peptide labeling and unlabeling}
-%\label{fig:labeling}
-%\end{figure}
+\begin{figure}[hpt] 
+\center
+\includegraphics[width=\textwidth]{pic/labeling.png}
+\caption{ Peptide labeling and unlabeling}
+\label{fig:labeling}
+\end{figure}
 
 Finding such a peptide is challenging, because the number of peptides is large, and only a small fraction of them are substrates for both enzymes (i.e., are ``hits'').  A peptide is a string of amino acids, of which 20 occur in nature, so there are $20^n$ peptides of length $n$.  The typical length of the peptides under consideration is 15 amino acids long, and the number of peptides with length 15 is $20^{15} \approx 3.3 \times 10^{19}$.  Of these, we estimate that approximately $1$ in $10^4$ is a substrate. We can test peptides in batches of size approximately $300$, and each batch requires approximately one week of work, several thousand dollars in materials, and access to an expensive shared machine on which time can be reserved for a batch of experiments approximately once every two months. If we were to test peptides of length $15$ uniformly at random, then we would need to test $n = \log(1/2) / \log(1-10^{-4}) \approx 6931$ peptides to ensure a probability of $1/2$ of finding at least one hit, which would in turn require 23 batches of experiments, and roughly four years' time.
 
@@ -211,7 +211,7 @@ We also use leave-one-out cross validation to plot ROC curve and validate our mo
   \underset{e \in E \backslash S}{\mathrm{arg}\max} \,g(S \cup \{e\}),
 \end{equation}
 and incorporate it into $S$ until $|S|=K$ for some chosen K. This approach reduces the size of search space dramatically from $|E|^{|S|}$ down to $|E| \times |S|$, and we prove that if objective function $g$ is either $\PI$ or $\EI$, the proposed greedy algorithm is guaranteed to be near-optimal with a lower bound. Additionally, we show that under the statistical model described in section \ref{sec:stat model}, we can formulate \eqref{eq:greedy} as Mixed-Integer Nonlinear Programming
-(MINLP) and solve it efficiently using a off-the-shelf MINLP solver.
+(MINLP) and solve it efficiently using an off-the-shelf MINLP solver.
 
 \subsection{Performance guarantee for the greedy algorithm}
 In this subsection, we show that when the objective function $g$ in \eqref{eq:greedy} is either $\PI$ or $\EI$, the proposed greedy algorithm has performance guarantee. The result is stated in the following:
@@ -234,6 +234,8 @@ If $F(S)$ is submodular, nondecreasing and $F(\emptyset)=0$, the greedy heuristi
 From Lemma 2 and 3, we know that $\PI$ and $\EI$ are submodular, nondecreasing and their measure of the empty set is 0. From Lemma 1, we conclude that if the objective function $g$ in \eqref{eq:greedy} is $\PI$ or $\EI$, the greedy algorithm is guaranteed to achieve a factor of $(1-1/e)$ of the optimal value. \qedhere
 \end{proof}
 
+The proofs of Lemma 2 and 3 are available in the appendix.
+
 \subsection{Probability of Improvement}
 We first show in Proposition 1 that \eqref{eq:greedy} can be written into the form in which the objective function can be easily calculated using any statitical classifier. This is the general form of greedy algorithm for optimization over probability of improvement and can be used with any underlying statistical model. In addition, we show that, using the Naive Bayes classifier proposed in section \ref{sec:stat model}, we can further formulate \eqref{eq:greedy} as a MINLP, which can be solved efficiently using an off-the-shelf MINLP solver.
 \begin{proposition}
@@ -243,7 +245,7 @@ We first show in Proposition 1 that \eqref{eq:greedy} can be written into the fo
   \end{equation}
 \end{proposition}
 
-In our motivation application, using the Bayesian classification model described in section \ref{sec:stat model}, we can formulate \eqref{eq:PI3} as a MINLP. First we write equation \eqref{eq:model} as
+The proof is available in the appendix. In our motivating application, using the Bayesian classification model described in section \ref{sec:stat model}, we can formulate \eqref{eq:PI3} as a MINLP. First we write equation \eqref{eq:model} as
 \begin{equation} \label{model1}
 \Prob\left(Y(x) = 1 | \theta\right) =
 \frac{\prod_j \eta_j(x_j)}{\prod_j \eta_j(x_j) + \frac{\Prob(Y(x)=0)}{\Prob(Y(x)=1)}},
@@ -296,7 +298,7 @@ The formulation for expected improvement is similar to probability of improvemen
   and $c_i (i=0,\ldots,|S|)$ are known coefficients.
 \end{proposition}
 
-Note that each term in the summation of \eqref{eq:EI1} has a similar structure as \eqref{eq:PI3}. Let $S=\{p^1,\ldots,p^{|S|}\}$, we can write \eqref{eq:EI1} as a MINLP:
+The proof is availabel in the appendix. Note that each term in the summation of \eqref{eq:EI1} has a similar structure as \eqref{eq:PI3}. Let $S=\{p^1,\ldots,p^{|S|}\}$, we can write \eqref{eq:EI1} as a MINLP:
 \begin{equation} \label{eq:EI5}
 \begin{split}
 \max \quad &\Sigma_{i=0}^{|S|} c_i \frac{\prod_j \Sigma_k x_j(k) \eta_j^i(k)}{\prod_j \Sigma_k x_j(k) \eta_j^i(k) + \frac{\Prob(Y(x)=0)}{\Prob(Y(x)=1)}} (f_i-f(e))^+ \\
@@ -368,187 +370,187 @@ Given the preliminary data, we have performed two rounds of experiments using re
 \section{Conclusion}
 We proposed an optimal search algorithm based on greedy heuristic for solving the active learning problem motivated by finding short peptide substrates problem, and proved that the proposed algorithm guarantees to achieve at least a factor (1-1/e) of the optimal value. From benchmark results, we further showed that the proposed algorithm outperformed the other two heuristic search methods. In addition to theoretical results, we demonstrated effectiveness of our method in practice: so far we have performed two rounds of evaluations by doing experiments. The first round of experiments tested 258 peptides recommended by our algorithm, which is based on the statistical classifier trained using 36 preliminary data points, and the experiments took about 2 weeks to complete. As demonstrated in Figure \ref{fig:experiment}, we found 38 new peptide hits with shortest length 11. A month later, the second round of experiments tested 580 peptides and took another 2 weeks, in which we found 43 new hits and a peptide hit with length 10, which is shorter than the shortest previously known. 
 
-%\section*{Appendix A: Algorithms}
-%
-%\begin{Algorithm}(Probability of Improvement) \label{algo1}
-%\begin{algorithmic}[1]
-%\REQUIRE Inputs $\text{M, J, K}$, data set D and prior distribution of $\theta_y \sim \text{Dirichlet} (\boldsymbol \alpha_y), y \in \{1,0\}$
-%\STATE $S \leftarrow \emptyset $
-%\STATE Calculate posterior distribution of $\theta_1 \sim \text{Dirichlet} (\boldsymbol \alpha_1|\{x|x \in D,y(x)=1\})$.
-%\FOR{$m=1$ to $M$} 
-%\STATE COUNT $\leftarrow 0$
-%\STATE Calculate posterior distribution of $\theta_0 \sim \text{Dirichlet} (\boldsymbol \alpha_0|\{x|x \in D,y(x)=0\} \cup S)$.
-%\LOOP 
-%\STATE Sample $\theta_1$ from $\text{Dirichlet} (\boldsymbol \alpha_1|\{x|x \in D,y(x)=1\})$ and $\theta_0$ from $\text{Dirichlet} (\boldsymbol \alpha_0|\{x|x \in D,y(x)=0\} \cup S)$.
-%\STATE $\eta \leftarrow \frac{\theta_1}{\theta_0}$
-%\STATE Solve MINLP in equation \eqref{eq:PI5} to find $x$.
-%\STATE COUNT $\leftarrow$ COUNT $+ x$.
-%\ENDLOOP
-%\FOR {$j=1$ to $J$}
-%\STATE $e_j \leftarrow \underset{k \in \{1,\ldots,K\}}{\mathrm{arg}\max} \, \text{COUNT}_{kj}$
-%\ENDFOR
-%\STATE $S \leftarrow (S, e)$
-%\ENDFOR
-%\end{algorithmic}
-%\end{Algorithm}
-%
-%\begin{Algorithm}(Expected Improvement) \label{algo2}
-%\begin{algorithmic}[1]
-%\REQUIRE Inputs $\text{M, J, K}$, data set D and prior distribution of $\theta_y \sim \text{Dirichlet} (\boldsymbol \alpha_y), y \in \{1,0\}$
-%\STATE $S \leftarrow \emptyset $
-%\FOR{$m=1$ to $M$} 
-%\STATE COUNT $\leftarrow 0$
-%\IF{$S$ is not empty}
-%\STATE Sort elements in $S$ as $\{p^1,\ldots,p^{|S|}\}$ such that $f(p^i) \leq f(p^j), \forall i<j$.
-%\ENDIF
-%\STATE Calculate posterior distribution of $\theta_1^0 \sim \text{Dirichlet} (\boldsymbol \alpha_1|\{x|x \in D,y(x)=1\})$ and $\theta_0^0 \sim \text{Dirichlet} (\boldsymbol \alpha_0|\{x|x \in D,y(x)=0\} \cup S)$.
-%\FOR{$i=1$ to $|S|$}
-%\STATE Calculate posterior distribution of $\theta_1^i \sim \text{Dirichlet} (\boldsymbol \alpha_1|\{x|x \in D,y(x)=1\} \cup \{p^i\})$ and $\theta_0^i \sim \text{Dirichlet} (\boldsymbol \alpha_0|\{x|x \in D,y(x)=0\} \cup \{p^j|j<i\})$.
-%\ENDFOR
-%\LOOP 
-%\STATE Sample $\theta_1^{i=0:|S|}$ and $\theta_0^{i=0:|S|}$ from posterior distribution.
-%\STATE $\eta^{i=0:|S|} \leftarrow \frac{\theta_1^{i=0:|S|}}{\theta_0^{i=0:|S|}}$
-%\STATE Solve MINLP in equation \eqref{eq:EI5} to find $x$.
-%\STATE COUNT $\leftarrow$ COUNT $+ x$.
-%\ENDLOOP
-%\FOR {$j=1$ to $J$}
-%\STATE $e_j \leftarrow \underset{k \in \{1,\ldots,K\}}{\mathrm{arg}\max} \, \text{COUNT}_{kj}$
-%\ENDFOR
-%\STATE $S \leftarrow (S, e)$
-%\ENDFOR
-%\end{algorithmic}
-%\end{Algorithm}
-%
-%\section*{Appendix B: Mathematical Proofs}
-%\begin{proof}[\bf{Proof of Lemma 2.}]
-%First we show $\PI(\emptyset) = 0$.
-%\begin{equation*}
-%  \PI(\emptyset) = \mathbb{P}(f^*(\emptyset)<b) = \mathbb{P}(\infty<b)=0.
-%\end{equation*}
-%
-%To show $\PI(S)$ is nondecreasing, let $A \subseteq B \subseteq E$ where $E$ is a finite set, then
-%\begin{equation*}
-%\begin{split}
-%\PI(B) &= \mathbb{P}(f^*(B)<b) \\
-%       &= \mathbb{P}(f^*(B)<b |f^*(A) \geq b) \mathbb{P}(f^*(A) \geq b) + \mathbb{P}(f^*(B)<b |f^*(A)<b) \mathbb{P}(f^*(A)<b) \\
-%       &= \mathbb{P}(f^*(B)<b |f^*(A) \geq b) \mathbb{P}(f^*(A) \geq b) + \mathbb{P}(f^*(A)<b) \\
-%       &\geq \mathbb{P}(f^*(A)<b) \\
-%       &= \PI(A)
-%\end{split}
-%\end{equation*}
-%
-%Lastly, we want to show $\PI(S)$ is submodular. For $e \in E\backslash B$,
-%\begin{equation*}
-%\begin{split}
-%&\PI(A \cup \{e\}) - \PI(A) \\
-%&= \mathbb{P}(f^*(A \cup \{e\})<b)-\mathbb{P}(f^*(A)<b)\\
-%&= \mathbb{P}(f^*(A \cup \{e\})<b|f^*(A)<b)\mathbb{P}(f^*(A)<b) + \mathbb{P}(f^*(A \cup \{e\})<b|f^*(A)\geq b)\mathbb{P}(f^*(A)\geq b) -\mathbb{P}(f^*(A)<b) \\
-%&=\mathbb{P}(f^*(A)<b) + \mathbb{P}(f^*(A \cup \{e\})<b|f^*(A)\geq b)\mathbb{P}(f^*(A)\geq b) -\mathbb{P}(f^*(A)<b)\\
-%&= \mathbb{P}(f^*(A \cup \{e\})<b|f^*(A)\geq b)\mathbb{P}(f^*(A)\geq b) \\
-%&= \mathbb{P}(f(e)<b, y(e)=1|f^*(A)\geq b)\mathbb{P}(f^*(A)\geq b) \\
-%&= \mathbb{P}(f(e)<b, y(e)=1,f^*(A)\geq b)
-%\end{split}
-%\end{equation*}
-%Using similar argument,
-%\begin{equation*}
-%\begin{split}
-%&\PI(B \cup \{e\}) - \PI(B) \\
-%&= \mathbb{P}(f(e)<b, y(e)=1,f^*(B)\geq b) \\
-%&= \mathbb{P}(f(e)<b, y(e)=1,f^*(A)\geq b, f^*(B\backslash A) \geq b )
-%\end{split}
-%\end{equation*}
-%Therefore, $\PI(A \cup \{e\}) - \PI(A) \geq \PI(B \cup \{e\}) - \PI(B)$, thus $\PI(S)$ is submodular. \qedhere
-%\end{proof}
-%
-%
-%\begin{proof}[\bf{Proof of Lemma 3.}]
-%First we show $\EI(\emptyset) = 0$.
-%\begin{equation*}
-%  \EI(\emptyset) = \E[(b-f^*(\emptyset))^+] = \E[0] = 0.
-%\end{equation*}
-%
-%To show $\EI(S)$ is nondecreasing, let $A \subseteq B \subseteq E$ where $E$ is a finite set. Since $f^*(B) \leq f^*(A)$, $b-f^*(B) \geq b-f^*(A)$, and $(b-f^*(B))^+ \geq (b-f^*(A))^+$, therefore, $\E[(b-f^*(B))^+] \geq \E[(b-f^*(A))^+]$.
-%
-%Lastly, we want to show $\PI(S)$ is submodular. For $e \in E\backslash B$, consider $\E[(b-f^*(A \cup \{e\}))^+]-\E[(b-f^*(A))^+]$. We can write
-%\begin{equation*}
-%(b-f^*(A \cup \{e\}))^+ = \begin{dcases}
-%                         (b-f^*(A))^+ & \text{if $y(e)=0$} \\
-%                         (b-\min\{f(e),f^*(A)\})^+ & \text{if $y(e)=1$}
-%                         \end{dcases}
-%\end{equation*}
-%Then 
-%\begin{align*}
-%&\E[(b-f^*(A \cup \{e\}))^+]-\E[(b-f^*(A))^+] \\
-%&= \mathbb{P}(y(e)=1) \E[(b-\min\{f(e),f^*(A)\})^+ -(b-f^*(A))^+|y(e)=1]\\
-%&= \mathbb{P}(y(e)=1) \mathbb{P}(f(e)<f^*(A)|y(e)=1) \E[(b-e)^+-(b-f^*(A))^+|y(e)=1, f(e)<f^*(A)]\\
-%&= \E[ \mathbbm{1}_{y(e)=1, f(e)<f^*(A)} ((b-e)^+-(b-f^*(A))^+)]
-%\end{align*}
-%Since $f^*(A) \geq f^*(B)$, $\mathbbm{1}_{y(e)=1, f(e)<f^*(A)} ((b-e)^+-(b-f^*(A))^+)) \geq \mathbbm{1}_{y(e)=1, f(e)<f^*(B)} ((b-e)^+-(b-f^*(B))^+))$, thus
-%\begin{equation*}
-%\EI(A\cup \{e\})-\EI(A) \geq \EI(B\cup \{e\})-\EI(B)
-%\end{equation*}
-%$\EI(S)$ is submodular. 
-%\end{proof}
-%
-%\begin{proof}[\bf{Proof of proposition 1.}]
-%  \begin{equation*}
-%    \begin{split}
-%      &\PI(S \cup \{e\}) = \mathbb{P}(f^*(S\cup \{e\})<b)\\
-%      &= \mathbb{P}(f^*(S)<b) + \mathbb{P}(f^*(S)\geq b) \mathbb{P}(f(e)<b, y(e)=1|f^*(S)\geq b),
-%    \end{split}
-%  \end{equation*}
-%  so \eqref{eq:greedy} becomes
-%  \begin{equation} \label{eq:PI1} 
-%    \underset{e \in E \backslash S}{\max} \, \PI(S \cup \{e\}) = \underset{e \in E \backslash S}{\max} \, \mathbb{P}(f(e)<b, y(e)=1|f^*(S)\geq b).
-%  \end{equation}
-%  Note that when $f(e) \geq b$, $\mathbb{P}(f(e)<b, y(e)=1|f^*(S)\geq b)=0$, thus our algorithm will always propose $e$ such that $f(e)<b$. Therefore, it is reasonable to assume that $f(x)<b$ for $\forall x \in S$, and $f^*(S)\geq b$ is equivalent to $y(x)=0$ for $\forall x \in S$. Now we can write \eqref{eq:PI1} as 
-%  \begin{equation*}
-%    \underset{e \in E \backslash S, f(e) < b}{\max} \, \mathbb{P} (y(e) = 1 \mid y(x) = 0, \forall x \in S). 
-%  \end{equation*}
-%\end{proof}
-%
-%\begin{proof}[\bf{Proof of proposition 2.}]
-%Since choosing $e$ such that $f(e) \geq b$ has no contribution to the objective function, by using similar argument as dealing with probability of improvement, we argue that $f(x)<b$ for $\forall x \in S$. Thus
-%\begin{equation*}
-%f^*(S)  \begin{dcases}
-%         =\infty & \text{if $y(x)=0$ for $\forall x \in S$},\\
-%         < b & \text{else}.
-% \end{dcases}
-%\end{equation*}
-%Now objective function we want to maximize becomes
-%\begin{equation*}
-%  \begin{split}
-%    &\E \left[ (b-f^*(S \cup \{e\}))^+ \right] \\
-%    &= \E[(b-f(e))^+ \mathbbm{1}_{f^*(S)=\infty, y(e)=1}]+ \E[ (b-f^*(S \cup \{e\}))^+ \mathbbm{1}_{f^*(S)<b}] \\
-%    &= \E[(b-f(e))^+ \mathbbm{1}_{f^*(S)=\infty, y(e)=1}]+ \E[ (b-f^*(S)) \mathbbm{1}_{f^*(S)<b}] + \E[(f^*(S)-f(e)) \mathbbm{1}_{y(e)=1, f(e)<f^*(S)<b}].
-%  \end{split}
-%\end{equation*}
-%so
-%\begin{equation} \label{eq:EI2}
-%  \begin{split}
-%    &\underset{e \in E \backslash S}{\max} \, \E \left[ (b-f^*(S \cup \{e\}))^+ \right], \\
-%    &= \underset{e \in E \backslash S, f(e)<b}{\max} \, \E[(b-f(e)) \mathbbm{1}_{f^*(S)=\infty, y(e)=1}]+\E[(f^*(S)-f(e)) \mathbbm{1}_{y(e)=1, f(e)<f^*(S)<b}].
-%  \end{split}
-%\end{equation}
-%For $e \in E \backslash S, f(e)<b$,
-%\begin{equation}
-%    \E[(b-f(e)) \mathbbm{1}_{f^*(S)=\infty, y(e)=1}] = \mathbb{P}(y(e)=1, y(x)=0, \forall x \in S)(b-f(e)), 
-%  \label{eq:EI3}
-%\end{equation}
-%\begin{equation*}
-%  \begin{split}
-%    &\E[(f^*(S)-f(e)) \mathbbm{1}_{y(e)=1, f(e)<f^*(S)<b}], \\
-%    &=\E[\E[(f^*(S)-f(e)) \mathbbm{1}_{y(e)=1, f(e)<f^*(S)<b}]|f^*(S)=l], \\
-%    &= \sum_{l \in L, f(e)<l} \mathbb{P}(y(e)=1|f^*(S)=l)(l-f(e))\mathbb{P}(f^*(S)=l),\\
-%  \end{split}
-%\end{equation*}
-%where $L = \{f(x): x \in S\}$. If we rank elements in $S$ such that $f(x_i) \leq f(x_j), \forall i<j, x_i,x_j \in S$, we can write equation above as
-%\begin{equation}
-%  \sum_{i=1}^{|S|} \mathbb{P}(y(e)=1, y(x_i)=1, y(x_j)=0, \forall j<i, x_i,x_j \in S)(f(x_i)-f(e))^+.
-%  \label{eq:EI4}
-%\end{equation}
-%Substitute \eqref{eq:EI3} \eqref{eq:EI4} into \eqref{eq:EI2}, and note that $\mathbb{P}(y(e)=1, \mathcal{F}(x_1,\ldots,x_{|S|}) \propto \mathbb{P}(y(e)=1| \mathcal{F}(x_1,\ldots,x_{|S|})$ with known coefficient given $S$, we get \eqref{eq:EI1} in proposition 2. 
-%\end{proof}
+\section*{Appendix A: Algorithms}
+
+\begin{Algorithm}(Probability of Improvement) \label{algo1}
+\begin{algorithmic}[1]
+\REQUIRE Inputs $\text{M, J, K}$, data set D and prior distribution of $\theta_y \sim \text{Dirichlet} (\boldsymbol \alpha_y), y \in \{1,0\}$
+\STATE $S \leftarrow \emptyset $
+\STATE Calculate posterior distribution of $\theta_1 \sim \text{Dirichlet} (\boldsymbol \alpha_1|\{x|x \in D,y(x)=1\})$.
+\FOR{$m=1$ to $M$} 
+\STATE COUNT $\leftarrow 0$
+\STATE Calculate posterior distribution of $\theta_0 \sim \text{Dirichlet} (\boldsymbol \alpha_0|\{x|x \in D,y(x)=0\} \cup S)$.
+\LOOP 
+\STATE Sample $\theta_1$ from $\text{Dirichlet} (\boldsymbol \alpha_1|\{x|x \in D,y(x)=1\})$ and $\theta_0$ from $\text{Dirichlet} (\boldsymbol \alpha_0|\{x|x \in D,y(x)=0\} \cup S)$.
+\STATE $\eta \leftarrow \frac{\theta_1}{\theta_0}$
+\STATE Solve MINLP in equation \eqref{eq:PI5} to find $x$.
+\STATE COUNT $\leftarrow$ COUNT $+ x$.
+\ENDLOOP
+\FOR {$j=1$ to $J$}
+\STATE $e_j \leftarrow \underset{k \in \{1,\ldots,K\}}{\mathrm{arg}\max} \, \text{COUNT}_{kj}$
+\ENDFOR
+\STATE $S \leftarrow (S, e)$
+\ENDFOR
+\end{algorithmic}
+\end{Algorithm}
+
+\begin{Algorithm}(Expected Improvement) \label{algo2}
+\begin{algorithmic}[1]
+\REQUIRE Inputs $\text{M, J, K}$, data set D and prior distribution of $\theta_y \sim \text{Dirichlet} (\boldsymbol \alpha_y), y \in \{1,0\}$
+\STATE $S \leftarrow \emptyset $
+\FOR{$m=1$ to $M$} 
+\STATE COUNT $\leftarrow 0$
+\IF{$S$ is not empty}
+\STATE Sort elements in $S$ as $\{p^1,\ldots,p^{|S|}\}$ such that $f(p^i) \leq f(p^j), \forall i<j$.
+\ENDIF
+\STATE Calculate posterior distribution of $\theta_1^0 \sim \text{Dirichlet} (\boldsymbol \alpha_1|\{x|x \in D,y(x)=1\})$ and $\theta_0^0 \sim \text{Dirichlet} (\boldsymbol \alpha_0|\{x|x \in D,y(x)=0\} \cup S)$.
+\FOR{$i=1$ to $|S|$}
+\STATE Calculate posterior distribution of $\theta_1^i \sim \text{Dirichlet} (\boldsymbol \alpha_1|\{x|x \in D,y(x)=1\} \cup \{p^i\})$ and $\theta_0^i \sim \text{Dirichlet} (\boldsymbol \alpha_0|\{x|x \in D,y(x)=0\} \cup \{p^j|j<i\})$.
+\ENDFOR
+\LOOP 
+\STATE Sample $\theta_1^{i=0:|S|}$ and $\theta_0^{i=0:|S|}$ from posterior distribution.
+\STATE $\eta^{i=0:|S|} \leftarrow \frac{\theta_1^{i=0:|S|}}{\theta_0^{i=0:|S|}}$
+\STATE Solve MINLP in equation \eqref{eq:EI5} to find $x$.
+\STATE COUNT $\leftarrow$ COUNT $+ x$.
+\ENDLOOP
+\FOR {$j=1$ to $J$}
+\STATE $e_j \leftarrow \underset{k \in \{1,\ldots,K\}}{\mathrm{arg}\max} \, \text{COUNT}_{kj}$
+\ENDFOR
+\STATE $S \leftarrow (S, e)$
+\ENDFOR
+\end{algorithmic}
+\end{Algorithm}
+
+\section*{Appendix B: Mathematical Proofs}
+\begin{proof}[\bf{Proof of Lemma 2.}]
+First we show $\PI(\emptyset) = 0$.
+\begin{equation*}
+  \PI(\emptyset) = \mathbb{P}(f^*(\emptyset)<b) = \mathbb{P}(\infty<b)=0.
+\end{equation*}
+
+To show $\PI(S)$ is nondecreasing, let $A \subseteq B \subseteq E$ where $E$ is a finite set, then
+\begin{equation*}
+\begin{split}
+\PI(B) &= \mathbb{P}(f^*(B)<b) \\
+       &= \mathbb{P}(f^*(B)<b |f^*(A) \geq b) \mathbb{P}(f^*(A) \geq b) + \mathbb{P}(f^*(B)<b |f^*(A)<b) \mathbb{P}(f^*(A)<b) \\
+       &= \mathbb{P}(f^*(B)<b |f^*(A) \geq b) \mathbb{P}(f^*(A) \geq b) + \mathbb{P}(f^*(A)<b) \\
+       &\geq \mathbb{P}(f^*(A)<b) \\
+       &= \PI(A)
+\end{split}
+\end{equation*}
+
+Lastly, we want to show $\PI(S)$ is submodular. For $e \in E\backslash B$,
+\begin{equation*}
+\begin{split}
+&\PI(A \cup \{e\}) - \PI(A) \\
+&= \mathbb{P}(f^*(A \cup \{e\})<b)-\mathbb{P}(f^*(A)<b)\\
+&= \mathbb{P}(f^*(A \cup \{e\})<b|f^*(A)<b)\mathbb{P}(f^*(A)<b) + \mathbb{P}(f^*(A \cup \{e\})<b|f^*(A)\geq b)\mathbb{P}(f^*(A)\geq b) -\mathbb{P}(f^*(A)<b) \\
+&=\mathbb{P}(f^*(A)<b) + \mathbb{P}(f^*(A \cup \{e\})<b|f^*(A)\geq b)\mathbb{P}(f^*(A)\geq b) -\mathbb{P}(f^*(A)<b)\\
+&= \mathbb{P}(f^*(A \cup \{e\})<b|f^*(A)\geq b)\mathbb{P}(f^*(A)\geq b) \\
+&= \mathbb{P}(f(e)<b, y(e)=1|f^*(A)\geq b)\mathbb{P}(f^*(A)\geq b) \\
+&= \mathbb{P}(f(e)<b, y(e)=1,f^*(A)\geq b)
+\end{split}
+\end{equation*}
+Using similar argument,
+\begin{equation*}
+\begin{split}
+&\PI(B \cup \{e\}) - \PI(B) \\
+&= \mathbb{P}(f(e)<b, y(e)=1,f^*(B)\geq b) \\
+&= \mathbb{P}(f(e)<b, y(e)=1,f^*(A)\geq b, f^*(B\backslash A) \geq b )
+\end{split}
+\end{equation*}
+Therefore, $\PI(A \cup \{e\}) - \PI(A) \geq \PI(B \cup \{e\}) - \PI(B)$, thus $\PI(S)$ is submodular. \qedhere
+\end{proof}
+
+
+\begin{proof}[\bf{Proof of Lemma 3.}]
+First we show $\EI(\emptyset) = 0$.
+\begin{equation*}
+  \EI(\emptyset) = \E[(b-f^*(\emptyset))^+] = \E[0] = 0.
+\end{equation*}
+
+To show $\EI(S)$ is nondecreasing, let $A \subseteq B \subseteq E$ where $E$ is a finite set. Since $f^*(B) \leq f^*(A)$, $b-f^*(B) \geq b-f^*(A)$, and $(b-f^*(B))^+ \geq (b-f^*(A))^+$, therefore, $\E[(b-f^*(B))^+] \geq \E[(b-f^*(A))^+]$.
+
+Lastly, we want to show $\PI(S)$ is submodular. For $e \in E\backslash B$, consider $\E[(b-f^*(A \cup \{e\}))^+]-\E[(b-f^*(A))^+]$. We can write
+\begin{equation*}
+(b-f^*(A \cup \{e\}))^+ = \begin{dcases}
+                         (b-f^*(A))^+ & \text{if $y(e)=0$} \\
+                         (b-\min\{f(e),f^*(A)\})^+ & \text{if $y(e)=1$}
+                         \end{dcases}
+\end{equation*}
+Then 
+\begin{align*}
+&\E[(b-f^*(A \cup \{e\}))^+]-\E[(b-f^*(A))^+] \\
+&= \mathbb{P}(y(e)=1) \E[(b-\min\{f(e),f^*(A)\})^+ -(b-f^*(A))^+|y(e)=1]\\
+&= \mathbb{P}(y(e)=1) \mathbb{P}(f(e)<f^*(A)|y(e)=1) \E[(b-e)^+-(b-f^*(A))^+|y(e)=1, f(e)<f^*(A)]\\
+&= \E[ \mathbbm{1}_{y(e)=1, f(e)<f^*(A)} ((b-e)^+-(b-f^*(A))^+)]
+\end{align*}
+Since $f^*(A) \geq f^*(B)$, $\mathbbm{1}_{y(e)=1, f(e)<f^*(A)} ((b-e)^+-(b-f^*(A))^+)) \geq \mathbbm{1}_{y(e)=1, f(e)<f^*(B)} ((b-e)^+-(b-f^*(B))^+))$, thus
+\begin{equation*}
+\EI(A\cup \{e\})-\EI(A) \geq \EI(B\cup \{e\})-\EI(B)
+\end{equation*}
+$\EI(S)$ is submodular. 
+\end{proof}
+
+\begin{proof}[\bf{Proof of proposition 1.}]
+  \begin{equation*}
+    \begin{split}
+      &\PI(S \cup \{e\}) = \mathbb{P}(f^*(S\cup \{e\})<b)\\
+      &= \mathbb{P}(f^*(S)<b) + \mathbb{P}(f^*(S)\geq b) \mathbb{P}(f(e)<b, y(e)=1|f^*(S)\geq b),
+    \end{split}
+  \end{equation*}
+  so \eqref{eq:greedy} becomes
+  \begin{equation} \label{eq:PI1} 
+    \underset{e \in E \backslash S}{\max} \, \PI(S \cup \{e\}) = \underset{e \in E \backslash S}{\max} \, \mathbb{P}(f(e)<b, y(e)=1|f^*(S)\geq b).
+  \end{equation}
+  Note that when $f(e) \geq b$, $\mathbb{P}(f(e)<b, y(e)=1|f^*(S)\geq b)=0$, thus our algorithm will always propose $e$ such that $f(e)<b$. Therefore, it is reasonable to assume that $f(x)<b$ for $\forall x \in S$, and $f^*(S)\geq b$ is equivalent to $y(x)=0$ for $\forall x \in S$. Now we can write \eqref{eq:PI1} as 
+  \begin{equation*}
+    \underset{e \in E \backslash S, f(e) < b}{\max} \, \mathbb{P} (y(e) = 1 \mid y(x) = 0, \forall x \in S). 
+  \end{equation*}
+\end{proof}
+
+\begin{proof}[\bf{Proof of proposition 2.}]
+Since choosing $e$ such that $f(e) \geq b$ has no contribution to the objective function, by using similar argument as dealing with probability of improvement, we argue that $f(x)<b$ for $\forall x \in S$. Thus
+\begin{equation*}
+f^*(S)  \begin{dcases}
+         =\infty & \text{if $y(x)=0$ for $\forall x \in S$},\\
+         < b & \text{else}.
+ \end{dcases}
+\end{equation*}
+Now objective function we want to maximize becomes
+\begin{equation*}
+  \begin{split}
+    &\E \left[ (b-f^*(S \cup \{e\}))^+ \right] \\
+    &= \E[(b-f(e))^+ \mathbbm{1}_{f^*(S)=\infty, y(e)=1}]+ \E[ (b-f^*(S \cup \{e\}))^+ \mathbbm{1}_{f^*(S)<b}] \\
+    &= \E[(b-f(e))^+ \mathbbm{1}_{f^*(S)=\infty, y(e)=1}]+ \E[ (b-f^*(S)) \mathbbm{1}_{f^*(S)<b}] + \E[(f^*(S)-f(e)) \mathbbm{1}_{y(e)=1, f(e)<f^*(S)<b}].
+  \end{split}
+\end{equation*}
+so
+\begin{equation} \label{eq:EI2}
+  \begin{split}
+    &\underset{e \in E \backslash S}{\max} \, \E \left[ (b-f^*(S \cup \{e\}))^+ \right], \\
+    &= \underset{e \in E \backslash S, f(e)<b}{\max} \, \E[(b-f(e)) \mathbbm{1}_{f^*(S)=\infty, y(e)=1}]+\E[(f^*(S)-f(e)) \mathbbm{1}_{y(e)=1, f(e)<f^*(S)<b}].
+  \end{split}
+\end{equation}
+For $e \in E \backslash S, f(e)<b$,
+\begin{equation}
+    \E[(b-f(e)) \mathbbm{1}_{f^*(S)=\infty, y(e)=1}] = \mathbb{P}(y(e)=1, y(x)=0, \forall x \in S)(b-f(e)), 
+  \label{eq:EI3}
+\end{equation}
+\begin{equation*}
+  \begin{split}
+    &\E[(f^*(S)-f(e)) \mathbbm{1}_{y(e)=1, f(e)<f^*(S)<b}], \\
+    &=\E[\E[(f^*(S)-f(e)) \mathbbm{1}_{y(e)=1, f(e)<f^*(S)<b}]|f^*(S)=l], \\
+    &= \sum_{l \in L, f(e)<l} \mathbb{P}(y(e)=1|f^*(S)=l)(l-f(e))\mathbb{P}(f^*(S)=l),\\
+  \end{split}
+\end{equation*}
+where $L = \{f(x): x \in S\}$. If we rank elements in $S$ such that $f(x_i) \leq f(x_j), \forall i<j, x_i,x_j \in S$, we can write equation above as
+\begin{equation}
+  \sum_{i=1}^{|S|} \mathbb{P}(y(e)=1, y(x_i)=1, y(x_j)=0, \forall j<i, x_i,x_j \in S)(f(x_i)-f(e))^+.
+  \label{eq:EI4}
+\end{equation}
+Substitute \eqref{eq:EI3} \eqref{eq:EI4} into \eqref{eq:EI2}, and note that $\mathbb{P}(y(e)=1, \mathcal{F}(x_1,\ldots,x_{|S|}) \propto \mathbb{P}(y(e)=1| \mathcal{F}(x_1,\ldots,x_{|S|})$ with known coefficient given $S$, we get \eqref{eq:EI1} in proposition 2. 
+\end{proof}
 
 % Acknowledgments here
 % \acknowledgment{The authors gratefully acknowledge the existence of
