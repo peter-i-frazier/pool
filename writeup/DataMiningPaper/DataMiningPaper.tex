@@ -32,6 +32,7 @@
 \newtheorem{theorem}{Theorem}
 \newtheorem{lemma}{Lemma}
 \newtheorem{proposition}{Proposition}
+\newtheorem{remark}{Remark}
 
 \begin{document}
 
@@ -85,14 +86,13 @@ While our method was developed for this specific application in biochemistry, it
 
 \section{Introduction}
 
-In this paper, we use machine learning to address a specific instance of a problem common in medicine, materials science, chemistry, and other physical sciences.  In this class of problems, we wish to find a molecule with a particular biological or chemical property. While we have historical data on related molecules or related properties that can support predictive modeling, the only way that we can determine with certainty whether a particular molecule has the property of interest (in colloquial language, ``is a hit'') is to synthesize and test it in a time-consuming laboratory experiment. Success is hampered by the enormous search space, and the limits imposed by experimental cost on the number of molecules that can be tested.  Within this context, we wish to use mathematical methods to recommend which experiments to perform, so as to reliably find a hit within a given experimental budget. Common examples include drug discovery, in which we wish to find a molecule that can be effective in treating a particular disease, and materials discovery, in which we wish to find a molecule that has a particular material property.
+In this paper, we use machine learning to address a specific instance of a problem common in medicine, materials science, chemistry, and other physical sciences.  In this class of problems, we wish to find a molecule with a particular biological or chemical property. While we have historical data on related molecules or related properties that can support predictive modeling, the only way that we can determine with certainty whether a particular molecule has the property of interest (in colloquial language, ``is a hit'') is to synthesize and test it in a time-consuming laboratory experiment. Success is hampered by the enormous search space, and the limits imposed by experimental cost on the number of molecules that can be tested.  Within this context, we wish to use mathematical methods to recommend which experiments to perform, so as to reliably find a hit within a given experimental budget. Common examples include drug discovery, in which we wish to find a molecule that can be effective in treating a particular disease \citep{Negoescu2010}, and materials discovery \citep{material1, material2}, in which we wish to find a molecule that has a particular physical or chemical property.
 
 The instance of this problem that we consider in detail in this paper comes from biochemistry: we wish to find a peptide that is (1) as short as possible; and (2) is a substrate for two protein-modifying enzymes, phosphopantetheinyltransferase (PPTase) and ACP hydrolase (AcpH). These protein-modifying enzymes can be used to attach and detach arbitrary molecules to their substrates.  In particular, 
-% as shown in Figure \ref{fig:labeling}, 
-we can use PPTase to attach a fluorescent ``tag'' or ``label'' to peptides that we would discover that are substrates for both enzymes, allowing us to track the peptide, starting from a time of our choosing.  We can then use AcpH to remove the fluorescent tag at a time of our choosing.  If this peptide were short, then it could be inserted into a protein or peptide-based catalytic complex of our choosing without disrupting its activity, allowing monitoring of biological and catalytic systems.  This monitoring tool would have a number of applications in medicine, biology, and materials science \citep{nick}.
+ as shown in Figure \ref{fig:labeling}, 
+we can use PPTase to attach a fluorescent ``tag'' or ``label'' to peptides that we would discover that are substrates for both enzymes, allowing us to track the peptide, starting from a time of our choosing.  We can then use AcpH to remove the fluorescent tag at a time of our choosing, and this reversible process is shown in Figure \ref{fig:reversible}.  If this peptide were short, then it could be inserted into a protein or peptide-based catalytic complex of our choosing without disrupting its activity, allowing monitoring of biological and catalytic systems.  This monitoring tool would have a number of applications in medicine, biology, and materials science \citep{nick}.
 
 
-% Commented out due to lack of space
 \begin{figure}[hpt] 
 \center
 \includegraphics[width=\textwidth]{pic/labeling.png}
@@ -100,6 +100,12 @@ we can use PPTase to attach a fluorescent ``tag'' or ``label'' to peptides that 
 \label{fig:labeling}
 \end{figure}
 
+\begin{figure}[hpt] 
+\center
+\includegraphics[width=\textwidth]{pic/reversible_peptide.png}
+\caption{ Illustration of the reversible process}
+\label{fig:reversible}
+\end{figure}
 Finding such a peptide is challenging, because the number of peptides is large, and only a small fraction of them are substrates for both enzymes (i.e., are ``hits'').  A peptide is a string of amino acids, of which 20 occur in nature, so there are $20^n$ peptides of length $n$.  The typical length of the peptides under consideration is 15 amino acids long, and the number of peptides with length 15 is $20^{15} \approx 3.3 \times 10^{19}$.  Of these, we estimate that approximately $1$ in $10^4$ is a substrate. We can test peptides in batches of size approximately $300$, and each batch requires approximately one week of work, several thousand dollars in materials, and access to an expensive shared machine on which time can be reserved for a batch of experiments approximately once every two months. If we were to test peptides of length $15$ uniformly at random, then we would need to test $n = \log(1/2) / \log(1-10^{-4}) \approx 6931$ peptides to ensure a probability of $1/2$ of finding at least one hit, which would in turn require 23 batches of experiments, and roughly four years' time.
 
 % Prob(at least one hit in n)
@@ -116,16 +122,18 @@ Finding such a peptide is challenging, because the number of peptides is large, 
 
 % If we want to talk more about existing techniques, we could also describe phage display.
 
-To address this challenge, we formulate this problem as a Bayesian active learning problem.  We first develop a Bayesian classification method, which combines Naive Bayes, a prior distribution encoding knowledge from domain experts, and training data from naturally occurring and longer peptide substrates, to predict whether a short peptide is a hit. We then use the joint probability distributed over unobserved labels (``hit'' or ``miss'') of all peptides created by this classification method within a combinatorial optimization framework to find a {\it set} of peptides to test that, when taken together, are most likely to produce a hit.  We provide a theoretical performance guarantee on the quality of the resulting set of peptides to test, and using simulation, we show that this combination of prediction and optimization provides robust results that are better than a more naive use of the predictive model that considers only marginal probabilities, and a benchmark method of truncating and mutating known hits at random. We then describe laboratory results in which this method was used to discover peptide substrates that are shorter than the shortest previously known: the ybbR sequence \citep{ybbr}.
+To address this challenge, we formulate this problem as a Bayesian active learning problem.  We first develop a Bayesian classification method, which combines Naive Bayes \citep{NB}, a prior distribution encoding knowledge from domain experts, and training data from naturally occurring and longer peptide substrates, to predict whether a short peptide is a hit. We then use the joint probability distributed over unobserved labels (``hit'' or ``miss'') of all peptides created by this classification method within a combinatorial optimization framework to find a {\it set} of peptides to test that, when taken together, are most likely to produce a hit.  We provide a theoretical performance guarantee on the quality of the resulting set of peptides to test, and using simulation, we show that this combination of prediction and optimization provides robust results that are better than a more naive use of the predictive model that considers only marginal probabilities, and a benchmark method of truncating and mutating known hits at random. We then describe laboratory results in which this method was used to discover peptide substrates that are shorter than the shortest previously known: the ybbR sequence \citep{ybbr}.
 
 
 % The accuracy of this classification model is, however, too low to simply take the single peptide most likely to be a hit, or even the top 300 most likely to be a hit, and have it provide reliable results. We then use combinatorial optimization to post-process the output of this classification method to find a set of peptides to test that, when taken together, are most likely to produce a hit.  We show that this method provides robust results that are better than more naive use of the predictive model
 
 While the methods we develop were designed to address a particular problem arising in biochemistry, the formal model we propose is general, and can be used whenever we have a large collection of exemplars with expensive-to-obtain labels, and we wish to choose exemplars to evaluate so as to find one with both a positive label and a small secondary cost objective, within a limited budget.
 
-This paper builds on a number of recently developed methods for optimal search, all of which aim to effectively collect information so as to make the best decisions under uncertainty. In this setting, they need to trade off the reward by sampling (i.e. exploitation) and the cost by acquiring this information (i.e. exploration). For example, in drug discovery, people search for a chemical derivative of the base molecule that best treats disease. To achieve this goal, they choose molecules to test to maximize the expected quality of the
-best compound discovered \citep{Negoescu2010}. Since the budget for testing is limited, they need to test the most informative and high quality molecules. To address this problem, Jones \& Schonlau proposed Expected Improvement algorithm to sample points sequentially \citep{Jones1998}. Ginsbourger used constant liar heuristic to extend Expected Improvement algorithm to parallel setting \citep{Ginsbourger2008}. There are quite a few papers about parallel sampling in active learning research
-community \citep{Chen2013, Hoi2006, Hoi2006a} , but they only aim to maximize information gain (i.e. pure exploration).
+This paper builds on a number of recently developed methods for optimal search, all of which aim to effectively collect information so as to make the best decisions under uncertainty. In this setting, they need to trade off the reward by sampling (i.e. exploitation) and the cost by acquiring this information (i.e. exploration). There are a number of methods in the similar setting proposed in the active learning research community in the past a few years. For example, in document recommendation system, a new model quality measure that quantatively manage trade-off between expoitation and exploration \citep{filter} was proposed. In information retrevial, there are a few papers about batch mode (parallel sampling) active learning in various contexts \citep{Chen2013, Hoi2006, Hoi2006a}, although they only aim to maximize information gain (i.e. pure exploration).
+
+%For example, in drug discovery, people search for a chemical derivative of the base molecule that best treats disease. To achieve this goal, they choose molecules to test to maximize the expected quality of the
+%best compound discovered \citep{Negoescu2010}. Since the budget for testing is limited, they need to test the most informative and high quality molecules. To address this problem, there are a number of methods have been proposed by other research groups: in active learning research community, Golovin, Krause \& Ray Jones \& Schonlau proposed Expected Improvement algorithm to sample points sequentially \citep{Jones1998}. Ginsbourger used constant liar heuristic to extend Expected Improvement algorithm to parallel setting \citep{Ginsbourger2008}. There are quite a few papers about parallel sampling in active learning research
+%community \citep{Chen2013, Hoi2006, Hoi2006a} , but they only aim to maximize information gain (i.e. pure exploration).
 
 In section 2, we provide a formal model of our problem.  In section 3, we state the Bayesian classification model used for the problem. In section 4, we provide the formulation of the proposed optimization algorithm, prove its performance guarantee, and summarize the algorithm in pseudo code. In section 5, we use available real data to validate our statistical model, compare the performance of our proposed optimization method against
 other methods, and show progress of this biochemical application using our method.
@@ -206,12 +214,12 @@ Since our training data is expensive and highly skewed, we use the leave-one-out
 We also use leave-one-out cross validation to plot ROC curve and validate our model. Currently we have three sets of data: data set \#0 is the preliminary data obtained from biochemistry literature and has 36 data points; data set \#1 contains 258 data points evaluated in the first round of experiments using our algorithm; data set \#2 has 580 data points evaluated in the second round of experiments. In Figure \ref{fig:ROC}, we compare the performance of our model using different combinations of data sets, and observe that ROC curve to the left is better than the one to the right. We think that this is because data set \#2 was generated by our algorithm based on the previous two data sets, and due to the exploration manner of our algorithm, data set \#2 should lie in the region that is more challenging for the classifier. Thus it is reasonable that our classifer performs worse using all three data sets. 
 
 \section{Optimization Algorithm}
-\eqref{eq:opt} is a combinatorial optimization problem with huge feasible region. This problem is considered NP-hard and yet there is no known algorithm that solves it quickly. We propose an approximation algorithm, which solves \eqref{eq:opt} using greedy heuristic, that is, starting with the empty set $S=\emptyset$, iteratively find element $e$ such that 
+\eqref{eq:opt} is a combinatorial optimization problem with huge feasible region. This problem is hard for any known algorithm that solves it quickly. We propose an approximation algorithm, which solves \eqref{eq:opt} using greedy heuristic, that is, starting with the empty set $S=\emptyset$, iteratively find element $e$ such that 
 \begin{equation} \label{eq:greedy}
   \underset{e \in E \backslash S}{\mathrm{arg}\max} \,g(S \cup \{e\}),
 \end{equation}
 and incorporate it into $S$ until $|S|=K$ for some chosen K. This approach reduces the size of search space dramatically from $|E|^{|S|}$ down to $|E| \times |S|$, and we prove that if objective function $g$ is either $\PI$ or $\EI$, the proposed greedy algorithm is guaranteed to be near-optimal with a lower bound. Additionally, we show that under the statistical model described in section \ref{sec:stat model}, we can formulate \eqref{eq:greedy} as Mixed-Integer Nonlinear Programming
-(MINLP) and solve it efficiently using an off-the-shelf MINLP solver.
+(MINLP). We plan to use an off-the-shelf MINLP solver to solve this problem.
 
 \subsection{Performance guarantee for the greedy algorithm}
 In this subsection, we show that when the objective function $g$ in \eqref{eq:greedy} is either $\PI$ or $\EI$, the proposed greedy algorithm has performance guarantee. The result is stated in the following:
@@ -237,7 +245,7 @@ From Lemma 2 and 3, we know that $\PI$ and $\EI$ are submodular, nondecreasing a
 The proofs of Lemma 2 and 3 are available in the appendix.
 
 \subsection{Probability of Improvement}
-We first show in Proposition 1 that \eqref{eq:greedy} can be written into the form in which the objective function can be easily calculated using any statitical classifier. This is the general form of greedy algorithm for optimization over probability of improvement and can be used with any underlying statistical model. In addition, we show that, using the Naive Bayes classifier proposed in section \ref{sec:stat model}, we can further formulate \eqref{eq:greedy} as a MINLP, which can be solved efficiently using an off-the-shelf MINLP solver.
+Since the objective function in \eqref{eq:greedy} does not have an intuitive look and is expensive to compute directly when $|S|$ is large, We show in Proposition 1 and 2 that \eqref{eq:greedy} can be written into the form in which the objective function can be easily computed using any statitical classifier. This is the general form of greedy algorithm for optimization over probability of improvement and can be used with any underlying statistical model. In addition, using the formulation in Proposition 1 and 2, we show that, under the Naive Bayes model proposed in section \ref{sec:stat model}, we can further formulate \eqref{eq:greedy} as a MINLP, and we plan to use an off-the-shelf MINLP solver to solve that.
 \begin{proposition}
   If the objective function $g$ is $\PI$, we can write \eqref{eq:greedy} as 
   \begin{equation} \label{eq:PI3}
@@ -322,6 +330,10 @@ f_i=\begin{dcases}
 \end{equation*}
 and $c_i$'s are known coefficients. We summarize the algorithm in the appendix.
 
+\begin{remark}
+Comparing the objective functions in \eqref{eq:PI3} and \eqref{eq:EI1}, you will notice that computation of $\PI$ is a lot cheaper than computing $\EI$, and thus solving optimization problem with $\PI$ is a lot easier than solving $\EI$, which you can observe by comparing \eqref{eq:PI5} and \eqref{eq:EI5}. However, the trade-off is that, $\PI$ only finds hits with length shorter than some threshold, whereas $\EI$ aims to optimize over length direcly and will find hits with minimal lengths. Both methods have their own advantages in achieving the goal.
+\end{remark}
+
 
 \section{Model Validation and Performance}
 In this section we evaluate the performance of our proposed optimization methods by comparing it with two benchmark methods, in simulation, and by using it in practice.  We show our algorithm helped find a peptide with the desired property that is shorter than the shortest previously known.
@@ -368,7 +380,7 @@ Given the preliminary data, we have performed two rounds of experiments using re
 
 
 \section{Conclusion}
-We proposed an optimal search algorithm based on greedy heuristic for solving the active learning problem motivated by finding short peptide substrates problem, and proved that the proposed algorithm guarantees to achieve at least a factor (1-1/e) of the optimal value. From benchmark results, we further showed that the proposed algorithm outperformed the other two heuristic search methods. In addition to theoretical results, we demonstrated effectiveness of our method in practice: so far we have performed two rounds of evaluations by doing experiments. The first round of experiments tested 258 peptides recommended by our algorithm, which is based on the statistical classifier trained using 36 preliminary data points, and the experiments took about 2 weeks to complete. As demonstrated in Figure \ref{fig:experiment}, we found 38 new peptide hits with shortest length 11. A month later, the second round of experiments tested 580 peptides and took another 2 weeks, in which we found 43 new hits and a peptide hit with length 10, which is shorter than the shortest previously known. 
+We proposed an optimal search algorithm based on greedy heuristic for solving the active learning problem motivated by finding short peptide substrates problem, and proved that the proposed algorithm guarantees to achieve at least a factor (1-1/e) of the optimal value. From benchmark results, we further showed that the proposed algorithm outperformed the other two heuristic search methods. In addition to theoretical results, we demonstrated effectiveness of our method in practice: so far we have performed two rounds of evaluations by doing experiments. The first round of experiments tested 258 peptides recommended by our algorithm, which is based on the statistical classifier trained using 36 preliminary data points, and the experiments took about 2 weeks to complete. As demonstrated in Figure \ref{fig:experiment}, we found 43 new peptide hits with shortest length 11 (in which 40 were obtained from baseline method, i.e. mutating existing hits, and 3 were obtained from our proposed algorithm). A month later, the second round of experiments tested 580 peptides and took another 2 weeks, in which we found another 42 new hits and a peptide hit with length 10, which is shorter than the shortest previously known (18 were obtained from mutating known hits, and 24, including the shortest hit, were obtained from our proposed algorithm). 
 
 \section*{Appendix A: Algorithms}
 
@@ -552,12 +564,32 @@ where $L = \{f(x): x \in S\}$. If we rank elements in $S$ such that $f(x_i) \leq
 Substitute \eqref{eq:EI3} \eqref{eq:EI4} into \eqref{eq:EI2}, and note that $\mathbb{P}(y(e)=1, \mathcal{F}(x_1,\ldots,x_{|S|}) \propto \mathbb{P}(y(e)=1| \mathcal{F}(x_1,\ldots,x_{|S|})$ with known coefficient given $S$, we get \eqref{eq:EI1} in proposition 2. 
 \end{proof}
 
+\section*{Appendix C: Finding Orthogonal Labeling Peptides}
+An extension to the current application is to find \it{orthogonal} peptides selectively labeled by PPTases and unlabeled by AcpH, where \it{orthogonal} means a peptide can only be labeled by a specific PPTase, and be unlabeled by AcpH. Currently we investigate two kinds of PPTases: sfp and AcpS, and we look for two types of orthogonal peptides: type 1 can only be labeled by sfp and unlabeled by AcpH, while type 2 can only be labeled by AcpS and unlabeled by AcpH.
+
+For this problem we use the similar statistical learning model as described in \ref{sec:stat model}. We originally proposed to directly use \eqref{eq:model}, and simply redefine $Y(x)=1$ as peptide $x$ is type 1 or type 2. This is simple, as all the previous developed algorithms apply to the new application, and the only thing we need to do is to modify the training dataset according to the new definitions of ``labeling''. However, we have 580 peptides from earlier experiments only tested using sfp and AcpH, and we cannot use these precious experimental data for training since we do not have their labeling property about AcpS. 
+
+We tweaked the original idea and proposed a new method: for a peptide $x$, we define three types of labeling, where $Y_1(x) = 1$ means $x$ can be labeled by sfp, $Y_2(x)$ means $x$ can be labeled by AcpS, and $Y_3(x)$ means given $x$ is labeled, $x$ can be unlabeled by AcpH. Now
+\begin{equation*}
+\begin{split}
+\mathbb{P} (\text{$x$ is type 1}) &=\mathbb{P} (Y_1(x) = 1, Y_2(x) = 0, \text{$x$ can be unlabeled by AcpH}),\\
+&= \mathbb{P} (Y_1(x) = 1, Y_2(x) = 0) \mathbb{P} (Y_3(x)), \\
+&= \mathbb{P} (Y_1(x) = 1) \mathbb{P} (Y_2(x) = 0) \mathbb{P} (Y_3(x) = 1),
+\end{split}
+\end{equation*}
+and similarly,
+\begin{equation*}
+\mathbb{P} (\text{$x$ is type 2}) = \mathbb{P} (Y_1(x) = 0) \mathbb{P} (Y_2(x) = 1) \mathbb{P} (Y_3(x) = 1).
+\end{equation*}
+Thus we can create three datasets and use \eqref{eq:model} to train three seperate models. Since prediction on labeling property for sfp does not depend on the labeling property for AcpS, we can utilize the 580 data points for training on both labeling by sfp and unlabeling by AcpH, which were left out by original training method.
+
+However, for the new method, we need to tweak our optimization algorithm in \eqref{eq:PI5} and \eqref{eq:EI5}, which will be updated later.
 % Acknowledgments here
 % \acknowledgment{The authors gratefully acknowledge the existence of
 % the Journal of Irreproducible Results and the support of the Society
 % for the Preservation of Inane Research.}
 \bibliography{DataMiningPaper}
-\bibliographystyle{apalike}
+\bibliographystyle{plainnat}
 %%%%%%%%%%%%%%%%%
 \end{document}
 %%%%%%%%%%%%%%%%%
