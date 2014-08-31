@@ -2,6 +2,8 @@
 # Inputs: raw data (vector)
 # Outputs: normalized data (vector)
 normalize_data <- function(data, cutoff) {
+# obtain normalized data by estimating background mean & var
+# We delete outliers to estimate background
     M <- median(data)
     L <- quantile(data, 0.25)
     z <- qnorm(0.25)

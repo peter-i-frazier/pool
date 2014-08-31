@@ -2,7 +2,8 @@
 
 #0. Read in Data
 rm(list=ls())
-DATA <- read.csv('../../data/2014_5_15_orthogonal_labeling/sfp_vs_AcPS_membrane.csv', header=F)
+#DATA <- read.csv('../../data/2014_08_08_orthogonal_labeling/sfp_vs_AcpS.csv')
+DATA <- read.csv('~/Desktop/data.csv')
 source('analysis.R')
 
 #1. Normalize Raw Data:
@@ -42,82 +43,83 @@ source('analysis.R')
 
 # script start
 normal_data <- c()
-for (i in 1:4) {
-    normal_data <- cbind(normal_data, normalize_data(DATA[,i],2))
+for (i in 1:2) {
+    normal_data <- cbind(normal_data, normalize_data(DATA[,i],2.0))
 }
+write.csv(normal_data,'normal.csv')
 #M <- c(1470.38, 1078.21, 1010.46, 1064.98)
 #for (i in 1:4) {
 #    normal_data <- cbind(normal_data, normalize_data_manual(DATA[,i],M[i]))
 #}
 
-####################
-# Find hit by categorizing peptides
-#We are interested in 4 & 6
-threshold <- c(1.5, 3, 1.5, 3)
-indicator <- peptide_indicator(normal_data, threshold)
-cat <- categorize_peptide(indicator)
-sfp_code_idx <- c(which(cat==4), which(cat==5))
-sfp_spot_idx <- convert_to_spot_idx(sfp_code_idx)
-sfp_category <- cbind(sfp_spot_idx, 1-indicator[sfp_code_idx,2], normal_data[sfp_code_idx,1:4])
-colnames(sfp_category) <- c('Index', 'unlabeling', 'sfp normalized value', 'sfp-PfAcpH normalized value',  'AcpS normalized value', 'AcpS-PfAcpH normalized value')
-write.csv(sfp_category, 'sfp_category.csv')
-
-AcpS_code_idx <- c(which(cat==6), which(cat==7))
-AcpS_spot_idx <- convert_to_spot_idx(AcpS_code_idx)
-AcpS_category <- cbind(AcpS_spot_idx, 1-indicator[AcpS_code_idx,4], normal_data[AcpS_code_idx,1:4])
-colnames(AcpS_category) <- c('Index', 'unlabeling', 'sfp normalized value', 'sfp-PfAcpH normalized value', 'AcpS normalized value', 'AcpS-PfAcpH normalized value')
-write.csv(AcpS_category, 'AcpS_category.csv')
-####################
-
-
-####################
-# Find hit by taking diff
-labeling_cutoff <- rep(1.5, 2)
-delta_cutoff <- rep(0.5, 2)
-#M <- c(1493, 1134.4, 1192, 1207.7)
-#sigma <- c(190, 120, 125, 125)
-#normal_data <- normalize_data_manual(DATA, M, sigma)
-
-sfp_labeling <- 1 * (normal_data[,1] > labeling_cutoff[1])
-AcpS_labeling <- 1 * (normal_data[,3] > labeling_cutoff[2])
-both_labeling <- sfp_labeling * AcpS_labeling
-only_sfp_labeling <- sfp_labeling - both_labeling
-only_AcpS_labeling <- AcpS_labeling - both_labeling
-delta_sfp <- normal_data[,1] - normal_data[,2]
-delta_AcpS <- normal_data[,3] - normal_data[,4]
-sfp_unlabel <- 1 * (delta_sfp > delta_cutoff[1])
-AcpS_unlabel <- 1 * (delta_AcpS > delta_cutoff[2])
-
-sfp_code_idx <- which(only_sfp_labeling==1)
-sfp_spot_idx <- convert_to_spot_idx(sfp_code_idx)
-sfp_diff <- cbind(sfp_spot_idx, sfp_unlabel[sfp_code_idx], normal_data[sfp_code_idx,1:4], delta_sfp[sfp_code_idx])
-colnames(sfp_diff) <- c('Index', 'unlabeling', 'sfp normalized value', 'sfp-PfAcpH normalized value',  'AcpS normalized value', 'AcpS-PfAcpH normalized value', 'sfp diff')
-write.csv(sfp_diff, 'sfp_diff.csv')
-
-AcpS_code_idx <- which(only_AcpS_labeling==1)
-AcpS_spot_idx <- convert_to_spot_idx(AcpS_code_idx)
-AcpS_diff <- cbind(AcpS_spot_idx, AcpS_unlabel[AcpS_code_idx], normal_data[AcpS_code_idx,1:4], delta_AcpS[AcpS_code_idx])
-colnames(AcpS_diff) <- c('Index', 'unlabeling', 'sfp normalized value', 'sfp-PfAcpH normalized value', 'AcpS normalized value', 'AcpS-PfAcpH normalized value', 'AcpS diff')
-write.csv(AcpS_diff, 'AcpS_diff.csv')
-####################
-
-
-####################
-# Analyze Lori's result
-sfp_data <- read.csv('Lori_result_sfp.csv')
-AcpS_data <- read.csv('Lori_result_AcpS.csv')
-sfp_spot_idx <- as.character(sfp_data[,1])
-sfp_code_idx <- convert_to_code_idx(sfp_spot_idx)
-sfp_analysis <- cbind(sfp_data, normal_data[sfp_code_idx,1:4])
-colnames(sfp_analysis) <- c('Index', 'unlabeling', 'sfp normalized value', 'sfp-PfAcpH normalized value',  'AcpS normalized value', 'AcpS-PfAcpH normalized value')
-write.csv(sfp_analysis, 'Lori_result_sfp_analysis.csv')
-
-AcpS_spot_idx <- as.character(AcpS_data[,1])
-AcpS_code_idx <- convert_to_code_idx(AcpS_spot_idx)
-AcpS_analysis <- cbind(AcpS_data, normal_data[AcpS_code_idx,1:4])
-colnames(AcpS_analysis) <- c('Index', 'unlabeling', 'sfp normalized value', 'sfp-PfAcpH normalized value', 'AcpS normalized value', 'AcpS-PfAcpH normalized value')
-write.csv(AcpS_analysis, 'Lori_result_AcpS_analysis.csv')
-####################
+#####################
+## Find hit by categorizing peptides
+##We are interested in 4 & 6
+#threshold <- c(1.5, 3, 1.5, 3)
+#indicator <- peptide_indicator(normal_data, threshold)
+#cat <- categorize_peptide(indicator)
+#sfp_code_idx <- c(which(cat==4), which(cat==5))
+#sfp_spot_idx <- convert_to_spot_idx(sfp_code_idx)
+#sfp_category <- cbind(sfp_spot_idx, 1-indicator[sfp_code_idx,2], normal_data[sfp_code_idx,1:4])
+#colnames(sfp_category) <- c('Index', 'unlabeling', 'sfp normalized value', 'sfp-PfAcpH normalized value',  'AcpS normalized value', 'AcpS-PfAcpH normalized value')
+#write.csv(sfp_category, 'sfp_category.csv')
+#
+#AcpS_code_idx <- c(which(cat==6), which(cat==7))
+#AcpS_spot_idx <- convert_to_spot_idx(AcpS_code_idx)
+#AcpS_category <- cbind(AcpS_spot_idx, 1-indicator[AcpS_code_idx,4], normal_data[AcpS_code_idx,1:4])
+#colnames(AcpS_category) <- c('Index', 'unlabeling', 'sfp normalized value', 'sfp-PfAcpH normalized value', 'AcpS normalized value', 'AcpS-PfAcpH normalized value')
+#write.csv(AcpS_category, 'AcpS_category.csv')
+#####################
+#
+#
+#####################
+## Find hit by taking diff
+#labeling_cutoff <- rep(1.5, 2)
+#delta_cutoff <- rep(0.5, 2)
+##M <- c(1493, 1134.4, 1192, 1207.7)
+##sigma <- c(190, 120, 125, 125)
+##normal_data <- normalize_data_manual(DATA, M, sigma)
+#
+#sfp_labeling <- 1 * (normal_data[,1] > labeling_cutoff[1])
+#AcpS_labeling <- 1 * (normal_data[,3] > labeling_cutoff[2])
+#both_labeling <- sfp_labeling * AcpS_labeling
+#only_sfp_labeling <- sfp_labeling - both_labeling
+#only_AcpS_labeling <- AcpS_labeling - both_labeling
+#delta_sfp <- normal_data[,1] - normal_data[,2]
+#delta_AcpS <- normal_data[,3] - normal_data[,4]
+#sfp_unlabel <- 1 * (delta_sfp > delta_cutoff[1])
+#AcpS_unlabel <- 1 * (delta_AcpS > delta_cutoff[2])
+#
+#sfp_code_idx <- which(only_sfp_labeling==1)
+#sfp_spot_idx <- convert_to_spot_idx(sfp_code_idx)
+#sfp_diff <- cbind(sfp_spot_idx, sfp_unlabel[sfp_code_idx], normal_data[sfp_code_idx,1:4], delta_sfp[sfp_code_idx])
+#colnames(sfp_diff) <- c('Index', 'unlabeling', 'sfp normalized value', 'sfp-PfAcpH normalized value',  'AcpS normalized value', 'AcpS-PfAcpH normalized value', 'sfp diff')
+#write.csv(sfp_diff, 'sfp_diff.csv')
+#
+#AcpS_code_idx <- which(only_AcpS_labeling==1)
+#AcpS_spot_idx <- convert_to_spot_idx(AcpS_code_idx)
+#AcpS_diff <- cbind(AcpS_spot_idx, AcpS_unlabel[AcpS_code_idx], normal_data[AcpS_code_idx,1:4], delta_AcpS[AcpS_code_idx])
+#colnames(AcpS_diff) <- c('Index', 'unlabeling', 'sfp normalized value', 'sfp-PfAcpH normalized value', 'AcpS normalized value', 'AcpS-PfAcpH normalized value', 'AcpS diff')
+#write.csv(AcpS_diff, 'AcpS_diff.csv')
+#####################
+#
+#
+#####################
+## Analyze Lori's result
+#sfp_data <- read.csv('Lori_result_sfp.csv')
+#AcpS_data <- read.csv('Lori_result_AcpS.csv')
+#sfp_spot_idx <- as.character(sfp_data[,1])
+#sfp_code_idx <- convert_to_code_idx(sfp_spot_idx)
+#sfp_analysis <- cbind(sfp_data, normal_data[sfp_code_idx,1:4])
+#colnames(sfp_analysis) <- c('Index', 'unlabeling', 'sfp normalized value', 'sfp-PfAcpH normalized value',  'AcpS normalized value', 'AcpS-PfAcpH normalized value')
+#write.csv(sfp_analysis, 'Lori_result_sfp_analysis.csv')
+#
+#AcpS_spot_idx <- as.character(AcpS_data[,1])
+#AcpS_code_idx <- convert_to_code_idx(AcpS_spot_idx)
+#AcpS_analysis <- cbind(AcpS_data, normal_data[AcpS_code_idx,1:4])
+#colnames(AcpS_analysis) <- c('Index', 'unlabeling', 'sfp normalized value', 'sfp-PfAcpH normalized value', 'AcpS normalized value', 'AcpS-PfAcpH normalized value')
+#write.csv(AcpS_analysis, 'Lori_result_AcpS_analysis.csv')
+#####################
 
 
 
