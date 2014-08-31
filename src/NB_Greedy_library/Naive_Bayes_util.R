@@ -104,20 +104,20 @@ getFeatures <- function(data.org, classlist, nL, nR)
         l.seq  <- length(sequence)
         l <- min(nL,l.seq)
         for (i in 1:l) {
-		feature[r,nL+1-i] <- classlist[1,sequence[l.seq+1-i]]
+		feature[r,nL+1-i] <- classlist[1, sequence[l.seq+1-i]]
 	  }
         sequence <- unlist(strsplit(data.org[r, 'cterm'],''))
         l.seq  <- length(sequence)
         c <- min(nR,l.seq)
         for (i in 1:c) {
-		feature[r,nL+i] <- classlist[1,sequence[i]]
+		feature[r,nL+i] <- classlist[1, sequence[i]]
 	  }
         if( nOUTCOME != 0) {
             for (i in 1:nOUTCOME) {
-                if (is.na(data.org[r,i+2])) {
+                if (is.na(data.org[r,i])) {
                     feature[r,nL+nR+i] <- 0
                 } else {
-                    feature[r,nL+nR+i] <- data.org[r,i+2]
+                    feature[r,nL+nR+i] <- data.org[r,i]
                 }
             }
         }
@@ -125,7 +125,7 @@ getFeatures <- function(data.org, classlist, nL, nR)
     #outcome.names : name of outcome values
     outcome.names <- c()
     if(nOUTCOME != 0) {
-        outcome.names <- colnames(data.org)[3:(nOUTCOME+2)]
+        outcome.names <- colnames(data.org)[1:(nOUTCOME)]
     }
     feature <- as.data.frame(feature)
     if(nOUTCOME != 0){
@@ -377,6 +377,10 @@ NB_predict <- function(newdata, theta, S.Pos, maxL, maxR, prior.positive)
     	return(predict)
 }
 
+new_NB_predict <- function(newdata, label_prefer_theta, label_unprefer_theta, unlabel_theta, S.Pos, maxL, maxR, label_prefer_prior, label_unprefer_prior, unlabel_prior) {
+    return (NB_predict(newdata, label_prefer_theta, S.Pos, maxL, maxR, label_prefer_prior) * (1-NB_predict(newdata, label_unprefer_theta, S.Pos, maxL, maxR, label_unprefer_prior)) * NB_predict(newdata, unlabel_theta, S.Pos, maxL, maxR, unlabel_prior))
+}
+
 AUC <- function(x, y)
 {
 	n <- length(y)
@@ -442,41 +446,40 @@ AUC <- function(x, y)
 
 
 
-opt_gen_peptide_lib <- function(Nlib, maxL, maxR, minL, minR, S.Pos, col_name, alpha, classlist) {
-    peptides.library <- matrix(-1, nrow=Nlib, ncol=nF)
-    nL.lib <- runif(Nlib, min = minL, max = maxL)
-    nR.lib <- runif(Nlib, min = minR, max = maxR)
-    for (n in 1:Nlib) {
-        theta <- getTheta_MC(alpha=alpha, classlist=classlist)
-        ratio <- as.matrix(theta$theta_1) / as.matrix(theta$theta_0)
-        for (l in 1:nL.lib[n]) {
-            peptides.library[n, S.Pos-l+1] <- which.max(ratio[,S.Pos-l+1])
-        }
-        for (r in 1:nR.lib[n]) {
-            peptides.library[n, S.Pos+r] <- which.max(ratio[,S.Pos+r])
-        }
+# generate a single peptide
+old_opt_gen_peptide_lib <- function(nF, maxL, maxR, minL, minR, S.Pos, alpha, classlist) {
+    peptide <- rep(-1, nF)
+    nL <- runif(1, min = minL, max = maxL)
+    nR <- runif(1, min = minR, max = maxR)
+    theta <- getTheta_MC(alpha=alpha, classlist=classlist)
+
+    ratio <- as.matrix(theta$theta_1) / as.matrix(theta$theta_0)
+    for (l in 1:nL) {
+        peptide[S.Pos-l+1] <- which.max(ratio[,S.Pos-l+1])
     }
-    return (peptides.library)
+    for (r in 1:nR) {
+        peptide[S.Pos+r] <- which.max(ratio[,S.Pos+r])
+    }
+    return (peptide)
 }
 
-new_opt_gen_peptide_lib <- function(Nlib, maxL, maxR, minL, minR, S.Pos, col_name, alpha_label_like, alpha_label_unlike, alpha_unlabel, classlist) {
-    peptides.library <- matrix(-1, nrow=Nlib, ncol=nF)
-    nL.lib <- runif(Nlib, min = minL, max = maxL)
-    nR.lib <- runif(Nlib, min = minR, max = maxR)
-    for (n in 1:Nlib) {
-        theta_label_like <- getTheta_MC(alpha=alpha_label_like, classlist=classlist)
-        theta_label_unlike <- getTheta_MC(alpha=alpha_label_unlike, classlist=classlist)
-        theta_unlabel <- getTheta_MC(alpha=alpha_unlabel, classlist=classlist)
+# generate a single peptide
+new_opt_gen_peptide <- function(nF, maxL, maxR, minL, minR, S.Pos, alpha_label_like, alpha_label_unlike, alpha_unlabel, classlist) {
+    peptide <- rep(-1, nF)
+    nL <- runif(1, min = minL, max = maxL)
+    nR <- runif(1, min = minR, max = maxR)
+    theta_label_like <- getTheta_MC(alpha=alpha_label_like, classlist=classlist)
+    theta_label_unlike <- getTheta_MC(alpha=alpha_label_unlike, classlist=classlist)
+    theta_unlabel <- getTheta_MC(alpha=alpha_unlabel, classlist=classlist)
 
-        ratio <- as.matrix(theta_label_like$theta_1) / as.matrix(theta_label_like$theta_0) * as.matrix(theta_label_unlike$theta_0) / as.matrix(theta_label_unlike$theta_1) * as.matrix(theta_unlabel$theta_1) / as.matrix(theta_unlabel$theta_0)
-        for (l in 1:nL.lib[n]) {
-            peptides.library[n, S.Pos-l+1] <- which.max(ratio[,S.Pos-l+1])
-        }
-        for (r in 1:nR.lib[n]) {
-            peptides.library[n, S.Pos+r] <- which.max(ratio[,S.Pos+r])
-        }
+    ratio <- as.matrix(theta_label_like$theta_1) / as.matrix(theta_label_like$theta_0) * as.matrix(theta_label_unlike$theta_0) / as.matrix(theta_label_unlike$theta_1) * as.matrix(theta_unlabel$theta_1) / as.matrix(theta_unlabel$theta_0)
+    for (l in 1:nL) {
+        peptide[S.Pos-l+1] <- which.max(ratio[,S.Pos-l+1])
     }
-    return (peptides.library)
+    for (r in 1:nR) {
+        peptide[S.Pos+r] <- which.max(ratio[,S.Pos+r])
+    }
+    return (peptide)
 }
 
 

@@ -1,9 +1,9 @@
 # This file needs root_path, datafile, outcome_name, para_idx as input in command line
 # Code block below is only for testing, must disable when submit to nbs!
-# root_path = "/fs/home/jw865/peptide-catalysis"
-# datafile <- paste(root_path,"/data/2014_06_03_orthogonal_labeling_data/Training_Set_Cumulative.csv",sep='')
-# outcome_name <- "PfAcpH"
-# para_idx <- 1
+root_path = "/fs/home/jw865/peptide-catalysis"
+datafile <- paste(root_path,"/data/2014_06_03_orthogonal_labeling_data/Training_Set_Cumulative.csv",sep='')
+outcome_name <- "PfAcpH"
+para_idx <- 1
 # Code block end
 load(paste(root_path, "/data/all_data_for_training.RData", sep=''))
 
@@ -57,12 +57,12 @@ source(paste(root_path,"/src/NB_Greedy_library/Opt_Search_util.R",sep=''))
 #Specify path/to/classlist file here
 classfile <- paste(root_path,"/data/Reduced_AA_Alphabet.csv",sep='')
 
-# data_org <- data.frame(read.csv(datafile, header = T, as.is = T, sep = ','))
+data_org <- data.frame(read.csv(datafile, header = T, as.is = T, sep = ','))
 AAclass <- data.frame(read.csv(classfile, header = T, as.is = T, sep = ','))
-# train_data <- getFeatures(data_org, AAclass, nL, nR)
+train_data <- getFeatures(data_org, AAclass, nL, nR)
 # training part has 2 cases: if we train PfAcpH, it's the prob give the peptide is labeled, this training set is a subset of original training set
-# X <- train_data[,1:(nL+nR)]
-# N <- dim(X)[1]
+X <- train_data[,1:(nL+nR)]
+N <- dim(X)[1]
 # if (outcome_name == 'PfAcpH') {
 #     truth.table <- (((train_data[,'sfp_specific']==1) + (train_data[,'AcpS_specific']==1)) >= 1)
 #     train.X <- train_data[truth.table,1:(nL+nR)]
