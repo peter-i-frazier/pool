@@ -38,6 +38,22 @@ Naive_Bayes <- function(trainX, trainY, testData, classlist, S.Pos, maxL, maxR, 
 	return(predProb)
 }
 
+Naive_Bayes_new <- function(X_prefer, Y_prefer, X_unprefer, Y_unprefer, X_unlabel, Y_unlabel, testData, classlist, S.Pos, maxL, maxR, gamma_0_prefer, gamma_1_prefer, prior_prefer, gamma_0_unprefer, gamma_1_unprefer, prior_unprefer, gamma_0_unlabel, gamma_1_unlabel, prior_unlabel, itr) {
+    alpha_prefer <- Dirichlet_parameter(X_prefer, Y_prefer, classlist, gamma_0_prefer, gamma_1_prefer)
+    alpha_unprefer <- Dirichlet_parameter(X_unprefer, Y_unprefer, classlist, gamma_0_unprefer, gamma_1_unprefer)
+    alpha_unlabel <- Dirichlet_parameter(X_unlabel, Y_unlabel, classlist, gamma_0_unlabel, gamma_1_unlabel)
+
+    predict_mat <- c()
+    for (i in 1:itr) {
+        theta_prefer <- getTheta_MC(alpha=alpha_prefer, classlist=classlist)
+        theta_unprefer <- getTheta_MC(alpha=alpha_unprefer, classlist=classlist)
+        theta_unlabel <- getTheta_MC(alpha=alpha_unlabel , classlist=classlist)
+        predict_mat <- rbind(predict_mat, new_NB_predict(testData, theta_prefer, theta_unprefer, theta_unlabel, S.Pos, maxL, maxR, prior_prefer, prior_unprefer, prior_unlabel))
+    }
+    return (colMeans(predict_mat))
+}
+
+
 #	A supporting function that estimates the theta parameters of the Naive Bayesian model through Monte Carlo simulation, assuming theta has a Dirichlet distribution with 
 #	hyperprior alpha. If alpha(posterior) is specified, theta will be simulated according to Dirichlet(alpha); otherwise trainX and trainY must be specified and posterior
 #      	alpha will be estimated accoring to trainX and trainY by calling function Dirichlet_Parameter.

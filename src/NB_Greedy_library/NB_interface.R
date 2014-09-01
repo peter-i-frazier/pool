@@ -90,8 +90,8 @@ getFeatures <- function(data.org, classlist, nL, nR)
 # :type X: matrix
 # :param Y: label of peptides in the training dataset
 # :type Y: vector
-# :param AAclass: table for reduced AA alphabet
-# :type AAclass: vector
+# :param classlist: table for reduced AA alphabet
+# :type classlist: vector
 # :param S.Pos: position of Serine
 # :type S.Pos: int
 # :param nL: number of AAs to the left of Serine, usually equals to S.Pos
@@ -109,21 +109,21 @@ getFeatures <- function(data.org, classlist, nL, nR)
 # :return auc: area under ROC curve
 # :rtyupe: float
 
-loocv <- function(X, Y, AAclass, S.Pos, nL, nR, gamma_0, gamma_1, prior, itr) {
+loocv <- function(X, Y, classlist, S.Pos, nL, nR, gamma_0, gamma_1, prior, itr) {
     num_rows <- dim(X)[1]
     prob <- rep(0, num_rows)
     for (n in 1:num_rows) {
         print (n)
         train_X <- X[-n,]
         train_Y <- Y[-n]
-        prob[n] <- Naive_Bayes(train_X, train_Y, X[n,], AAclass, S.Pos, nL, nR, gamma_0, gamma_1, prior, itr)
+        prob[n] <- Naive_Bayes(train_X, train_Y, X[n,], classlist, S.Pos, nL, nR, gamma_0, gamma_1, prior, itr)
     }
     xy <- ROC_xy_output(prob, Y)
     auc <- AUC(rev(xy$x), rev(xy$y))
     return (auc)
 }
 
-fold_cv <- function(X, Y, AAclass, S.Pos, nL, nR, gamma_0, gamma_1, prior, itr, num_fold) {
+fold_cv <- function(X, Y, classlist, S.Pos, nL, nR, gamma_0, gamma_1, prior, itr, num_fold) {
     num_rows <- dim(X)[1]
     group_size <- floor(num_rows / (num_fold - 1))
     prob <- c()
@@ -132,13 +132,13 @@ fold_cv <- function(X, Y, AAclass, S.Pos, nL, nR, gamma_0, gamma_1, prior, itr, 
         train_X <- X[-c(((n-1)*group_size+1):(n*group_size)),]
         train_Y <- Y[-c(((n-1)*group_size+1):(n*group_size))]
         test_X <- X[c(((n-1)*group_size+1):(n*group_size)),]
-        part_prob <- Naive_Bayes(train_X, train_Y, test_X, AAclass, S.Pos, nL, nR, gamma_0, gamma_1, prior, itr)
+        part_prob <- Naive_Bayes(train_X, train_Y, test_X, classlist, S.Pos, nL, nR, gamma_0, gamma_1, prior, itr)
         prob <- c(prob, part_prob)
     }
     train_X <- X[-c(((num_fold-1)*group_size+1):num_rows),]
     train_Y <- Y[-c(((num_fold-1)*group_size+1):num_rows)]
     test_X <- X[c(((num_fold-1)*group_size+1):num_rows),]
-    part_prob <- Naive_Bayes(train_X, train_Y, test_X, AAclass, S.Pos, nL, nR, gamma_0, gamma_1, prior, itr)
+    part_prob <- Naive_Bayes(train_X, train_Y, test_X, classlist, S.Pos, nL, nR, gamma_0, gamma_1, prior, itr)
     prob <- c(prob, part_prob)
 
     xy <- ROC_xy_output(prob, Y)
@@ -146,15 +146,15 @@ fold_cv <- function(X, Y, AAclass, S.Pos, nL, nR, gamma_0, gamma_1, prior, itr, 
     return (auc)
 }
 
-cv <- function(X, Y, AAclass, S.Pos, nL, nR, gamma_0, gamma_1, prior, itr) {
+cv <- function(X, Y, classlist, S.Pos, nL, nR, gamma_0, gamma_1, prior, itr) {
     num_rows <- dim(X)[1]
-    prob <- Naive_Bayes(X, Y, X, AAclass, S.Pos, nL, nR, gamma_0, gamma_1, prior, itr)
+    prob <- Naive_Bayes(X, Y, X, classlist, S.Pos, nL, nR, gamma_0, gamma_1, prior, itr)
     xy <- ROC_xy_output(prob, Y)
     auc <- AUC(rev(xy$x), rev(xy$y))
     return (auc)
 }
 
-generate_recommendation_MAP_old <- function(X, Y, AAclass, S.Pos, max_L, max_R, min_L, min_R, gamma_0, gamma_1, add_ins, num_recom) {
+generate_recommendation_MAP_old <- function(X, Y, classlist, S.Pos, num_recom, maxL, maxR, minL, minR, gamma_0, gamma_1, prior, add_ins, itr) {
 	num_features <- dim(X)[2]
 	rec <- c()	
 	train_x <- X
@@ -163,10 +163,10 @@ generate_recommendation_MAP_old <- function(X, Y, AAclass, S.Pos, max_L, max_R, 
     count_repeated_recom <- 0
 
 	while (num_peptides < num_recom) {		
-        ratio <- get_ratio_old_method(train_x, train_y, AAclass, gamma_0, gamma_1)
+        ratio <- get_ratio_old_method(train_x, train_y, classlist, gamma_0, gamma_1)
 		best_class <- as.numeric(apply(ratio, 2, which.max))
-		length_left <- ceiling(runif(1, min = min_L-1, max = max_L))
-		length_right  <- ceiling(runif(1, min = min_R-1, max = max_R))
+		length_left <- ceiling(runif(1, min = minL-1, max = maxL))
+		length_right  <- ceiling(runif(1, min = minR-1, max = maxR))
 		best_peptide <- rep(-1, num_features)
 		best_peptide[(S.Pos-length_left+1):(S.Pos+length_right)] <- best_class[(S.Pos-length_left+1):(S.Pos+length_right)]
 		if(isNew(train_x, best_peptide)){
@@ -186,28 +186,30 @@ generate_recommendation_MAP_old <- function(X, Y, AAclass, S.Pos, max_L, max_R, 
 	}
 	colnames(rec) <- colnames(X)
 	rownames(rec) <- c(1:dim(rec)[1])
-	return (rec)
+    # calculate prob of hit for rec
+    prob <- Naive_Bayes(X, Y, rec, S.Pos, maxL, maxR, gamma_0, gamma_1, prior, itr)
+	return (list(rec=rec, prob=prob))
 }
 
-generate_recommendation_MAP_new <- function(matrix_x_label_prefer, vector_y_label_prefer, matrix_x_label_unprefer, vector_y_label_unprefer, matrix_x_unlabel, vector_y_unlabel, classlist, serine_position, num_recom, max_left, max_right, min_left, min_right, gamma_0_label_prefer, gamma_1_label_prefer, gamma_0_label_unprefer, gamma_1_label_unprefer, gamma_0_unlabel, gamma_1_unlabel, add_ins) {
-	num_features <- dim(matrix_x_label_prefer)[2]
+generate_recommendation_MAP_new <- function(X_prefer, Y_prefer, X_unprefer, Y_unprefer, X_unlabel, Y_unlabel, classlist, S.Pos, num_recom, maxL, maxR, minL, minR, gamma_0_prefer, gamma_1_prefer, prior_prefer, gamma_0_unprefer, gamma_1_unprefer, prior_unprefer, gamma_0_unlabel, gamma_1_unlabel, prior_unlabel, add_ins, itr) {
+	num_features <- dim(X_prefer)[2]
 	rec <- c()	
-	train_x_label_prefer <- matrix_x_label_prefer 
-	train_y_label_prefer <- vector_y_label_prefer
-	train_x_label_unprefer <- matrix_x_label_unprefer 
-	train_y_label_unprefer <- vector_y_label_unprefer
-	train_x_unlabel <- matrix_x_unlabel
-	train_y_unlabel <- vector_y_unlabel
+	train_x_label_prefer <- X_prefer 
+	train_y_label_prefer <- Y_prefer
+	train_x_label_unprefer <- X_unprefer 
+	train_y_label_unprefer <- Y_unprefer
+	train_x_unlabel <- X_unlabel
+	train_y_unlabel <- Y_unlabel
 	num_peptides <- 0
     count_repeated_recom <- 0
 
 	while (num_peptides < num_recom) {		
-        ratio <- GetRatioNewMethod(classlist, train_x_label_prefer, train_y_label_prefer, gamma_0_label_prefer, gamma_1_label_prefer, train_x_label_unprefer, train_y_label_unprefer, gamma_0_label_unprefer, gamma_1_label_unprefer, train_x_unlabel, train_y_unlabel, gamma_0_unlabel, gamma_1_unlabel)
+        ratio <- GetRatioNewMethod(classlist, train_x_label_prefer, train_y_label_prefer, gamma_0_prefer, gamma_1_prefer, train_x_label_unprefer, train_y_label_unprefer, gamma_0_unprefer, gamma_1_unprefer, train_x_unlabel, train_y_unlabel, gamma_0_unlabel, gamma_1_unlabel)
 		best_class <- as.numeric(apply(ratio, 2, which.max))
-		length_left <- ceiling(runif(1, min = min_left-1, max = max_left))
-		length_right  <- ceiling(runif(1, min = min_right-1, max = max_right))
+		length_left <- ceiling(runif(1, min = minL-1, max = maxL))
+		length_right  <- ceiling(runif(1, min = minR-1, max = maxR))
 		best_peptide <- rep(-1, num_features)
-		best_peptide[(serine_position-length_left+1):(serine_position+length_right)] <- best_class[(serine_position-length_left+1):(serine_position+length_right)]
+		best_peptide[(S.Pos-length_left+1):(S.Pos+length_right)] <- best_class[(S.Pos-length_left+1):(S.Pos+length_right)]
 		if(isNew(rbind(train_x_label_prefer, train_x_label_unprefer, train_x_unlabel), best_peptide)){
 			rec <- rbind(rec, best_peptide)
 			num_peptides = num_peptides + 1
@@ -227,7 +229,9 @@ generate_recommendation_MAP_new <- function(matrix_x_label_prefer, vector_y_labe
             train_y_unlabel <- c(train_y_unlabel, 0)
         }
 	}
-	colnames(rec) <- colnames(matrix_x_label_prefer)
+	colnames(rec) <- colnames(X_prefer)
 	rownames(rec) <- c(1:dim(rec)[1])
-	return (rec)
+    # calculate prob of hit for rec
+    prob <- Naive_Bayes_new(X_prefer, Y_prefer, X_unprefer, Y_unprefer, X_unlabel, Y_unlabel, rec, classlist, S.Pos, maxL, maxR, gamma_0_prefer, gamma_1_prefer, prior_prefer, gamma_0_unprefer, gamma_1_unprefer, prior_unprefer, gamma_0_unlabel, gamma_1_unlabel, prior_unlabel, itr)
+	return (list(rec=rec, prob=prob))
 }

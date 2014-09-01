@@ -1,9 +1,9 @@
 # This file needs root_path, datafile, outcome_name, para_idx as input in command line
 # Code block below is only for testing, must disable when submit to nbs!
-root_path = "/fs/home/jw865/peptide-catalysis"
-datafile <- paste(root_path,"/data/whole_experiment_data.csv",sep='')
-outcome_name <- "PfAcpH"
-para_idx <- 300
+#root_path = "/fs/home/jw865/peptide-catalysis"
+#datafile <- paste(root_path,"/data/whole_experiment_data.csv",sep='')
+#outcome_name <- "PfAcpH"
+#para_idx <- 300
 # Code block end
 
 group_parameters <- function(v1, v2, v3) {
@@ -56,7 +56,7 @@ classfile <- paste(root_path,"/data/Reduced_AA_Alphabet.csv",sep='')
 data_org <- read.csv(datafile, header = T, as.is = T)
 AAclass <- read.csv(classfile, header = T, as.is = T)
 train_data <- getFeatures(data_org, AAclass, nL, nR)
-# training part has 2 cases: if we train PfAcpH, it's the prob give the peptide is labeled, this training set is a subset of original training set
+
 original_X <- train_data[,1:(nL+nR)]
 original_Y <- train_data[,outcome_name]
 X <- original_X[original_Y != -1,]
