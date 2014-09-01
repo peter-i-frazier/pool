@@ -1,9 +1,9 @@
 # This file needs root_path, datafile, outcome_name, para_idx as input in command line
 # Code block below is only for testing, must disable when submit to nbs!
-# root_path = "/fs/home/jw865/peptide-catalysis"
-# datafile <- paste(root_path,"/data/2014_06_03_orthogonal_labeling_data/Training_Set_Cumulative.csv",sep='')
-# outcome_name <- "PfAcpH"
-# para_idx <- 300
+root_path = "/fs/home/jw865/peptide-catalysis"
+datafile <- paste(root_path,"/data/whole_experiment_data.csv",sep='')
+outcome_name <- "PfAcpH"
+para_idx <- 300
 # Code block end
 
 group_parameters <- function(v1, v2, v3) {
@@ -35,56 +35,40 @@ prior_list <- c(1e-4, 1e-3, 1e-2, 0.1, 0.2, 0.3, 0.4, 0.5)
 parameters <- group_parameters(gamma_0_list, gamma_1_list, prior_list)
 colnames(parameters) <- c('gamma0','gamma1','prior')
 
-Gamma_0 <- parameters[para_idx, 'gamma0']
-Gamma_1 <- parameters[para_idx, 'gamma1']
-prior.positive <- parameters[para_idx, 'prior']
-filename <- 'ROC'
+gamma_0 <- parameters[para_idx, 'gamma0']
+gamma_1 <- parameters[para_idx, 'gamma1']
+prior <- parameters[para_idx, 'prior']
 nL <- 19
 nR <- 19
 S.Pos <- 19
 maxL <- 19
 maxR <- 19
-predIter <- 1000
+itr <- 500
+num_fold <- 200
 
 #import libraries
-source(paste(root_path,"/src/NB_Greedy_library/Naive_Bayes_util.R",sep=''))
-source(paste(root_path,"/src/NB_Greedy_library/utility.R",sep=''))
-source(paste(root_path,"/src/NB_Greedy_library/Opt_Search_util.R",sep=''))
+source(paste(root_path,"/src/NB_Greedy_library/NB_utility.R",sep=''))
+source(paste(root_path,"/src/NB_Greedy_library/NB_interface.R",sep=''))
 
 #Specify path/to/classlist file here
 classfile <- paste(root_path,"/data/Reduced_AA_Alphabet.csv",sep='')
 
-data_org <- data.frame(read.csv(datafile, header = T, as.is = T, sep = ','))
-AAclass <- data.frame(read.csv(classfile, header = T, as.is = T, sep = ','))
+data_org <- read.csv(datafile, header = T, as.is = T)
+AAclass <- read.csv(classfile, header = T, as.is = T)
 train_data <- getFeatures(data_org, AAclass, nL, nR)
 # training part has 2 cases: if we train PfAcpH, it's the prob give the peptide is labeled, this training set is a subset of original training set
-X <- train_data[,1:(nL+nR)]
-if (outcome_name == 'PfAcpH') {
-    truth.table <- (((train_data[,'sfp_specific']==1) + (train_data[,'AcpS_specific']==1)) >= 1)
-    train.X <- train_data[truth.table,1:(nL+nR)]
-    train.Y <- train_data[truth.table,'PfAcpH']
-    print("length of train.Y")
-    print(length(train.Y))
-    prob <- Naive_Bayes(train.X, train.Y, X, AAclass, S.Pos, maxL, maxR, Gamma_0, Gamma_1, prior.positive, predIter)
-    train.prob <- prob[truth.table]
-    ROC_plot(train.prob, train.Y, filename)
-    xy <- ROC_xy_output(train.prob, train.Y)
-} else {
-    Y <- train_data[,outcome_name]
-    print(length(Y))
-    prob <- Naive_Bayes(X, Y, X, AAclass, S.Pos, maxL, maxR, Gamma_0, Gamma_1, prior.positive, predIter)
-    ROC_plot(prob, Y, filename)
-    xy <- ROC_xy_output(prob, Y)
-}
-auc <- AUC(rev(xy$x), rev(xy$y))
+original_X <- train_data[,1:(nL+nR)]
+original_Y <- train_data[,outcome_name]
+X <- original_X[original_Y != -1,]
+Y <- original_Y[original_Y != -1]
+auc <- fold_cv(X, Y, AAclass, S.Pos, nL, nR, gamma_0, gamma_1, prior, itr, num_fold) 
 write(auc, 'auc')
-write.csv(prob, 'prob.csv')
 print ("auc")
 print (auc)
 print ("gamma 0")
-print (Gamma_0)
+print (gamma_0)
 print ("gamma 1")
-print (Gamma_1)
+print (gamma_1)
 print ("prior")
-print (prior.positive)
+print (prior)
 print (outcome_name)

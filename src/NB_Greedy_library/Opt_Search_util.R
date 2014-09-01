@@ -126,13 +126,13 @@ select_new_recom <- function(trainX, peptides.library, prob) {
     return (rep(-10,1000))
 }
 
-GetRatioOldMethod <- function(matrix_x, vector_y, classlist, gamma_0, gamma_1) {
+get_ratio_old_method <- function(matrix_x, vector_y, classlist, gamma_0, gamma_1) {
     alpha <- Dirichlet_Parameter(matrix_x, vector_y, classlist, Gamma_0 = gamma_0, Gamma_1 = gamma_1) 
     theta <- getTheta(alpha = alpha, classlist = classlist, Gamma_0 = gamma_0, Gamma_1 = gamma_1)
     return (as.matrix(theta$theta_1) / as.matrix(theta$theta_0))
 }
 
-GetRatioNewMethod <- function(classlist, matrix_x_label_prefer, vector_y_label_prefer, gamma_0_label_prefer, gamma_1_label_prefer, matrix_x_label_unprefer, vector_y_label_unprefer, gamma_0_label_unprefer, gamma_1_label_unprefer, matrix_x_unlabel, vector_y_unlabel, gamma_0_unlabel, gamma_1_unlabel) {
+get_ratio_new_method <- function(classlist, matrix_x_label_prefer, vector_y_label_prefer, gamma_0_label_prefer, gamma_1_label_prefer, matrix_x_label_unprefer, vector_y_label_unprefer, gamma_0_label_unprefer, gamma_1_label_unprefer, matrix_x_unlabel, vector_y_unlabel, gamma_0_unlabel, gamma_1_unlabel) {
     alpha_label_prefer <- Dirichlet_Parameter(matrix_x_label_prefer, vector_y_label_prefer, classlist, Gamma_0 = gamma_0_label_prefer, Gamma_1 = gamma_1_label_prefer) 
     theta_label_prefer <- getTheta(alpha = alpha_label_prefer, classlist = classlist, Gamma_0 = gamma_0_label_prefer, Gamma_1 = gamma_1_label_prefer)
 
@@ -144,93 +144,6 @@ GetRatioNewMethod <- function(classlist, matrix_x_label_prefer, vector_y_label_p
     return (as.matrix(theta_label_prefer$theta_1) / as.matrix(theta_label_prefer$theta_0) * as.matrix(theta_label_unprefer$theta_0) / as.matrix(theta_label_unprefer$theta_1) * as.matrix(theta_unlabel$theta_1) / as.matrix(theta_unlabel$theta_0))
 }
 
-MaxProbSearchMAPOld <- function(matrix_x, vector_y, classlist, serine_position, num_recom, max_left, max_right, min_left, min_right, gamma_0, gamma_1, add_ins) {
-#================================================================================================================================================================================
-#	An alternative version of maxP_search. The difference:
-#		theta parameter is obtained by MAP estimation instead of Monte Carlo simulation.
-#	
-#================================================================================================================================================================================
-	num_features <- dim(matrix_x)[2]
-	rec <- c()	
-	train_x <- matrix_x 
-	train_y <- vector_y
-	num_peptides <- 0
-    count_repeated_recom <- 0
-
-	while (num_peptides < num_recom) {		
-        ratio <- GetRatioOldMethod(train_x, train_y, classlist, gamma_0, gamma_1)
-		best_class <- as.numeric(apply(ratio, 2, which.max))
-		length_left <- ceiling(runif(1, min = min_left-1, max = max_left))
-		length_right  <- ceiling(runif(1, min = min_right-1, max = max_right))
-		best_peptide <- rep(-1, num_features)
-		best_peptide[(serine_position-length_left+1):(serine_position+length_right)] <- best_class[(serine_position-length_left+1):(serine_position+length_right)]
-		if(isNew(train_x, best_peptide)){
-			rec <- rbind(rec, best_peptide)
-			num_peptides = num_peptides + 1
-            print ("nth peptide")
-            print (num_peptides)
-		} else {
-            count_repeated_recom <- count_repeated_recom + 1
-            print ("repeated count")
-            print (count_repeated_recom)
-        }
-        for (i in add_ins) {
-            train_x <- rbind(train_x, best_peptide)
-            train_y <- c(train_y, 0)
-        }
-	}
-	colnames(rec) <- colnames(matrix_x)
-	rownames(rec) <- c(1:dim(rec)[1])
-	return (rec)
-}
-
-MaxProbSearchMAPNew <- function(matrix_x_label_prefer, vector_y_label_prefer, matrix_x_label_unprefer, vector_y_label_unprefer, matrix_x_unlabel, vector_y_unlabel, classlist, serine_position, num_recom, max_left, max_right, min_left, min_right, gamma_0_label_prefer, gamma_1_label_prefer, gamma_0_label_unprefer, gamma_1_label_unprefer, gamma_0_unlabel, gamma_1_unlabel, add_ins) {
-#================================================================================================================================================================================
-#	An alternative version of maxP_search. The difference:
-#		theta parameter is obtained by MAP estimation instead of Monte Carlo simulation.
-#	
-#================================================================================================================================================================================
-	num_features <- dim(matrix_x_label_prefer)[2]
-	rec <- c()	
-	train_x_label_prefer <- matrix_x_label_prefer 
-	train_y_label_prefer <- vector_y_label_prefer
-	train_x_label_unprefer <- matrix_x_label_unprefer 
-	train_y_label_unprefer <- vector_y_label_unprefer
-	train_x_unlabel <- matrix_x_unlabel
-	train_y_unlabel <- vector_y_unlabel
-	num_peptides <- 0
-    count_repeated_recom <- 0
-
-	while (num_peptides < num_recom) {		
-        ratio <- GetRatioNewMethod(classlist, train_x_label_prefer, train_y_label_prefer, gamma_0_label_prefer, gamma_1_label_prefer, train_x_label_unprefer, train_y_label_unprefer, gamma_0_label_unprefer, gamma_1_label_unprefer, train_x_unlabel, train_y_unlabel, gamma_0_unlabel, gamma_1_unlabel)
-		best_class <- as.numeric(apply(ratio, 2, which.max))
-		length_left <- ceiling(runif(1, min = min_left-1, max = max_left))
-		length_right  <- ceiling(runif(1, min = min_right-1, max = max_right))
-		best_peptide <- rep(-1, num_features)
-		best_peptide[(serine_position-length_left+1):(serine_position+length_right)] <- best_class[(serine_position-length_left+1):(serine_position+length_right)]
-		if(isNew(rbind(train_x_label_prefer, train_x_label_unprefer, train_x_unlabel), best_peptide)){
-			rec <- rbind(rec, best_peptide)
-			num_peptides = num_peptides + 1
-            print ("nth peptide")
-            print (num_peptides)
-		} else {
-            count_repeated_recom <- count_repeated_recom + 1
-            print ("repeated count")
-            print (count_repeated_recom)
-        }
-        for (i in add_ins) {
-            train_x_label_prefer <- rbind(train_x_label_prefer, best_peptide)
-            train_y_label_prefer <- c(train_y_label_prefer, 0)
-            train_x_label_unprefer <- rbind(train_x_label_unprefer, best_peptide)
-            train_y_label_unprefer <- c(train_y_label_unprefer, 1)
-            train_x_unlabel <- rbind(train_x_unlabel, best_peptide)
-            train_y_unlabel <- c(train_y_unlabel, 0)
-        }
-	}
-	colnames(rec) <- colnames(matrix_x_label_prefer)
-	rownames(rec) <- c(1:dim(rec)[1])
-	return (rec)
-}
 
 isNew <- function(collection, to_add) {
 # Test if to_add is already existed in collection. We only compare to_add's non -1 entries so
