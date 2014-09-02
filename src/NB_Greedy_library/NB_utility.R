@@ -39,9 +39,9 @@ Naive_Bayes <- function(trainX, trainY, testData, classlist, S.Pos, maxL, maxR, 
 }
 
 Naive_Bayes_new <- function(X_prefer, Y_prefer, X_unprefer, Y_unprefer, X_unlabel, Y_unlabel, testData, classlist, S.Pos, maxL, maxR, gamma_0_prefer, gamma_1_prefer, prior_prefer, gamma_0_unprefer, gamma_1_unprefer, prior_unprefer, gamma_0_unlabel, gamma_1_unlabel, prior_unlabel, itr) {
-    alpha_prefer <- Dirichlet_parameter(X_prefer, Y_prefer, classlist, gamma_0_prefer, gamma_1_prefer)
-    alpha_unprefer <- Dirichlet_parameter(X_unprefer, Y_unprefer, classlist, gamma_0_unprefer, gamma_1_unprefer)
-    alpha_unlabel <- Dirichlet_parameter(X_unlabel, Y_unlabel, classlist, gamma_0_unlabel, gamma_1_unlabel)
+    alpha_prefer <- Dirichlet_Parameter(X_prefer, Y_prefer, classlist, gamma_0_prefer, gamma_1_prefer)
+    alpha_unprefer <- Dirichlet_Parameter(X_unprefer, Y_unprefer, classlist, gamma_0_unprefer, gamma_1_unprefer)
+    alpha_unlabel <- Dirichlet_Parameter(X_unlabel, Y_unlabel, classlist, gamma_0_unlabel, gamma_1_unlabel)
 
     predict_mat <- c()
     for (i in 1:itr) {

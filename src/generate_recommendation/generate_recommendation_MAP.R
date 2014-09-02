@@ -58,17 +58,17 @@ Y_type1 <- train_data[train_data[,'type1'] != -1, 'type1']
 X_type2 <- train_data[train_data[,'type2'] != -1, 1:(nL+nR)]
 Y_type2 <- train_data[train_data[,'type2'] != -1, 'type2']
 
-# find type 1 hit new method
-method <- paste('type_1_new_addins_', toString(add_ins), sep = '')
-result <- generate_recommendation_MAP_new(X_sfp, Y_sfp, X_AcpS, Y_AcpS, X_PfAcpH, Y_PfAcpH, AAclass, S.Pos, num_recom, maxL, maxR, minL, minR, gamma_0_sfp, gamma_1_sfp, prior_sfp, gamma_0_AcpS, gamma_1_AcpS, prior_AcpS, gamma_0_PfAcpH, gamma_1_PfAcpH, prior_PfAcpH, add_ins, itr)
+# # find type 1 hit new method
+# method <- paste('type_1_new_addins_', toString(add_ins), sep = '')
+# result <- generate_recommendation_MAP_new(X_sfp, Y_sfp, X_AcpS, Y_AcpS, X_PfAcpH, Y_PfAcpH, AAclass, S.Pos, num_recom, maxL, maxR, minL, minR, gamma_0_sfp, gamma_1_sfp, prior_sfp, gamma_0_AcpS, gamma_1_AcpS, prior_AcpS, gamma_0_PfAcpH, gamma_1_PfAcpH, prior_PfAcpH, add_ins, itr)
 
 # # find type 2 hit new method
 # method <- paste('type_2_new_addins_', toString(add_ins), sep = '')
 # result <- generate_recommendation_MAP_new(X_AcpS, Y_AcpS, X_sfp, Y_sfp, X_PfAcpH, Y_PfAcpH, AAclass, S.Pos, num_recom, maxL, maxR, minL, minR, gamma_0_AcpS, gamma_1_AcpS, prior_AcpS, gamma_0_sfp, gamma_1_sfp, prior_sfp, gamma_0_PfAcpH, gamma_1_PfAcpH, prior_PfAcpH, add_ins, itr)
 
-# # find type 1 hit old method
-# method <- paste('type_1_old_addins_', toString(add_ins), sep = '')
-# result <- generate_recommendation_MAP_old(X_type1, Y_type1, AAclass, S.Pos, num_recom, maxL, maxR, minL, minR, gamma_0_type1, gamma_1_type1, prior_type1, add_ins, itr)
+# find type 1 hit old method
+method <- paste('type_1_old_addins_', toString(add_ins), sep = '')
+result <- generate_recommendation_MAP_old(X_type1, Y_type1, AAclass, S.Pos, num_recom, maxL, maxR, minL, minR, gamma_0_type1, gamma_1_type1, prior_type1, add_ins, itr)
 
 # # find type 2 hit old method
 # method <- paste('type_2_old_addins_', toString(add_ins), sep = '')

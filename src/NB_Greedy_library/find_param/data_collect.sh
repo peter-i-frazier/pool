@@ -1,5 +1,5 @@
 ROOT_PATH="/fs/home/jw865/peptide-catalysis"
-UCSD_outname="AcpS_specific"
+UCSD_outname="sfp"
 
 rm ${ROOT_PATH}/src/NB_Greedy_library/find_param/auc
 

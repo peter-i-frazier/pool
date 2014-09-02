@@ -187,7 +187,7 @@ generate_recommendation_MAP_old <- function(X, Y, classlist, S.Pos, num_recom, m
 	colnames(rec) <- colnames(X)
 	rownames(rec) <- c(1:dim(rec)[1])
     # calculate prob of hit for rec
-    prob <- Naive_Bayes(X, Y, rec, S.Pos, maxL, maxR, gamma_0, gamma_1, prior, itr)
+    prob <- Naive_Bayes(X, Y, rec, classlist, S.Pos, maxL, maxR, gamma_0, gamma_1, prior, itr)
 	return (list(rec=rec, prob=prob))
 }
 
@@ -204,7 +204,7 @@ generate_recommendation_MAP_new <- function(X_prefer, Y_prefer, X_unprefer, Y_un
     count_repeated_recom <- 0
 
 	while (num_peptides < num_recom) {		
-        ratio <- GetRatioNewMethod(classlist, train_x_label_prefer, train_y_label_prefer, gamma_0_prefer, gamma_1_prefer, train_x_label_unprefer, train_y_label_unprefer, gamma_0_unprefer, gamma_1_unprefer, train_x_unlabel, train_y_unlabel, gamma_0_unlabel, gamma_1_unlabel)
+        ratio <- get_ratio_new_method(classlist, train_x_label_prefer, train_y_label_prefer, gamma_0_prefer, gamma_1_prefer, train_x_label_unprefer, train_y_label_unprefer, gamma_0_unprefer, gamma_1_unprefer, train_x_unlabel, train_y_unlabel, gamma_0_unlabel, gamma_1_unlabel)
 		best_class <- as.numeric(apply(ratio, 2, which.max))
 		length_left <- ceiling(runif(1, min = minL-1, max = maxL))
 		length_right  <- ceiling(runif(1, min = minR-1, max = maxR))

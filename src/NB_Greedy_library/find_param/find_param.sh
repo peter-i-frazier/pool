@@ -1,7 +1,7 @@
 #!/bin/sh
 UCSD_ROOT_PATH="/fs/home/jw865/peptide-catalysis"
-UCSD_outname="AcpS_specific"
-UCSD_datafile="${UCSD_ROOT_PATH}/data/2014_06_03_orthogonal_labeling_data/Training_Set_Cumulative.csv"
+UCSD_outname="sfp"
+UCSD_datafile="${UCSD_ROOT_PATH}/data/whole_experiment_data.csv"
 rm -R ${UCSD_ROOT_PATH}/temp/find_param/${UCSD_outname}
 mkdir ${UCSD_ROOT_PATH}/temp/find_param/${UCSD_outname}
 
