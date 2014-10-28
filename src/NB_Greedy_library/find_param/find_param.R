@@ -31,7 +31,7 @@ for(i in 1:length(args))
 
 gamma_0_list <- c(1000, 500, 100, 50, 10, 5, 1)
 gamma_1_list <- c(0.01, 0.05, 0.1, 0.5, 1, 10)
-prior_list <- c(1e-4, 1e-3, 1e-2, 0.1, 0.2, 0.3, 0.4, 0.5)
+prior_list <- c(1e-5, 1e-4, 1e-3, 1e-2, 0.1, 0.2, 0.3, 0.4, 0.5)
 parameters <- group_parameters(gamma_0_list, gamma_1_list, prior_list)
 colnames(parameters) <- c('gamma0','gamma1','prior')
 
@@ -61,7 +61,8 @@ original_X <- train_data[,1:(nL+nR)]
 original_Y <- train_data[,outcome_name]
 X <- original_X[original_Y != -1,]
 Y <- original_Y[original_Y != -1]
-auc <- fold_cv(X, Y, AAclass, S.Pos, nL, nR, gamma_0, gamma_1, prior, itr, num_fold) 
+# auc <- fold_cv(X, Y, AAclass, S.Pos, nL, nR, gamma_0, gamma_1, prior, itr, num_fold) 
+auc <- loocv(X, Y, AAclass, S.Pos, nL, nR, gamma_0, gamma_1, prior, itr) 
 write(auc, 'auc')
 print ("auc")
 print (auc)
