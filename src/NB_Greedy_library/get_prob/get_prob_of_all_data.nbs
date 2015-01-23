@@ -1,0 +1,8 @@
+#!/bin/sh
+cd ${4}
+
+ROOTPATH=\'${1}\'
+DATAFILE=\'${2}\'
+/usr/local/R/icse/bin/Rscript --slave ${1}/src/NB_Greedy_library/get_prob/get_prob_of_all_data.R root_path=${ROOTPATH} datafile=${DATAFILE} seq_idx=${3}
+
+
