@@ -1,3 +1,9 @@
+Jan 16, 2015
+
+The raw data we are going to normalize and analyze is from root_path/data/all_TS_raw_reading.csv
+
+script.R showed the latest method to do normalization and make histogram plots
+
 May 28, 2014.
 
 This directory contains files that Jialei and Peter put together to address a
