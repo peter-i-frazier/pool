@@ -185,28 +185,32 @@ Dirichlet_Parameter <- function(trainX, trainY, classlist, Gamma_0, Gamma_1)
 	alpha_1 <- c()
 	for (col in 1:K) {
 		count <- rep(0,nVal)
-		for (r in 1:R_1) {
-            if (train_1[r,col]!= -1) {
-                count[train_1[r,col]] <- count[train_1[r,col]] + 1
+        if (R_1 > 0) {
+            for (r in 1:R_1) {
+                        if (train_1[r,col] != -1) {
+                            count[train_1[r,col]] <- count[train_1[r,col]] + 1
+                        }
             }
-		}
+        }
 		distance <- as.numeric(paste(unlist(strsplit(colnames(train_1)[col],''))[-1],collapse=""))
         alpha_1 <- cbind(alpha_1, count + rep(distance**0.5*Gamma_1,nVal))
-    	}	
+    }	
 	
 	#R_0: number of negative training samples
 	R_0<- dim(train_0)[1]
     alpha_0 <- c()
 	for (col in 1:K) {
 		count <- rep(0,nVal)
-		for (r in 1:R_0) {
-            if (train_0[r,col]!= -1) {
-                count[train_0[r,col]] <- count[train_0[r,col]] + 1
+        if (R_0 > 0) {
+            for (r in 1:R_0) {
+                        if (train_0[r,col] != -1) {
+                            count[train_0[r,col]] <- count[train_0[r,col]] + 1
+                        }
             }
-		}
-    		#distance <- as.numeric(paste(unlist(strsplit(colnames(train_0)[col],''))[-1],collapse=""))
-        	alpha_0 <- cbind(alpha_0, count + table(as.numeric(classlist))/length(classlist)*Gamma_0)
-    	}	
+        }
+        #distance <- as.numeric(paste(unlist(strsplit(colnames(train_0)[col],''))[-1],collapse=""))
+        alpha_0 <- cbind(alpha_0, count + table(as.numeric(classlist))/length(classlist)*Gamma_0)
+    }	
 	alpha_0 <- as.data.frame(alpha_0)
     	colnames(alpha_0) <- colnames(trainX)
     	alpha_1 <- as.data.frame(alpha_1)
@@ -456,4 +460,96 @@ writePep <- function(newPep, S.Pos, pred_prob, classlist, out_file, method_name)
 	rownames(pepTable) <- c(1:nPep)
 	pepTable <- as.data.frame(pepTable, stringsAsFactors = FALSE)	
 	write.csv(pepTable, out_file)
+}
+
+mutate_rec <- function(nterms, cterms, classlist, Nrec, max_pos_mutation) {
+    num_data <- length(nterms)
+    lib_nterm <- c()
+    lib_cterm <- c()
+    which_to_mutate <- sample(num_data, size=Nrec, replace=T)
+    for (n in 1:Nrec) {
+        to_mutate_nterm <- strsplit(nterms[which_to_mutate[n]], '')[[1]]
+        for (i in 1:max_pos_mutation) {
+            if (runif(1) > 0.5) {
+                to_mutate_nterm[sample(length(to_mutate_nterm), size=1)] <- sample(colnames(classlist), size=1)
+            }
+        }
+        to_mutate_nterm <- paste(to_mutate_nterm, collapse='')
+        lib_nterm <- c(lib_nterm, to_mutate_nterm)
+        to_mutate_cterm <- strsplit(cterms[which_to_mutate[n]], '')[[1]]
+        for (i in 1:max_pos_mutation) {
+            if (runif(1) > 0.5) {
+                to_mutate_cterm[sample(length(to_mutate_cterm), size=1)] <- sample(colnames(classlist), size=1)
+            }
+        }
+        to_mutate_cterm <- paste(to_mutate_cterm, collapse='')
+        lib_cterm <- c(lib_cterm, to_mutate_cterm)
+    }
+    return (list(nterm=lib_nterm, cterm=lib_cterm))
+}
+
+naive_rec <- function(X, Y, classlist, S.Pos, nL, nR, gamma_0, gamma_1, prior, itr, Nlib, Nrec, maxL, maxR) {
+    lib_nterm <- c()
+    lib_cterm <- c()
+    for (n in 1:Nlib) {
+        lib_nterm <- c(lib_nterm, paste(sample(colnames(classlist), size=maxL, replace=T), collapse=''))
+        lib_cterm <- c(lib_cterm, paste(sample(colnames(classlist), size=maxL, replace=T), collapse=''))
+    }
+    lib_data <- data.frame(test=rep(0,Nlib), nterm=lib_nterm, cterm=lib_cterm, sequence=lib_cterm, stringsAsFactors=F)
+    lib_X <- getFeatures(lib_data, classlist, nL, nR)[, 1:(nL+nR)]
+    lib_prob <- Naive_Bayes(X, Y, lib_X, classlist, S.Pos, nL, nR, gamma_0, gamma_1, prior, itr)
+    return (list(nterm=rep(lib_nterm[order(lib_prob, decreasing=T)][1], Nrec), cterm=rep(lib_cterm[order(lib_prob, decreasing=T)][1], Nrec)))
+}
+    
+convert_term_to_feature <- function(nterms, cterms, classlist, nL, nR) {
+    num_data <- length(nterms)
+    data <- data.frame(dummy=rep(0, num_data), nterm=nterms, cterm=cterms, sequence=nterms, stringsAsFactors=F)
+    return (getFeatures(data, classlist, nL, nR)[, 1:(nL+nR)])
+}
+
+convert_feature_to_class <- function(features, classlist, nL, nR, maxL, maxR) {
+    num_seq <- dim(features)[1]
+    seqs <- c()
+    for (n in 1:num_seq) {
+        one_seq <- c()
+        for (i in (nL-maxL+1):nL) {
+            one_seq <- c(one_seq, colnames(classlist)[which(classlist[1,] == features[n, i])[1]])
+        }
+        one_seq <- c(one_seq, "S")
+        for (i in (nL+1):(nL+maxR)) {
+            one_seq <- c(one_seq, colnames(classlist)[which(classlist[1,] == features[n, i])[1]])
+        }
+        one_seq <- paste(one_seq, collapse='')
+        seqs <- c(seqs, one_seq)
+    }
+    return (seqs)
+}
+
+convert_term_to_seqs <- function(nterms, cterms, maxL, maxR) {
+    nterms <- strsplit(nterms, '')
+    cterms <- strsplit(cterms, '')
+    seqs <- c()
+    for (n in 1:length(nterms)) {
+        l <- length(nterms[[n]])
+        r <- length(cterms[[n]])
+        short_nterm <- paste(nterms[[n]][max(1, (l-maxL+1)):l], collapse='')
+        short_cterm <- paste(cterms[[n]][1:min(r, maxR)], collapse='')
+        seqs <- c(seqs, paste(short_nterm, 'S', short_cterm, sep=''))
+    }
+    return (seqs)
+}
+
+convert_to_class <- function(seqs, classlist) {
+    seq_list <- strsplit(seqs, '')
+    classes <- c()
+    for (n in 1:length(seq_list)) {
+        for (i in 1:length(seq_list[[n]])) {
+            seq_list[[n]][i] <- colnames(classlist)[which(classlist[1,] == classlist[1, seq_list[[n]][i]])[1]]
+        }
+    }
+    new_seqs <- c()
+    for (n in 1:length(seq_list)) {
+        new_seqs <- c(new_seqs, paste(seq_list[[n]], collapse=''))
+    }
+    return (new_seqs)
 }

@@ -46,13 +46,7 @@ getFeatures <- function(data.org, classlist, nL, nR)
         if (data.org[r,'nterm'] == '') {
             next
         }
-        # verify nterm and cterm add up to the whole sequence
-        if (paste(data.org[r,'nterm'],'S',data.org[r,'cterm'],sep='') != paste(unlist(strsplit(data.org[r,'sequence'], split=' ')), collapse='')) {
-            print ("add up verification failed")
-            print (r)
-            error <- error + 1
-        }
-        one_feature <- rep(-1, nL+nR+nOUTCOME+1)
+        one_feature <- rep(-1, nL+nR+nOUTCOME)
         sequence <- unlist(strsplit(data.org[r, 'nterm'],''))
         l.seq  <- length(sequence)
         l <- min(nL,l.seq)
@@ -78,10 +72,7 @@ getFeatures <- function(data.org, classlist, nL, nR)
     #outcome.names : name of outcome values
     outcome.names <- colnames(data.org)[1:(nOUTCOME)]
     feature <- as.data.frame(feature)
-    colnames(feature) <- c(paste('L',nL:1,sep=""), paste('R',1:nR,sep=""), outcome.names, 'org_idx')
-    if (error > 0) {
-        print ("there is error when getting features!")
-    }
+    colnames(feature) <- c(paste('L',nL:1,sep=""), paste('R',1:nR,sep=""), outcome.names)
     return( feature )
 }
 
