@@ -36,7 +36,7 @@ getFeatures <- function(data.org, classlist, nL, nR)
     #nVal: number of values each feature can take
     nVal <- length(unique(as.numeric(classlist)))
     #nOUTCOME: number of outcome values
-    nOUTCOME <- dim(data.org)[2]-3
+    nOUTCOME <- dim(data.org)[2]-5
     if (nOUTCOME <= 0) {
         print ("no labels")
         error <- error + 1
@@ -47,12 +47,12 @@ getFeatures <- function(data.org, classlist, nL, nR)
             next
         }
         # verify nterm and cterm add up to the whole sequence
-        if (paste(data.org[r,'nterm'],'S',data.org[r,'cterm'],sep='') != data.org[r,'sequence']) {
+        if (paste(data.org[r,'nterm'],'S',data.org[r,'cterm'],sep='') != paste(unlist(strsplit(data.org[r,'sequence'], split=' ')), collapse='')) {
             print ("add up verification failed")
             print (r)
             error <- error + 1
         }
-        one_feature <- rep(-1, nL+nR+nOUTCOME)
+        one_feature <- rep(-1, nL+nR+nOUTCOME+1)
         sequence <- unlist(strsplit(data.org[r, 'nterm'],''))
         l.seq  <- length(sequence)
         l <- min(nL,l.seq)
@@ -72,12 +72,13 @@ getFeatures <- function(data.org, classlist, nL, nR)
                 one_feature[nL+nR+i] <- data.org[r,i]
             }
         }
-        feature <- rbind(feature, one_feature)
+        one_feature[nL+nR+nOUTCOME+1] = r
+        feature <- rbind.data.frame(feature, one_feature)
     }    
     #outcome.names : name of outcome values
     outcome.names <- colnames(data.org)[1:(nOUTCOME)]
     feature <- as.data.frame(feature)
-    colnames(feature) <- c(paste('L',nL:1,sep=""), paste('R',1:nR,sep=""), outcome.names)
+    colnames(feature) <- c(paste('L',nL:1,sep=""), paste('R',1:nR,sep=""), outcome.names, 'org_idx')
     if (error > 0) {
         print ("there is error when getting features!")
     }
@@ -120,7 +121,7 @@ loocv <- function(X, Y, classlist, S.Pos, nL, nR, gamma_0, gamma_1, prior, itr) 
     }
     xy <- ROC_xy_output(prob, Y)
     auc <- AUC(rev(xy$x), rev(xy$y))
-    return (auc)
+    return (list(xy=xy, auc=auc))
 }
 
 fold_cv <- function(X, Y, classlist, S.Pos, nL, nR, gamma_0, gamma_1, prior, itr, num_fold) {
@@ -135,15 +136,17 @@ fold_cv <- function(X, Y, classlist, S.Pos, nL, nR, gamma_0, gamma_1, prior, itr
         part_prob <- Naive_Bayes(train_X, train_Y, test_X, classlist, S.Pos, nL, nR, gamma_0, gamma_1, prior, itr)
         prob <- c(prob, part_prob)
     }
-    train_X <- X[-c(((num_fold-1)*group_size+1):num_rows),]
-    train_Y <- Y[-c(((num_fold-1)*group_size+1):num_rows)]
-    test_X <- X[c(((num_fold-1)*group_size+1):num_rows),]
-    part_prob <- Naive_Bayes(train_X, train_Y, test_X, classlist, S.Pos, nL, nR, gamma_0, gamma_1, prior, itr)
-    prob <- c(prob, part_prob)
+    if (group_size * (num_fold-1) < num_rows) {
+        train_X <- X[-c(((num_fold-1)*group_size+1):num_rows),]
+        train_Y <- Y[-c(((num_fold-1)*group_size+1):num_rows)]
+        test_X <- X[c(((num_fold-1)*group_size+1):num_rows),]
+        part_prob <- Naive_Bayes(train_X, train_Y, test_X, classlist, S.Pos, nL, nR, gamma_0, gamma_1, prior, itr)
+        prob <- c(prob, part_prob)
+    }
 
     xy <- ROC_xy_output(prob, Y)
     auc <- AUC(rev(xy$x), rev(xy$y))
-    return (auc)
+    return (list(xy=xy, auc=auc))
 }
 
 cv <- function(X, Y, classlist, S.Pos, nL, nR, gamma_0, gamma_1, prior, itr) {
@@ -151,7 +154,7 @@ cv <- function(X, Y, classlist, S.Pos, nL, nR, gamma_0, gamma_1, prior, itr) {
     prob <- Naive_Bayes(X, Y, X, classlist, S.Pos, nL, nR, gamma_0, gamma_1, prior, itr)
     xy <- ROC_xy_output(prob, Y)
     auc <- AUC(rev(xy$x), rev(xy$y))
-    return (auc)
+    return (list(xy=xy, auc=auc))
 }
 
 generate_recommendation_MAP_old <- function(X, Y, classlist, S.Pos, num_recom, maxL, maxR, minL, minR, gamma_0, gamma_1, prior, add_ins, itr) {

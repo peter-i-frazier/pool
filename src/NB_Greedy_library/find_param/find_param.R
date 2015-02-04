@@ -1,9 +1,10 @@
 # This file needs root_path, datafile, outcome_name, para_idx as input in command line
 # Code block below is only for testing, must disable when submit to nbs!
-#root_path = "/fs/home/jw865/peptide-catalysis"
-#datafile <- paste(root_path,"/data/whole_experiment_data.csv",sep='')
-#outcome_name <- "PfAcpH"
-#para_idx <- 300
+# root_path = "/fs/home/jw865/peptide-catalysis"
+# datafile <- paste(root_path,"/data/whole_experiment_data.csv",sep='')
+# outcome_name <- "sfp"
+# para_idx <- 300
+# num_fold <- 3
 # Code block end
 
 group_parameters <- function(v1, v2, v3) {
@@ -44,7 +45,6 @@ S.Pos <- 19
 maxL <- 19
 maxR <- 19
 itr <- 500
-num_fold <- 200
 
 #import libraries
 source(paste(root_path,"/src/NB_Greedy_library/NB_utility.R",sep=''))
@@ -61,8 +61,16 @@ original_X <- train_data[,1:(nL+nR)]
 original_Y <- train_data[,outcome_name]
 X <- original_X[original_Y != -1,]
 Y <- original_Y[original_Y != -1]
-# auc <- fold_cv(X, Y, AAclass, S.Pos, nL, nR, gamma_0, gamma_1, prior, itr, num_fold) 
-auc <- loocv(X, Y, AAclass, S.Pos, nL, nR, gamma_0, gamma_1, prior, itr) 
+cv_result <- fold_cv(X, Y, AAclass, S.Pos, nL, nR, gamma_0, gamma_1, prior, itr, num_fold) 
+auc <- cv_result$auc
+# cv_result <- loocv(X, Y, AAclass, S.Pos, nL, nR, gamma_0, gamma_1, prior, itr) 
+# xy <- cv_result$axis
+# area <- cv_result$area
+# 
+# plot(x = xy$x, y = xy$y, type = 'l', xlim = c(0,1), ylim = c(0,1), xlab = "false positive rate", ylab = "true positive rate")
+# title(main = )
+# dev.off()
+
 write(auc, 'auc')
 print ("auc")
 print (auc)

@@ -38,6 +38,16 @@ Naive_Bayes <- function(trainX, trainY, testData, classlist, S.Pos, maxL, maxR, 
 	return(predProb)
 }
 
+NB_theta_matrices <- function(trainX, trainY, classlist, S.Pos, maxL, maxR, Gamma_0, Gamma_1, prior.positive)
+{
+	nF <- dim(trainX)[2]
+	nAA <- length(unique(as.numeric(classlist))) 
+	alpha <- Dirichlet_Parameter(trainX, trainY, classlist, Gamma_0 = Gamma_0, Gamma_1 = Gamma_1)
+	
+    theta <- getTheta(alpha = alpha, classlist = classlist, Gamma_0 = Gamma_0, Gamma_1 = Gamma_1)
+	return(theta)
+}
+
 Naive_Bayes_new <- function(X_prefer, Y_prefer, X_unprefer, Y_unprefer, X_unlabel, Y_unlabel, testData, classlist, S.Pos, maxL, maxR, gamma_0_prefer, gamma_1_prefer, prior_prefer, gamma_0_unprefer, gamma_1_unprefer, prior_unprefer, gamma_0_unlabel, gamma_1_unlabel, prior_unlabel, itr) {
     alpha_prefer <- Dirichlet_Parameter(X_prefer, Y_prefer, classlist, gamma_0_prefer, gamma_1_prefer)
     alpha_unprefer <- Dirichlet_Parameter(X_unprefer, Y_unprefer, classlist, gamma_0_unprefer, gamma_1_unprefer)
@@ -176,9 +186,9 @@ Dirichlet_Parameter <- function(trainX, trainY, classlist, Gamma_0, Gamma_1)
 	for (col in 1:K) {
 		count <- rep(0,nVal)
 		for (r in 1:R_1) {
-            		if (train_1[r,col] != -1) {
-                		count[train_1[r,col]] <- count[train_1[r,col]] + 1
-            		}
+            if (train_1[r,col]!= -1) {
+                count[train_1[r,col]] <- count[train_1[r,col]] + 1
+            }
 		}
 		distance <- as.numeric(paste(unlist(strsplit(colnames(train_1)[col],''))[-1],collapse=""))
         alpha_1 <- cbind(alpha_1, count + rep(distance**0.5*Gamma_1,nVal))
@@ -190,9 +200,9 @@ Dirichlet_Parameter <- function(trainX, trainY, classlist, Gamma_0, Gamma_1)
 	for (col in 1:K) {
 		count <- rep(0,nVal)
 		for (r in 1:R_0) {
-            		if (train_0[r,col] != -1) {
-                		count[train_0[r,col]] <- count[train_0[r,col]] + 1
-            		}
+            if (train_0[r,col]!= -1) {
+                count[train_0[r,col]] <- count[train_0[r,col]] + 1
+            }
 		}
     		#distance <- as.numeric(paste(unlist(strsplit(colnames(train_0)[col],''))[-1],collapse=""))
         	alpha_0 <- cbind(alpha_0, count + table(as.numeric(classlist))/length(classlist)*Gamma_0)
