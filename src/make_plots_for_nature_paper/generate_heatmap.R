@@ -1,25 +1,6 @@
-root_path = "/fs/home/jw865/peptide-catalysis"
-datafile <- paste(root_path,"/data/whole_experiment_data.csv",sep='')
-
-gamma_0_sfp <- 100
-gamma_1_sfp <- 0.05
-prior_sfp <- 1e-5
-
-gamma_0_AcpS <- 100
-gamma_1_AcpS <- 0.1
-prior_AcpS <- 0.01
-
-gamma_0_PfAcpH <- 50
-gamma_1_PfAcpH <- 0.5
-prior_PfAcpH <- 0.1
-
-# gamma_0_type1 <- 50
-# gamma_1_type1 <- 0.5
-# prior_type1 <- 1e-4
-# 
-# gamma_0_type2 <- 1000
-# gamma_1_type2 <- 0.5
-# prior_type2 <- 1e-4
+rm(list=ls())
+root_path = "~/peptide-catalysis"
+datafile <- paste(root_path,"/data/all_TS_data.csv",sep='')
 
 nL <- 19
 nR <- 19
@@ -31,6 +12,7 @@ itr <- 500
 #import libraries
 source(paste(root_path,"/src/NB_Greedy_library/NB_utility.R",sep=''))
 source(paste(root_path,"/src/NB_Greedy_library/NB_interface.R",sep=''))
+source(paste(root_path,"/src/constant.R",sep=''))
 
 #Specify path/to/classlist file here
 classfile <- paste(root_path,"/data/Reduced_AA_Alphabet.csv",sep='')
@@ -53,4 +35,4 @@ Y_type2 <- train_data[train_data[,'type2'] != -1, 'type2']
 
 table <- c()
 theta <- NB_theta_matrices(X_sfp, Y_sfp, AAclass, S.Pos, maxL, maxR, gamma_0_sfp, gamma_1_sfp, prior_sfp)
-write.csv(theta$theta_1 / theta$theta_0, "NB_illustration.csv")
+write.csv(theta$theta_1 / theta$theta_0, "sfp_heatmap.csv")
