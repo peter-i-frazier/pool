@@ -11,7 +11,7 @@ all_plots <- function() {
 
 #### plot cumulative number of hits v.s. number of rounds
 cumulative_hits <- function() {
-    org.data <- read.csv(../../data/all_TS_data.csv, stringsAsFactors=F)
+    org.data <- read.csv(paste(root_path, "/data/all_TS_data.csv", sep=''), stringsAsFactors=F)
     pdf("plots/cumulative_number_of_hits_vs_number_of_rounds.pdf", width=10, height=10)
     TS <- c(1,3,4,5)
     par(mfrow=c(2,2))
@@ -27,6 +27,7 @@ cumulative_hits <- function() {
         cumu_counts[i] = sum(counts[1:i])
     }
     barplot(cumu_counts, main="sfp specific labeling cumulative", xlab="number of rounds")
+    print (cumu_counts)
 # sfp specific labeling and unlabeling
     counts <- rep(0, 4)
     for (i in 1:dim(org.data)[1]) {
@@ -39,6 +40,7 @@ cumulative_hits <- function() {
         cumu_counts[i] = sum(counts[1:i])
     }
     barplot(cumu_counts, main="sfp specific labeling and unlabeling cumulative", xlab="number of rounds")
+    print (cumu_counts)
 # AcpS specific labeling
     counts <- rep(0, 4)
     for (i in 1:dim(org.data)[1]) {
@@ -51,6 +53,7 @@ cumulative_hits <- function() {
         cumu_counts[i] = sum(counts[1:i])
     }
     barplot(cumu_counts, main="AcpS specific labeling cumulative", xlab="number of rounds")
+    print (cumu_counts)
 # AcpS specific labeling and unlabeling
     counts <- rep(0, 4)
     for (i in 1:dim(org.data)[1]) {
@@ -63,6 +66,7 @@ cumulative_hits <- function() {
         cumu_counts[i] = sum(counts[1:i])
     }
     barplot(cumu_counts, main="AcpS specific labeling and unlabeling cumulative", xlab="number of rounds")
+    print (cumu_counts)
     dev.off()
 }
 
