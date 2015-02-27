@@ -69,6 +69,10 @@ class OptimizerInterface(object):
 
     __metaclass__ = ABCMeta
 
+    @abstractproperty
+    def performance_value(self):
+        pass
+    
     @abstractmethod
     def optimize(self, **kwargs):
         """Minimize a function f(x), represented by an implementation of
