@@ -149,6 +149,33 @@ getTheta <- function(trainX = NA, trainY = NA, alpha = NA, classlist, Gamma_0, G
 	return (theta)
 }
 
+
+get_theta_with_var <- function(trainX, trainY, classlist, Gamma_0, Gamma_1) 
+{
+    nVal <- length(unique(as.numeric(classlist)))
+   alpha <- Dirichlet_Parameter(trainX, trainY, classlist, Gamma_0, Gamma_1)
+    alpha_0 <- alpha$alpha_0
+	alpha_1 <- alpha$alpha_1
+	K <- dim(alpha_1)[2]
+	theta_0 <- c()
+	theta_1 <- c()
+    var_0 <- c()
+    var_1 <- c()
+  
+	for (k in 1:K) {	
+        	theta_0 <- cbind(theta_0, alpha_0[,k]/sum(alpha_0[,k]))
+        	theta_1 <- cbind(theta_1, alpha_1[,k]/sum(alpha_1[,k]))         
+            var_0 <- cbind(var_0, alpha_0[,k] * (sum(alpha_0[,k]) - alpha_0[,k]) / (sum(alpha_0[,k]) * sum(alpha_0[,k]) * (sum(alpha_0[,k]) +1)))
+            var_1 <- cbind(var_1, alpha_1[,k] * (sum(alpha_1[,k]) - alpha_1[,k]) / (sum(alpha_1[,k]) * sum(alpha_1[,k]) * (sum(alpha_1[,k]) +1)))
+	}
+	theta_0 <- as.data.frame(theta_0)
+    	colnames(theta_0) <- colnames(alpha_0)
+    	theta_1 <- as.data.frame(theta_1)
+    	colnames(theta_1) <- colnames(alpha_1)
+    	result = list(theta_0 = theta_0, theta_1 = theta_1, var_0=var_0, var_1=var_1)
+	return (result)
+}
+
 #	This function estimates the posterior alpha parameter of the Dirichlet distribution theta follows. For the jth position to the left/right of serene of the feature vector
 #	the prior alpha_1 is defined as(assuming K classes):
 #		(Gamma_1*(j**0.5), Gamma_2*(j**0.5),...Gamma_2*(j**0.5))
