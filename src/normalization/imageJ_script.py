@@ -67,12 +67,13 @@ def rank_stripes(table_folder, table_name, lib_folder, dest_folder):
     f.close()
 
 
-org_img = "/Users/jialeiwang/peptide-catalysis/src/normalization/org_img"
-lib_img = "/Users/jialeiwang/peptide-catalysis/src/normalization/lib_img"
-test_img = "/Users/jialeiwang/peptide-catalysis/src/normalization/test_img"
-table_folder = "/Users/jialeiwang/peptide-catalysis/src/normalization/rank_table"
-dup_img = "/Users/jialeiwang/peptide-catalysis/src/normalization/dup_img"
-rank_img = "/Users/jialeiwang/peptide-catalysis/src/normalization/rank_img"
+root = "/Users/jialeiwang/"
+org_img = root + "peptide-catalysis/src/normalization/org_img"
+lib_img = root + "peptide-catalysis/src/normalization/lib_img"
+test_img = root + "peptide-catalysis/src/normalization/test_img"
+table_folder = root + "peptide-catalysis/src/normalization/rank_table"
+dup_img = root + "peptide-catalysis/src/normalization/dup_img"
+rank_img = root + "peptide-catalysis/src/normalization/rank_img"
 
 TS1 = ['TS1_sfp_1', 'TS1_sfp_2', 'TS1_AcpS_1', 'TS1_AcpS_2']
 TS2 = ['TS2_sfp_1', 'TS2_sfp_2']
@@ -90,4 +91,6 @@ TS5 = ['TS5_sfp_1', 'TS5_sfp_2', 'TS5_AcpS_1', 'TS5_AcpS_2']
 #    rank_stripes(table_folder, 'sfp_1_dup_' + str(i), lib_img, dup_img)
 for filename in os.listdir(table_folder):
     if filename != '.DS_Store':
+        filename = filename[0:(len(filename) - 4)]
+        print filename
         rank_stripes(table_folder, filename, lib_img, rank_img)

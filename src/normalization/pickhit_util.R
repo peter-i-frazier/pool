@@ -24,7 +24,7 @@ log.rank <- function(org.data, m1, coef1, m2, coef2, m3=NA, coef3=NA) {
 slice.table <- function(org.table, unit.length, dest.folder, filename) {
     org.table <- org.table[org.table[, 'TS'] != 2,]
     if (floor(nrow(org.table) / unit.length) > 0) {
-        for (i in 0:floor(nrow(org.table) / unit.length))
+        for (i in 0:(floor(nrow(org.table) / unit.length) - 1))
             write.csv(org.table[(i * unit.length + 1):((i + 1) * unit.length),], sprintf("%s/%s_%d_to_%d.csv", dest.folder, filename, i * unit.length + 1, (i+1) * unit.length), row.names=F)
         write.csv(org.table[(floor(nrow(org.table) / unit.length) * unit.length + 1):nrow(org.table),], sprintf("%s/%s_%d_to_%d.csv", dest.folder, filename, floor(nrow(org.table) / unit.length) * unit.length + 1, nrow(org.table)), row.names=F)
     }
