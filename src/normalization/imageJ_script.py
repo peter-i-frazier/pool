@@ -1,5 +1,6 @@
 from ij import IJ
 import csv
+import os
 
 def construct_stripes(img_folder, lib_folder, img_list, ts, num_row, num_col, row_offset):
     imp_list = []
@@ -87,4 +88,6 @@ TS5 = ['TS5_sfp_1', 'TS5_sfp_2', 'TS5_AcpS_1', 'TS5_AcpS_2']
 #dup_idx = [1, 2, 5, 6, 107, 146, 159, 276, 277, 280, 281, 451, 453, 469, 522, 556, 577, 627, 688, 840, 841, 844, 845, 846, 847, 851, 859, 911, 972, 991, 1009, 1060, 1124, 1144, 1180, 1306, 1375, 1386, 1398, 1524, 1904]
 #for i in dup_idx:
 #    rank_stripes(table_folder, 'sfp_1_dup_' + str(i), lib_img, dup_img)
-rank_stripes(table_folder, 'measure1_1_to_15', lib_img, rank_img)
+for filename in os.listdir(table_folder):
+    if filename != '.DS_Store':
+        rank_stripes(table_folder, filename, lib_img, rank_img)
