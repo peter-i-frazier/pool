@@ -179,6 +179,7 @@ performance_benchmark <- function() {
     g <- g + labs(x="Number of peptides to sample", y="P(at least one peptide is a hit)", title="POOL works better than alternative methods")
     g <- g + scale_color_discrete(name="Method")
     ggsave("plots/benchmark.pdf", g)
+    write.csv(plot_data, "data_for_plots/benchmark.csv")
 }
 
 ### plot histogram of labeling / unlabeling of sfp

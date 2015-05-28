@@ -522,7 +522,7 @@ naive_rec <- function(X, Y, classlist, S.Pos, nL, nR, gamma_0, gamma_1, prior, i
         lib_nterm <- c(lib_nterm, paste(sample(colnames(classlist), size=maxL, replace=T), collapse=''))
         lib_cterm <- c(lib_cterm, paste(sample(colnames(classlist), size=maxL, replace=T), collapse=''))
     }
-    lib_data <- data.frame(test=rep(0,Nlib), nterm=lib_nterm, cterm=lib_cterm, sequence=lib_cterm, stringsAsFactors=F)
+    lib_data <- data.frame(test=rep(0,Nlib), nterm=lib_nterm, cterm=lib_cterm, sequence=lib_cterm, TS=rep(NA, Nlib), spot=rep(NA, Nlib), stringsAsFactors=F)
     lib_X <- getFeatures(lib_data, classlist, nL, nR)[, 1:(nL+nR)]
     lib_prob <- Naive_Bayes(X, Y, lib_X, classlist, S.Pos, nL, nR, gamma_0, gamma_1, prior, itr)
     return (list(nterm=rep(lib_nterm[order(lib_prob, decreasing=T)][1], Nrec), cterm=rep(lib_cterm[order(lib_prob, decreasing=T)][1], Nrec)))
@@ -530,7 +530,7 @@ naive_rec <- function(X, Y, classlist, S.Pos, nL, nR, gamma_0, gamma_1, prior, i
     
 convert_term_to_feature <- function(nterms, cterms, classlist, nL, nR) {
     num_data <- length(nterms)
-    data <- data.frame(dummy=rep(0, num_data), nterm=nterms, cterm=cterms, sequence=nterms, stringsAsFactors=F)
+    data <- data.frame(dummy=rep(0, num_data), nterm=nterms, cterm=cterms, sequence=rep(NA, num_data), TS=rep(NA, num_data), spot=rep(NA, num_data), stringsAsFactors=F)
     return (getFeatures(data, classlist, nL, nR)[, 1:(nL+nR)])
 }
 

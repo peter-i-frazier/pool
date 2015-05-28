@@ -96,8 +96,10 @@ getFeatures <- function(data.org, classlist, nL, nR)
 {
     #nVal: number of values each feature can take
     nVal <- length(unique(as.numeric(classlist)))
+    print (nVal)
     #nOUTCOME: number of outcome values
     nOUTCOME <- dim(data.org)[2]-2
+    print (nOUTCOME)
     feature <- matrix(-1, nrow=dim(data.org)[1], ncol=nL+nR+nOUTCOME)
     for (r in 1:dim(data.org)[1]) {
         sequence <- unlist(strsplit(data.org[r, 'nterm'],''))
