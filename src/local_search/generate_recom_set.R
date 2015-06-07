@@ -3,9 +3,10 @@
 # Generate a recommendation set
 # Use type1 response
 
+rm(list = ls())
+set.seed(1)
 # This section is required in any script, which specifies path of source folder
 # and load all modules.
-set.seed(1)
 root <- "~/repos/peptide-catalysis/src/"
 source(paste0(root, "core/dependency.R"))
 ResolveDependency(root)
