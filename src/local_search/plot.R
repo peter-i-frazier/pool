@@ -2,9 +2,9 @@
 # Created: 06.06.2015
 # Plot PI(S) from file
 
-plot.data <- read.csv("prob_improv_S_r2.csv")
+plot.data <- read.csv("prob_improv_S_v2.csv")
 plot.data <- unlist(unname(plot.data))
-png(filename = "plot_pi_r2.png")
-plot(plot.data, main = "Local Search", type = "l",
+png(filename = "plot_pi_v2.png")
+plot(plot.data, main = "Local Search (unique)", type = "l",
      lwd = 2, xlab = "# of iterations", ylab = "PI(S)")
 dev.off()

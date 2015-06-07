@@ -65,3 +65,30 @@ GenOnePeptideMAPNew <- function(length.left, length.right, alpha.1.label, alpha.
   }
   return (feature)
 }
+
+GenRecomSetOld <- function(X, Y, alpha.1, alpha.0, p1, num.recom, num.mc.samples, 
+                           minL, maxL, minR, maxR)  {
+  num.unique.recom <- 0
+  recom.set <- c()
+  while (num.unique.recom < num.recom) { 
+    print(sprintf("iter %d", num.unique.recom))
+
+    alphas <- BayesianNaiveBayes(X, Y, alpha.1, alpha.0, p1)
+    length.left <- ceiling(runif(1, min = minL - 1, max = maxL))
+    length.right <- ceiling(runif(1, min = minR - 1, max = maxR))
+    new.rec.peptide <- GenOnePeptideMAPOld(length.left, length.right,
+                                           alphas$post.alpha.1,
+                                           alphas$post.alpha.0, num.mc.samples)
+    if (nrow(unique(rbind(recom.set, new.rec.peptide))) ==
+        num.unique.recom)  # already contained this peptide
+      next
+    num.unique.recom <- num.unique.recom + 1
+    X <- rbind(X, new.rec.peptide)
+    Y <- c(Y, 0)
+    recom.set <- rbind(recom.set, new.rec.peptide)
+  }
+  return (recom.set)
+}
+
+  
+
