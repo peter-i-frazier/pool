@@ -8,5 +8,6 @@ ResolveDependency <- function(root) {
   source(paste0(root, "core/bayesian_naive_bayes.R"))
   source(paste0(root, "core/reversible_labeling_model.R"))
   source(paste0(root, "core/gen_recommendation.R"))
+  source(paste0(root, "core/prob_improv_of_set.R"))
 }
 
