@@ -68,6 +68,25 @@ GenOnePeptideMAPNew <- function(length.left, length.right, alpha.1.label, alpha.
 
 GenRecomSetOld <- function(X, Y, alpha.1, alpha.0, p1, num.recom, num.mc.samples, 
                            minL, maxL, minR, maxR)  {
+  # Generates a recommendation set
+  # 
+  # Args:
+  #   X: Feature matrix of peptides.
+  #   Y: Label vectors of peptides.
+  #   alpha.1: List of vectors, where each vector is parameter for a Dirichlet prior
+  #            corresponding to one feature for x with y = 1.
+  #   alpha.0: List of vectors, where each vector is parameter for a Dirichlet prior
+  #            corresponding to one feature for x with y = 0.
+  #   p1: P(y = 1), which is a constant
+  #   num.recom: Number of recommendations to generate.
+  #   num.mc.samples: Number samples to draw.
+  #   minL: Min length allowed for the left half of a peptide.
+  #   maxL: Max length allowed for the left half of a peptide.
+  #   minR: Min length allowed for the right half of a peptide.
+  #   maxR: Max length allowed for the right half of a peptide.
+  #
+  # Returns:
+  #   A matrix of recommendation set.
   num.unique.recom <- 0
   recom.set <- c()
   while (num.unique.recom < num.recom) { 

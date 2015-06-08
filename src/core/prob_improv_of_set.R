@@ -6,8 +6,18 @@ ComputeProbImprovOfSet <- function(S, X, Y, alpha.1, alpha.0, p1, num.samples) {
   # Compute probability improvement of a set, S
   #
   # Args:
-  #   S: matrix, recommendation set.
-  #   The other arguments are explained in BayesianNaiveBayes
+  #   S: A matrix of recommendation set.
+  #   X: Feature matrix of peptides.
+  #   Y: Label vectors of peptides.
+  #   alpha.1: List of vectors, where each vector is parameter for a Dirichlet prior
+  #            corresponding to one feature for x with y = 1.
+  #   alpha.0: List of vectors, where each vector is parameter for a Dirichlet prior
+  #            corresponding to one feature for x with y = 0.
+  #   p1: P(y = 1), which is a constant
+  #   num.samples: Number of samples to draw.
+  # 
+  # Returns:
+  #   Probability improvement of the set S.
   print("Computing PI(S)")
   sum <- 0  # cumulates probabilities to get prob improv
   grow.product <- 1
