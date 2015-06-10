@@ -65,3 +65,49 @@ GenOnePeptideMAPNew <- function(length.left, length.right, alpha.1.label, alpha.
   }
   return (feature)
 }
+
+GenRecomSetOld <- function(X, Y, alpha.1, alpha.0, p1, num.recom, num.mc.samples, 
+                           minL, maxL, minR, maxR)  {
+  # Generates a recommendation set
+  # 
+  # Args:
+  #   X: Feature matrix of peptides.
+  #   Y: Label vectors of peptides.
+  #   alpha.1: List of vectors, where each vector is parameter for a Dirichlet prior
+  #            corresponding to one feature for x with y = 1.
+  #   alpha.0: List of vectors, where each vector is parameter for a Dirichlet prior
+  #            corresponding to one feature for x with y = 0.
+  #   p1: P(y = 1), which is a constant
+  #   num.recom: Number of recommendations to generate.
+  #   num.mc.samples: Number samples to draw.
+  #   minL: Min length allowed for the left half of a peptide.
+  #   maxL: Max length allowed for the left half of a peptide.
+  #   minR: Min length allowed for the right half of a peptide.
+  #   maxR: Max length allowed for the right half of a peptide.
+  #
+  # Returns:
+  #   A matrix of recommendation set.
+  num.unique.recom <- 0
+  recom.set <- c()
+  while (num.unique.recom < num.recom) { 
+    print(sprintf("iter %d", num.unique.recom))
+
+    alphas <- BayesianNaiveBayes(X, Y, alpha.1, alpha.0, p1)
+    length.left <- ceiling(runif(1, min = minL - 1, max = maxL))
+    length.right <- ceiling(runif(1, min = minR - 1, max = maxR))
+    new.rec.peptide <- GenOnePeptideMAPOld(length.left, length.right,
+                                           alphas$post.alpha.1,
+                                           alphas$post.alpha.0, num.mc.samples)
+    if (nrow(unique(rbind(recom.set, new.rec.peptide))) ==
+        num.unique.recom)  # already contained this peptide
+      next
+    num.unique.recom <- num.unique.recom + 1
+    X <- rbind(X, new.rec.peptide)
+    Y <- c(Y, 0)
+    recom.set <- rbind(recom.set, new.rec.peptide)
+  }
+  return (recom.set)
+}
+
+  
+
