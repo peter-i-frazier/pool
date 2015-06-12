@@ -1,0 +1,421 @@
+\documentclass[11pt]{article}
+%\usepackage[T1]{fontenc}
+%\usepackage[latin9]{inputenc}
+\usepackage[margin=1in]{geometry}
+\usepackage{csquotes}
+
+% To compile in Times New Roman, use the following two lines.
+% You'll need to compile with xelatex or lualatex.
+% If you don't have these compilers, you can outcomment these two lines,
+% but it won't be in Times New Roman.
+\usepackage{fontspec}
+\setmainfont{Times New Roman}
+
+\usepackage{sectsty} % to get the section headings to be smaller
+\usepackage{natbib}
+\usepackage{bbm}
+\usepackage{bm}
+\usepackage{amsmath,amssymb,amsthm,mathtools}
+\usepackage{caption}
+\usepackage{algorithmic}
+%\usepackage{authblk} % if you are using texlive on macports, install texlive-latex-extra to get this
+
+% Uses the sectsty package to make section headings smaller.
+\sectionfont{\fontsize{12}{15}\selectfont}
+\subsectionfont{\fontsize{12}{15}\selectfont}
+
+\newcommand{\Prob}{\mathbb{P}}
+\newcommand{\E}{\mathbb{E}}
+\newcommand{\EI}{\mathrm{EI}}
+\newcommand{\Dir}{\mathrm{Dirichlet}}
+\newcommand{\PI}{\text{PI}}
+\newcommand{\mb}{\mathbf}
+\newtheorem{Algorithm}{Algorithm}
+\newtheorem{theorem}{Theorem}
+\newtheorem{lemma}{Lemma}
+\newtheorem{proposition}{Proposition}
+\newtheorem{remark}{Remark}
+
+\begin{document}
+
+\title{Supplemental Information for \enquote{Peptide Optimization by Optimal Learning: 
+Identification and refinement of peptides for reversible chemoenzymatic labeling}}
+\maketitle
+\tableofcontents
+\newpage
+\part{Supplementary Figures}
+\part{Supplementary Methods}
+\section{POOL Methodology}
+To describe our optimal learning approach, and to contrast it more precisely with the 
+previously described method of taking the peptides with the best predictions (which 
+we call the \enquote{predict-then-optimize} approach for short), we introduce mathematical 
+notation to formulate the peptide optimization problem. 
+
+Let $E$ be the set containing all possible peptide sequences, and for any peptide 
+sequence $e \in E$, let $y(e) \in \{0, 1\}$ be the binary label indicating whether
+peptide $e$ is active or not, if it were measured. 
+This is generally unknown a priori, but we suppose that a machine learning algorithm 
+provides a prediction $\hat{y}(e)$, based on previous measured peptides, i.e., training data. 
+The goal is to use machine learning algorithm and training data to find active peptides. To
+make the goal more general, suppose we are looking for active peptides with some
+favored property, and the measure of favorability can be determined by a fitness 
+function $f(e)$. Then the optimization problem of finding favored active peptides
+can be written as
+\begin{equation}
+  \underset{e \in E, y(e) = 1}{\arg\max} \, f(e).
+  \label{eq:general problem}
+\end{equation}
+The \enquote{predict-then-optimize} approach uses approximation by assuming that the 
+predictions $\hat{y}(e)$ are correct, and then solves, or approximately solves, the 
+optimization problem 
+\begin{equation*}
+  \underset{e \in E, \hat{y}(e) = 1}{\arg\max} \, f(e).
+  \label{}
+\end{equation*}
+Although it is ignored by the \enquote{predict-then-optimize} approach, many prediction methods, 
+including all Bayesian prediction methods, provide a joint probability distribution over
+$y(e): e \in E$, which encodes prediction uncertainty. In our optimal learning 
+approach, we use this joint probability distribution to define an auxiliary 
+function, called probability of improvement, which quantifies the probability 
+that a set of peptides $S$, if tested, will reveal an active peptide whose fitness 
+$f(e)$ improves on some benchmark value $b$, which is typically the best $f(e)$
+of active peptides observed in the past. We define this probability of improvement, 
+$\PI(S)$, to be
+\begin{equation}
+  \PI(S) = \Prob \left( \max_{e \in S, y(e)=1} f(e) > b \right).
+  \label{}
+\end{equation}
+To ensure consistency, we define $\max$ over an empty set is $-\infty$.
+We find $S$ by solving
+\begin{equation}
+  \underset{S \subseteq E, |S| \leq M}{\arg\max} \PI(S),
+  \label{eq:opt PI}
+\end{equation}
+where $M$ is the number of peptides that can be tested simultaneously in a single round of experiment. 
+After we find the set $S$ and tested the peptides in it, we use the results along with previously
+tested peptides as training data, and find a new set $S$ for the next round of experiment. We repeat this
+process until we find enough favored active peptides or resource is exhausted. We demonstrate
+in a specific application of finding reversible chemoenzymatic labeling peptides
+that this approach performs better than existing approaches.
+This use of the probability of improvement builds on previous work in engineering 
+for global optimization of time-consuming computer codes [add cites], and also on
+value-of-information and optimal learning methods in that same application area 
+[add cites].
+
+In section \ref{sec:stat model}, we build a machine learning algorithm that predicts
+$y(e)$, i.e., whether a peptide $e$ is active or not. In section \ref{sec:approx algo},
+we propose an approximation algorithm to solve \eqref{eq:opt PI} efficiently with 
+performance guarantee. In section \ref{sec:application}, we demonstrate performace
+of POOL in an application of finding short peptides for reversible chemoenzymatic
+labeling, and discuss the implication of diversified pool of peptides generated 
+by POOL.
+
+\subsection{Machine Learning Model} \label{sec:stat model}
+To predict whether a peptide is active or not, we develop a Naive Bayes classifier 
+under Bayesian framework, which combines Naive Bayes and a prior distribution over
+unknown parameters encoding prior knowledge. This model provides the joint probability
+distribution over $y(e): e \in E$, which is needed to calculate $\PI(S)$. Suppose we 
+can use a $J$-dimensional feature vector to represent a peptide, written as
+$\bm{x} = (x_1, \ldots, x_J)$, and the projection of $E$ to the feature space is
+$\mathcal{X}$, then the prediction problem is to calculate
+$\Prob (Y = y \mid \bm{X} = \bm{x})$, where $Y$ is random variable $\in \{0, 1\}$,
+and $\bm{X} \in \mathcal{X}$ is random vector. Use Bayes' theorem, we have
+\begin{equation}
+  \Prob(Y = y \mid \bm{X} = \bm{x}) = \frac{\Prob(\bm{X} = \bm{x} \mid Y = y) \Prob(Y = y)}{\sum_{y' \in \{0, 1\}} \Prob(\bm{X}= \bm{x} \mid Y = y') \Prob(Y = y')}.
+  \label{eq:NB_1}
+\end{equation}
+The Naive Bayes classifier assumes that the features are conditionally independent 
+given $y$, then we can write \eqref{eq:NB_1} as 
+\begin{equation}
+  \Prob(Y = y \mid \bm{X} = \bm{x}) = \frac{\prod_{j = 1}^J \Prob(X_j = x_j \mid Y = y) \Prob(Y = y)}{\sum_{y' \in \{0, 1\}} \prod_{j = 1}^J \Prob(X_j = x_j \mid Y = y') \Prob(Y = y')}.
+  \label{eq:NB_2}
+\end{equation}
+If we know $\Prob(X_j = x_j \mid Y = y)$ and $\Prob(Y = y)$, we can use \eqref{eq:NB_2} 
+to calculate $\Prob(Y = y \mid \bm{X} = \bm{x})$ for any $\bm{x} \in \mathcal{X}$. Now the learning
+problem simply becomes estimating $\Prob(X_j = x_j \mid Y = y)$ and $\Prob(Y = y)$.
+We further assume $\Prob(X_j = x_j \mid Y = y)$ obeys categorical distribution with
+unknown parameters $\bm{\theta}^{y, j} = (\theta^{y, j}_1, \ldots, \theta^{y, j}_{K_j})$,
+that means $X_j$ has finite number of discrete values to choose from, and the probability
+of choosing each is determined by the parameters $\bm{\theta}^{y, j}$, written as
+$X_j \in \{1, \ldots, K_j\}$ and $\Prob(X_j = x_j \mid Y = y) = \theta^{y, j}_{x_j}$.
+Then \eqref{eq:NB_2} becomes
+\begin{equation}
+  \Prob (Y = y \mid \bm{X} = \bm{x}) = \frac{\Prob(Y = y) \prod_{j=1}^J \theta^{y, j}_{x_j}}
+  {\Prob(Y = 1) \prod_{j=1}^J \theta^{1,j}_{x_j} + \Prob(Y = 0) \prod_{j=1}^J \theta^{0,j}_{x_j}}.
+  \label{eq:NB_3}
+\end{equation}
+Since $\bm{\theta}^{y, j}$ are unknown, we use Bayesian inference to estimate them. We 
+put Dirichlet prior distribution over $\bm{\theta}^{y, j}$, that is,
+$\bm{\theta}^{y, j} \sim Dirichlet(\bm{\alpha}^{y, j})$, where $\bm{\alpha}^{y, j}$
+are parameters chosen initially to specify the prior distribution. We know the
+posterior distribution of $\bm{\theta}^{y, j}$ given training data $\{(\bm{x}^1, y^1), 
+\ldots, (\bm{x}^N, y^N)\}$ is also a Dirichlet distribution, with new parameters
+$\overset{\sim}{\alpha}^{y, j}_k = \alpha^{y, j} + \sum_{n=1}^N \mathbbm{1}_{\{y^n = y, x^n_j = k\}}$,
+for $k = \{1, \ldots, K_j\}$. Now we can estimate $\Prob(Y = y \mid \bm{X} = \bm{x})$
+using $\bm{\theta}^{y, j}$ drawn from their posterior distribution and \eqref{eq:NB_3},
+if $\Prob(Y = 1)$ and $\bm{\alpha}^{y, j}$ are known, which can be estimated using
+cross validation. Here concludes the machine learning model we proposed and we will
+discuss the performance of this model in our specific application in section \ref{sec:application}.
+
+
+\subsection{Optimization Algorithm} \label{sec:approx algo}
+Directly solving \eqref{eq:opt PI} is impractical, because computational cost for $\PI(S)$
+grows exponentially with $M$, not to mention the optimization problem is even harder than
+computing the objective function, considering the number of sets $S$ satisfying $|S| \leq M$
+also grows exponentially with $M$. Instead we employ approximation methods, and the approximation
+method we employ is a greedy algorithm, which starts with $S = \emptyset$, and then adds
+peptides one-by-one, each time choosing the one that will increase the probability of 
+improvement by the greatest amount, that is, solving 
+\begin{equation}
+  \underset{e \in E \backslash S}{\mathrm{arg}\max} \,\PI (S \cup \{e\}),
+  \label{eq:greedy}
+\end{equation}
+until $|S| = M$. This algorithm has much smaller computational challenge, for two reasons:
+first, the size of search space reduces from $|E|^M$ to $|E| \times M$; second, as will be pointed
+out in Proposition \ref{prop:reduced form}, solving \eqref{eq:greedy} does not require computing $\PI$.
+Before going into detail of solving \eqref{eq:greedy}, I like to use the following section
+to show that this greedy algorithm has theoretic performance guarantee, and this result holds
+for any machine learning model that can compute probability of improvement.
+
+\subsubsection{Performance Guarantee for the Greedy Algorithm} \label{sec:lower bound}
+The main result is stated in the following theorem:
+\begin{theorem} 
+  The greedy algorithm always produces a solution whose probability of improvement is at 
+  least $1-[(M-1)/M]^M \geq 1 - 1 / e$ times the optimal objective
+  value of \eqref{eq:opt PI}.
+\end{theorem}
+To prove the theorem, we use the following two lemmas:
+\begin{lemma} \citep{nemhauser1978analysis}
+  If $F(S)$ is submodular, nondecreasing and $F(\emptyset)=0$, the greedy heuristic always 
+  produces a solution whose value is at least $1-[(M-1)/M]^M$ times the optimal value, where 
+  $|S| \leq M$. This bound can be achieved for each $M$ and has a limiting value of $1-1/e$, 
+  where $e$ is the base of the natural logarithm.
+\end{lemma}
+
+\begin{lemma} 
+  Probability of improvement $\PI(S)$ is submodular, nondecreasing and $\PI(\emptyset)=0$.
+\end{lemma}
+\begin{proof}
+Let $f^*(S) = \max_{e \in S, y(e)=1} f(e)$. First we show $\PI(\emptyset) = 0$.
+\begin{equation*}
+  \PI(\emptyset) = \Prob(f^*(\emptyset) > b) = \Prob(-\infty > b)=0.
+\end{equation*}
+
+To show $\PI(S)$ is nondecreasing, let $A \subseteq B \subseteq E$ where $E$ is a finite set, then
+\begin{equation*}
+\begin{split}
+\PI(B) &= \Prob(f^*(B) > b) \\
+       &= \Prob(f^*(B) > b \mid f^*(A) \leq b) \Prob(f^*(A) \leq b) + \Prob(f^*(B) > b \mid f^*(A) > b) \Prob(f^*(A) > b) \\
+       &= \Prob(f^*(B) > b \mid f^*(A) \leq b) \Prob(f^*(A) \leq b) + \Prob(f^*(A) > b) \\
+       &\leq \Prob(f^*(A) > b) \\
+       &= \PI(A)
+\end{split}
+\end{equation*}
+
+Lastly, we want to show $\PI(S)$ is submodular. For $e \in E\backslash B$,
+\begin{equation*}
+  \begin{split}
+    &\PI(A \cup \{e\}) - \PI(A) \\
+    &= \Prob(f^*(A \cup \{e\}) > b) - \Prob(f^*(A) > b) \\
+    &= \Prob(f^*(A \cup \{e\}) > b \mid f^*(A) > b) \Prob(f^*(A) > b) \\
+    &\quad + \Prob(f^*(A \cup \{e\}) > b \mid f^*(A) \leq b)
+    \Prob(f^*(A) \leq b) - \Prob(f^*(A) > b) \\
+    &=\Prob(f^*(A) > b) + \Prob(f^*(A \cup \{e\}) > b \mid f^*(A)\leq b)
+    \Prob(f^*(A)\leq b) -\Prob(f^*(A) > b) \\
+    &= \Prob(f^*(A \cup \{e\}) > b \mid f^*(A)\leq b) \Prob(f^*(A)\leq b) \\
+    &= \Prob(f(e) > b, y(e) = 1 \mid f^*(A) \leq b) \Prob(f^*(A) \leq b) \\
+    &= \Prob(f(e) > b, y(e) = 1, f^*(A) \leq b)
+  \end{split}
+\end{equation*}
+Using similar argument,
+\begin{equation*}
+\begin{split}
+&\PI(B \cup \{e\}) - \PI(B) \\
+&= \Prob(f(e)<b, y(e)=1,f^*(B)\geq b) \\
+&= \Prob(f(e)<b, y(e)=1,f^*(A)\geq b, f^*(B\backslash A) \geq b )
+\end{split}
+\end{equation*}
+Therefore, $\PI(A \cup \{e\}) - \PI(A) \geq \PI(B \cup \{e\}) - \PI(B)$, thus $\PI(S)$ is submodular. \qedhere
+\end{proof}
+
+Lemma 1 is a result from the analysis of greedy heuristic in combinatorial optimization by 
+Nemhauser, who provides lower bound of greedy heuristic given that objective function 
+satisfies certain conditions. Lemma 2 shows that $\PI(S)$ satisfies condition stated in 
+Lemma 1, therefore, theorem 1 holds. Note that the proof does not rely on a particular machine
+learning model.
+
+\subsubsection{Reduced Form of Greedy Algorithm} \label{sec:reduced form}
+Since $\PI(S)$ is expensive to compute when $|S|$ is large, in Proposition 
+\ref{prop:reduced form}, we show that \eqref{eq:greedy} can be written into a
+form in which the objective function can be easily computed. The result
+holds for any machine learning model that can compute the objective in
+\eqref{eq:reduced form}.
+\begin{proposition} \label{prop:reduced form}
+  Solving \eqref{eq:greedy} is equivalent to solving
+  \begin{equation}
+    \underset{e \in E \backslash S, f(e) > b}{\mathrm{arg}\max} \, \Prob (y(e)=1 \mid y(e') = 0, \forall e \in S).
+    \label{eq:reduced form}
+  \end{equation}
+\end{proposition}
+\begin{proof}
+  \begin{equation*}
+    \begin{split}
+      &\PI(S \cup \{e\}) = \Prob(f^*(S\cup \{e\}) > b)\\
+      &= \Prob(f^*(S) > b) + \Prob(f^*(S)\leq b) \Prob(f(e) > b, y(e) = 1 \mid f^*(S)\leq b),
+    \end{split}
+  \end{equation*}
+  so \eqref{eq:greedy} becomes
+  \begin{equation} \label{eq:PI1} 
+    \underset{e \in E \backslash S}{\max} \, \PI(S \cup \{e\}) = \underset{e \in E \backslash S}{\max} \, \Prob(f(e) > b, y(e)=1 \mid f^*(S)\leq b).
+  \end{equation}
+  Note that when $f(e) \leq b$, $\Prob(f(e) > b, y(e) = 1 \mid f^*(S)\leq b) = 0$, thus our algorithm will always propose $e$ such that $f(e) > b$. Therefore, it is reasonable to assume that $f(x) > b$ for $\forall x \in S$, and $f^*(S)\leq b$ is equivalent to $y(e') = 0$ for $\forall e' \in S$. Now we can write \eqref{eq:PI1} as 
+  \begin{equation*}
+    \underset{e \in E \backslash S, f(e) > b}{\max} \, \Prob (y(e) = 1 \mid y(e') = 0, \forall e' \in S). 
+  \end{equation*}
+\end{proof}
+
+\subsubsection{Solving Greedy Step}
+Under the Naive Bayes model proposed in section \ref{sec:stat model}, 
+we can formulate \eqref{eq:reduced form} as an instance of Mixed-Integer 
+Nonlinear Program (MINLP), and then we can use any off-the-shelf MINLP 
+solver to solve the greedy step. First we write \eqref{eq:NB_3} as
+\begin{equation}
+  \Prob (Y = 1 \mid \bm{x}) = \frac{\prod_{j=1}^J \eta^j_{x_j}}
+  {\prod_{j=1}^J \eta^j_{x_j} + \frac{\Prob(Y = 0)}{\Prob(Y = 1)}},
+  \label{eq:MINLP_2}
+\end{equation}
+where
+\begin{equation*}
+  \eta^j_{x_j} = \frac{\theta^{1,j}_{x_j}}{\theta^{0,j}_{x_j}}
+  \text{\,\,\,for $\forall j \in \{1,\ldots,J\}$}. 
+\end{equation*}
+Then we can write \eqref{eq:reduced form} as
+\begin{equation}
+  \underset{e \in E \backslash S, f(e) > b}{\mathrm{arg}\max} \, \frac{\prod_{j = 1}^J \eta^j_{x_j}}{\prod_{j = 1}^J \eta^j_{x_j} + \frac{\Prob(Y = 0)}{\Prob(Y = 1)}},
+  \label{eq:MINLP_3}
+\end{equation}
+where $\bm{x}$ is feature vector of peptide $e$, and
+\begin{equation*}
+  \eta^j_{x_j} = \frac{\Prob(X_j = x_j \mid Y = 1, y(e') = 0, \forall e' \in S)}
+  {\Prob(X_j = x_j \mid Y = 0, y(e') = 0, \forall e' \in S)}.
+\end{equation*}
+We can write \eqref{eq:MINLP_3} as a Mixed-Integer Nonlinear Program,
+\begin{equation}
+  \begin{split}
+    \max \quad &\frac{\prod_{j=1}^J \sum_{k=1}^{K_j} z^j_k \eta^j_k}
+    {\prod_{j=1}^J \sum_{k=1}^{K_j} z^j_k \eta^j_k + \frac{\Prob(Y = 0)}{\Prob(Y = 1)}} \\
+    \text{s.t} \quad &z^j_k \in \{0,1\}\\
+    &\sum_{k=1}^{K_j} z^j_k = 1, \,\, \forall j \in \{1, \ldots, J\}
+  \end{split}
+  \label{eq:MINLP_4}
+\end{equation}
+where
+\begin{equation*}
+z^j_k = \begin{dcases}
+        1 & \text{if $x_j = k$}\\
+        0 & \text{else}.
+\end{dcases}
+\end{equation*}
+The constraints in \eqref{eq:MINLP_4} do not account for $f(e) > b$, because it depends on
+the $f(\cdot)$ to design the corresponding constraint, and for now we assume this
+constraint is met. Since $\eta^j_k$s are unknown, we can sample $\eta^j_k$s from their posterior 
+distribution, which can be obtained from the machine learning model in \ref{sec:stat model},
+and solve \eqref{eq:MINLP_4} for each instance of $\eta^j_k$, then we pick
+the solution with highest objective in \eqref{eq:reduced form}. We summarize 
+the algorithm in the following:
+\begin{Algorithm}(Probability of Improvement) \label{algo1}
+\begin{algorithmic}[1]
+  \REQUIRE Inputs $M, J, K_j, j = \{1, \ldots, J\}$, data set $\mathcal{D} = 
+  \{(\bm{x}^1, y^1), \ldots, (\bm{x}^N, y^N)\}$ and parameters for the prior 
+  distributions $\bm{\alpha}^{y, j}$.
+  \STATE $S \leftarrow \emptyset $
+  \STATE Calculate posterior distribution of $\bm{\theta}^{1, j} \sim 
+  \text{Dirichlet} (\bm{\theta}^{1, j} \mid \{\bm{x}: \bm{x} \in \mathcal{D}, 
+  y(\bm{x}) = 1\})$.
+  \FOR{$m=1$ to $M$} 
+    \STATE COUNT $\leftarrow 0$
+    \STATE Calculate posterior distribution of $\bm{\theta}^{0, j} \sim 
+    \text{Dirichlet} (\bm{\theta}^{0, j} \mid \{\bm{x}: \bm{x} \in \mathcal{D}, 
+    y(\bm{x}) = 1\} \cup S)$.
+    \FOR{$i=1$ to $I$}
+      \STATE Sample $\bm{\theta}^{1, j}$ from $\text{Dirichlet} (\bm{\theta}^{1, j} 
+      \mid \{\bm{x}: \bm{x} \in \mathcal{D}, y(\bm{x}) = 1\})$ and $\bm{\theta}^{0, j}$
+      from $\text{Dirichlet} (\bm{\theta}^{0, j} \mid \{\bm{x}: \bm{x} \in \mathcal{D}, 
+      y(\bm{x}) = 1\} \cup S)$.
+      \STATE $\eta^j_k \leftarrow \frac{\theta^{1, j}_k}{\theta^{0, j}_k}$
+      \STATE Solve MINLP in \eqref{eq:MINLP_4} to find $\bm{x}^i$ and the corresponding
+      peptide sequence $e^i$.
+    \ENDFOR
+    \STATE $e^* \leftarrow \underset{e \in \{e^1, \ldots, e^I\}}
+    {\arg \max} \Prob (y(e) = 1 \mid y(e') = 0, \forall e' \in S)$.
+    \STATE $S \leftarrow (S, e^*)$.
+  \ENDFOR
+\end{algorithmic}
+\end{Algorithm}
+
+
+\subsection{Application} \label{sec:application}
+First we show this application is an instance of the more general problem discussed
+at the beginning. The goal in this specific problem is to find short peptides that 
+are labeled by specific PPTases and unlabeled by ACPH, thus we let $y(e) = 1$
+if peptide $e$ has this property. Since we are looking for short peptides, let the
+utility function $f(e)$ be negative the length of peptide $e$, and now the problem
+is the same as \eqref{eq:general problem}.
+
+\subsubsection{Performance of Machine Learning Model}
+We use the machine learning model described in \ref{sec:stat model} to predict $y(e)$.
+The feature vector for peptides is designed in the following: since the chemoenzymatic
+reaction only happens at position containing Serine within the peptide, we are looking 
+for the peptides containing exactly one Serine in the sequence. We use the position 
+containing Serine as the origin, and each feature corresponds to a position, which is
+counted from the origin towards C-terminus or N-terminus. For example, a sequence
+X-X-X-S-X-X, where S represents Serine and X represents any amino acid in that
+position, has features N1, N2, N3, C1, C2, and the correspondence in position is
+N3-N2-N1-S-C1-C2. Each feature's value is determined by the amino acid residing in
+the corresponding position. In this application, to reduce dimensionality of the 
+feature space, we group the 20 standard amino acids into 8 classes according to
+their similarity, and the feature values for the amino acids belonging to the 
+same class are the same. The grouping detail is shown in [refer to reduced AA table].
+
+After constructing the features, we train the model following the method outlined
+in \ref{sec:stat model}. To validate our model, we use leave-one-out 
+cross validation to plot receiver operating characteristic (ROC), which
+is typically used to benchmark performance of binary classifiers.
+
+\begin{figure}[hpt] 
+\center
+\begin{minipage}[b]{0.45\linewidth}
+\includegraphics[width=\textwidth]{pic/ROC_DS1_1000_025.pdf}
+\end{minipage}
+\begin{minipage}[b]{0.45\linewidth}
+\includegraphics[width=\textwidth]{pic/ROC_DS2_1000_025.pdf}
+\end{minipage}
+\caption{ ROC curve using leave-one-out cross validation}
+\label{fig:ROC}
+\end{figure}
+
+
+\subsubsection{Solving Greedy Step}
+We prabably should describe how we actually generated peptides, since we did not solve MINLP.
+
+\subsubsection{Comparison of POOL v.s. other existing methods}
+Describe setup of simulation for the benchmark plot?
+
+\subsubsection{Diversity}
+From Proposition \ref{prop:reduced form}, we have seen that the greedy algorithm
+is equivalent to an algorithm that chooses each new peptide to test by supposing
+that all previously added peptides did not produce the desired result, and adding
+this supposition as additional \enquote{training data} to provide a new estimate
+of peptide activity. Through this lens, we see that the optimal learning approach
+explicitly provides diversity in its search for high-quality peptides.
+
+\section{General materials and methods}
+\section{Lead peptides with fluorophores}
+\section{Sequence alignment of lead peptides}
+\part{Supplementary Tables}
+
+\bibliography{nature_SI}
+\bibliographystyle{plainnat}
+%%%%%%%%%%%%%%%%%
+\end{document}
+%%%%%%%%%%%%%%%%%

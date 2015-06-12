@@ -1,0 +1,147 @@
+\documentclass[11pt]{article}
+\usepackage{csquotes}
+\usepackage[margin=1in]{geometry}
+\usepackage{fontspec}
+\usepackage{authblk} % if you are using texlive on macports, install texlive-latex-extra to get this
+\usepackage{sectsty} % to get the section headings to be smaller
+\usepackage{natbib}
+\bibliographystyle{dinat}
+\setcitestyle{square}
+
+% Uses the sectsty package to make section headings smaller.
+\sectionfont{\fontsize{12}{15}\selectfont}
+\subsectionfont{\fontsize{12}{15}\selectfont}
+\title{Research Statement: Bayesian Optimization in Molecular Discovery}
+\author{Jialei Wang}
+\affil{Operations Research \& Information Engineering, Cornell University}
+\date{\vspace{-5ex}} % Remove the date, and the space it takes
+\begin{document}
+\maketitle
+
+In the recent years, with the advances of nano-technology and experimental techniques
+in biochemistry, people are able to create novel molecules that exhibit desired
+properties, for example, binding to a specific target. The novel molecules can 
+be very useful to drug development, material design, and scientific research. Despite
+of the tremendous potential, the challenges of actually making them is substantial,
+too. Success of designing these molecules depends critically on identifying the
+right design parameters among typically a very large number of design choices.
+Aside from many design choices, the other obstacle to success is the time required to
+test an idea. A single experiment might take as long as a few weeks, thus design
+choices must be chosen wisely based on only a handful of observations. 
+
+Under the guidance of Prof. Peter Frazier, I spent the last 3 years approaching
+this set of problems using Bayesian optimization, which is a sequential design strategy
+that effectively uses scientists' domain knowledge as well as experimental data to make
+decisions in Bayes optimal way. The idea is, we formulate the problem as global
+optimization of black-box functions. The Bayesian strategy treats 
+the objective function as a random function and places a prior over it. The prior
+captures our beliefs about the behavior of the function, which can be designed 
+with the help of scientist' domain knowledge. After doing experiments, we use
+the experimental data to update the prior, and form the posterior distribution
+over the objective function. Now the posterior distribution encodes information
+from both scientists' knowledge and experimental data. We then propose to use 
+sequential learning methods that maximizes the value of information 
+\citep{howard1966information}, which is calculated using the posterior distribution,
+to determine the next design choice(s) to test. The common sequential learning 
+methods used are probability of improvement\citep{kushner1964new}, expected improvement \citep{jones1998efficient},
+knowledge gradient \citep{frazier2009knowledge}, etc. In the following sections, 
+I will describe my previous work in this field, and propose two problems for the
+future work.
+
+\section{Previous Work}
+\subsection{Bayesian global optimization of expensive functions, in the case of 
+multiple function evaluations in parallel}
+
+In this work we consider global optimization of derivative-free expensive-to-evaluate 
+functions, in which simultaneous function evaluation is allowed and
+preferred. This scenario is very common in biochemistry applications, as testing
+multiple molecular designs simultaneously can be easily implemented and is actually
+preferred because the experimental process takes a long time. However, Almost all 
+existing Bayesian global optimization methods do not support simultaneous function 
+evaluation, except for some works that extend the algorithm for single function evaluation
+to parallel setting using heuristics \citep{ginsbourgertwo, chevalier2013fast, 
+ginsbourger2010kriging, janusevskis2012expected}. We began with a conceptual algorithm that
+generalizes expected improvement to parallel setting \citep{ginsbourger2007multi}, 
+called q-EI, and finds the point that maximizes q-EI. This idea was considered
+impractical because q-EI does not have analytic form when $q > 2$ \citep{ginsbourger2007multi}. 
+We proposed an approach based on stochastic approximation, in which we used infinitesimal 
+perturbation analysis (IPA) to construct an unbiased stochastic gradient estimator.
+In addition to the theoretic work, we collaborated with engineers from Yelp Inc.,
+and implemented the algorithm within an open sourced global optimization software
+package, which is available for the public at \underline{github.com/Yelp/MOE}.
+
+\subsection{Peptide optimization by optimal learning: identification and refinement
+of peptides for reversible chemoenzymatic labeling}
+
+We collaborated with a group of biochemists from University of California, San Diego,
+to find short peptide sequences that can be labeled by one specific enzyme, and 
+unlabeled by the other. Using SPOT synthesis technology, 600 different
+peptide sequences can be synthesized and tested simultaneously, but each round
+of experiments takes on average one month to complete. The method proposed in the
+previous section is not feasible for this problem, because a high performance
+computer with GPU enabling parallel computation can only handle $q \approx 20$,
+and the computational cost grows with $q^3$, thus the current available computational power
+will not be able to deal with the problem with $q = 600$ using previously proposed approach. 
+We developed a Bayesian optimization method, called peptide optimization by optimal learning (POOL),
+which is specifically designed for finding peptide sequences with desired
+property using highly parallel experimental setup. We used probability of
+improvement as the value of information to maximize over. Since this maximization
+problem is hard to solve directly, we employed heuristic method, which is
+a greedy algorithm, and we proved this algorithm had performance guarantee
+in finding the near optimal solution. In this application, we designed prior with
+the help of our collaborators' domain knowledge, and began with labeling
+activity of 14 peptide sequences found from literature as initial data, where
+most of them have length longer than 39 amino acids. After 5 rounds of experiments
+using the sequences generated by POOL, we tested $\sim 2500$ sequences in total, and found
+$\sim 30$ desired peptides with length shorter than 20 amino acids. Considering the enormous
+design space ($>10^{26}$ design choices), and our collaborators' estimate that
+the chance of finding the target peptides by random sampling is less than $10^{-5}$, this optimization
+algorithm's performance is exceptionally well.
+
+\subsection{Drug discovery for Ewing's sarcoma}
+We undertook a project with a team of medical researchers at Georgetown University
+who were looking for a molecule that would help cure a cancer known as Ewing's
+sarcoma. We have a base molecule with five sites, and at each site we can choose
+to attach any of a range of substituents. While testing every possible substituent
+at every possible site is impractical as the number of potential combinations is
+very large, we developed a Bayesian optimization approach. We first developed a
+statistical model to predict activity, which is known in the drug discovery community
+as a QSAR model (quantitative structure activity relationship), and then we used
+knowledge gradient to guide the choice of experiments. We did not finish the
+project as our collaborator ended up not having the ability to synthesize the
+designed molecules, but the methodology is ready to be applied to other similar
+drug discovery problems.
+
+\section{Proposed Projects}
+\subsection{Identification of peptide-based selective inhibitors of Matrix 
+metalloproteinase (MMPs)}
+Our collaborators from UC San Diego, have another cool idea of using POOL
+to identify peptides that are selective inhibitors of particular Matrix 
+metalloproteinase (MMPs), which are presented within certain organs in human body. 
+The target peptides, with their property of selectivity, can be used to design 
+effective drug delivery systems, which only release payload in targeted location
+within human body. This problem also motivates us to develop a more general
+version of POOL, as the previous version only distinguishes a peptide by
+\enquote{active} or \enquote{inactive}, while in this problem, each peptide
+has a corresponding selectivity, which is a quantitative value. We propose a new
+Bayesian statistical model that predicts quantitative response, and build
+corresponding optimization algorithm under the new setting. We expect this new
+version of POOL will have broader application to peptide optimization.
+
+
+\subsection{Multi-information source optimization}
+Another interesting set of problems is that, suppose there are multiple types of
+experiments to choose from, and each type of evaluation incurs different amount of 
+cost and provides different aspect of information about a design choice. For example, 
+in molecular design, researchers can run Molecular Dynamic simulation, or perform 
+physical experiments to test a design, and incur different cost and get different
+piece of information. The problem is to make decisions on which type of experiment
+to use and which design to test at each iteration, such that the information usage 
+is the most efficient. We have found suitable applications
+in biochemistry, and we propose to use Bayesian optimization to 
+answer this question.
+
+\bibliography{research_statement}
+
+\end{document}
+
