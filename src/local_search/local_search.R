@@ -32,7 +32,7 @@ S <- GenRecomSetOld(train.X, train.Y, prior.alpha.1, prior.alpha.0,
 
 # ====================================================================
 # Compute probability improvement
-PI.ITER <- 4000
+PI.ITER <- 10000
 Y <- c(train.Y, rep(0, nrow(S) - 1))
 prob.improv.S <- rep(-1, PI.ITER)
 rdm.pos.vec <- floor(runif(PI.ITER, 1, nrow(S))) 

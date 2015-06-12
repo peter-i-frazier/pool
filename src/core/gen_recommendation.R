@@ -109,5 +109,28 @@ GenRecomSetOld <- function(X, Y, alpha.1, alpha.0, p1, num.recom, num.mc.samples
   return (recom.set)
 }
 
-  
+GenOneRandomPeptide <- function(minL, maxL, minR, maxR, max.left,
+                                max.right, class.vec) {
+  # Generates a random peptide
+  # 
+  # Args:
+  #   minL: Min length allowed for the left half of a peptide.
+  #   maxL: Max length allowed for the left half of a peptide.
+  #   minR: Min length allowed for the right half of a peptide.
+  #   maxR: Max length allowed for the right half of a peptide.
+  #   max.left: Hard limit on the length of the left half of a peptide
+  #   max.right: Hard limit on the length of the right half of a peptide
+  #              i.e. the total length of a peptide is (max.left + max.right)
+  #   class.vec: Vector of class numbers of amino acids
+  #
+  # Returns:
+  #   Feature vector of a peptide
+  length.left <- sample(minL:maxL, 1)
+  length.right <- sample(minR:maxR, 1)
+  feature <- rep(-1, max.left + max.right)
+  feature[1:length.left] <- sample(class.vec, length.left, replace = TRUE)
+  feature[max.left + 1:length.right] <- sample(class.vec, length.right,
+                                               replace = TRUE)
+  return (feature)
+}
 

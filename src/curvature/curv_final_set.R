@@ -2,6 +2,8 @@
 # Created: 06.08.2015
 # Computes curvature for a fixed recommendation set
 
+# ====================================================================
+# Initialization
 rm(list = ls())
 set.seed(1)
 
@@ -14,6 +16,8 @@ X <- dataset$feature
 Y <- dataset$data[, 'type1']
 train.X <- X[Y != -1, ]
 train.Y <- Y[Y != -1]
+class.vec <- QuerySql("sfp_AcpS", "SELECT * FROM reduced_AA")
+class.vec <- unique(class.vec[, 'class'])
 
 # ====================================================================
 # Generate recommendation set
@@ -62,22 +66,57 @@ alphas <- BayesianNaiveBayes(X, Y, prior.alpha.1, prior.alpha.0,
                              prior.prob)
 thetas.1 <- SampleThetas(alphas$post.alpha.1, NB.ITER)
 thetas.0 <- SampleThetas(alphas$post.alpha.0, NB.ITER)
-curv.vec <- rep(-1, nrow(S))
-for (i in 1:nrow(S)) {
-  ################################################################
-  # TODO(Tom Fei): Complete this function
-  test.x <- GenOneRandomPeptideMAPOld()
-  ################################################################
+CV.ITER <- 1000
+curv.vec <- rep(-1, CV.ITER)
 
-  # ptm.0 <- proc.time()
+#>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+# Debug variables
+n.vec <- curv.vec
+d.vec <- curv.vec
+p.vec <- curv.vec
+D <- c()
+#<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
+print(sprintf("CV.ITER = %d", CV.ITER))
+
+for (i in 1:CV.ITER) {
+  test.x <- GenOneRandomPeptide(minL, maxL, minR, maxR,
+                                MAXL, MAXR, class.vec)
+  D <- rbind(D, test.x)
+  ptm.0 <- proc.time()
+
+#>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+# Debug
+#  alphas <- BayesianNaiveBayes(X, Y, prior.alpha.1, prior.alpha.0, 
+#                             prior.prob)
+#  thetas.1 <- SampleThetas(alphas$post.alpha.1, NB.ITER)
+#  thetas.0 <- SampleThetas(alphas$post.alpha.0, NB.ITER)
+#<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
 
   prob.list <- CalculateProb(t(test.x), thetas.1, thetas.0, prior.prob)
   prob.positive <- prob.list$mean
+
   numerator <- grow.product * prob.positive
+
+#>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+# Debug
+ # num.1 <- ComputeProbImprovOfSet(rbind(S, test.x), train.X, train.Y,
+ #                                 prior.alpha.1, prior.alpha.0,
+ #                                 prior.prob, NB.ITER)
+ # num.2 <- ComputeProbImprovOfSet(S, train.X, train.Y,
+ #                                 prior.alpha.1, prior.alpha.0,
+ #                                 prior.prob, NB.ITER)
+ # numerator <- num.1 - num.2
+#<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
+
   denominator <- ComputeProbImprovOfSet(t(test.x), train.X, train.Y,
                                         prior.alpha.1, prior.alpha.0,
                                         prior.prob, NB.ITER)
   curv.vec[i] <- 1 - numerator / denominator
+  p.vec[i] <- prob.positive
+  n.vec[i] <- numerator
+  d.vec[i] <- denominator
 
+  print(sprintf("Computing curvature costs %1.2f", (proc.time() - ptm.0)[1]))
   print(sprintf("Curvature for iter #%d is %.3f", i, curv.vec[i]))
+  print("==============")
 }
