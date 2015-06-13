@@ -87,6 +87,8 @@ GenRecomSetOld <- function(X, Y, alpha.1, alpha.0, p1, num.recom, num.mc.samples
   #
   # Returns:
   #   A matrix of recommendation set.
+  if (num.recom < 1 || num.recom %% 1 > 0)
+    stop("num.recom must be a positive integer")
   num.unique.recom <- 0
   recom.set <- c()
   while (num.unique.recom < num.recom) { 
