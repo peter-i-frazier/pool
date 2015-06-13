@@ -24,7 +24,7 @@ prior.prob <- prior_type1
 prior.alpha.1 <- SetPriorReducedAA(gamma.1, NUM_CLASS)
 prior.alpha.0 <- SetPriorReducedAA(gamma.0, NUM_CLASS)
 NUM.RECOM <- 71
-NB.ITER <- 1000
+NB.ITER <- 10000
 S <- GenRecomSetOld(train.X, train.Y, prior.alpha.1, prior.alpha.0,
                     prior.prob, NUM.RECOM, NB.ITER, minL, maxL, minR, maxR)
 print("Done")
@@ -36,7 +36,11 @@ grow.product <- 1
 curv.vec <- rep(-1, nrow(S))
 X <- train.X
 Y <- train.Y
-for (i in 1:nrow(S)) {
+num.neg.val <- 0
+num.curv.computed <- 0
+while (num.curv.computed < nrow(S)) {
+# for (i in 1:nrow(S)) {
+  i <- num.curv.computed + 1
   test.x <- S[i, ]
   # ptm.0 <- proc.time()
 
@@ -54,7 +58,14 @@ for (i in 1:nrow(S)) {
                                         prior.alpha.1, prior.alpha.0,
                                         prior.prob, NB.ITER)
   curv.vec[i] <- 1 - numerator / denominator
-
+  if (i == 1) 
+    curv.vec[i] <- 0
+  if (curv.vec[i] < 0) {
+    print("Found a negative value!")
+    num.neg.val <- num.neg.val + 1
+    next
+  }
+  num.curv.computed <- num.curv.computed + 1
   # Update variables
   X <- rbind(X, test.x)
   Y <- c(Y, 0)

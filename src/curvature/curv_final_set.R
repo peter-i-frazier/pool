@@ -40,6 +40,7 @@ print("Begin computing grow product")
 grow.product <- 1
 X <- train.X
 Y <- train.Y
+
 for (i in 1:nrow(S)) {
   test.x <- S[i, ]
   alphas <- BayesianNaiveBayes(X, Y, prior.alpha.1, prior.alpha.0, 
@@ -66,8 +67,10 @@ alphas <- BayesianNaiveBayes(X, Y, prior.alpha.1, prior.alpha.0,
                              prior.prob)
 thetas.1 <- SampleThetas(alphas$post.alpha.1, NB.ITER)
 thetas.0 <- SampleThetas(alphas$post.alpha.0, NB.ITER)
-CV.ITER <- 1000
+CV.ITER <- 100
 curv.vec <- rep(-1, CV.ITER)
+num.neg.val <- 0
+num.curv.computed <- 0
 
 #>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
 # Debug variables
@@ -78,39 +81,27 @@ D <- c()
 #<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
 print(sprintf("CV.ITER = %d", CV.ITER))
 
-for (i in 1:CV.ITER) {
+while (num.curv.computed < CV.ITER) {
+# for (i in 1:CV.ITER) {
   test.x <- GenOneRandomPeptide(minL, maxL, minR, maxR,
                                 MAXL, MAXR, class.vec)
+
   D <- rbind(D, test.x)
   ptm.0 <- proc.time()
 
-#>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
-# Debug
-#  alphas <- BayesianNaiveBayes(X, Y, prior.alpha.1, prior.alpha.0, 
-#                             prior.prob)
-#  thetas.1 <- SampleThetas(alphas$post.alpha.1, NB.ITER)
-#  thetas.0 <- SampleThetas(alphas$post.alpha.0, NB.ITER)
-#<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
-
   prob.list <- CalculateProb(t(test.x), thetas.1, thetas.0, prior.prob)
   prob.positive <- prob.list$mean
-
   numerator <- grow.product * prob.positive
-
-#>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
-# Debug
- # num.1 <- ComputeProbImprovOfSet(rbind(S, test.x), train.X, train.Y,
- #                                 prior.alpha.1, prior.alpha.0,
- #                                 prior.prob, NB.ITER)
- # num.2 <- ComputeProbImprovOfSet(S, train.X, train.Y,
- #                                 prior.alpha.1, prior.alpha.0,
- #                                 prior.prob, NB.ITER)
- # numerator <- num.1 - num.2
-#<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
-
   denominator <- ComputeProbImprovOfSet(t(test.x), train.X, train.Y,
                                         prior.alpha.1, prior.alpha.0,
                                         prior.prob, NB.ITER)
+  if (1 - numerator / denominator < 0) {
+    print("Found a negative value!")
+    num.neg.val <- num.neg.val + 1
+    next
+  }
+  num.curv.computed <- num.curv.computed + 1
+  i <- num.curv.computed
   curv.vec[i] <- 1 - numerator / denominator
   p.vec[i] <- prob.positive
   n.vec[i] <- numerator
