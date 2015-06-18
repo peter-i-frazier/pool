@@ -36,6 +36,8 @@
 \newtheorem{proposition}{Proposition}
 \newtheorem{remark}{Remark}
 
+\newcommand{\pfcomment}[1]{\color{blue} PF: #1}
+
 \begin{document}
 
 \title{Supplemental Information for \enquote{Peptide Optimization by Optimal Learning: 
@@ -46,25 +48,34 @@ Identification and refinement of peptides for reversible chemoenzymatic labeling
 \part{Supplementary Figures}
 \part{Supplementary Methods}
 \section{POOL Methodology}
-To describe our optimal learning approach, and to contrast it more precisely with the 
-previously described method of taking the peptides with the best predictions (which 
-we call the \enquote{predict-then-optimize} approach for short), we introduce mathematical 
-notation to formulate the peptide optimization problem. 
 
-Let $E$ be the set containing all possible peptide sequences, and for any peptide 
-sequence $e \in E$, let $y(e) \in \{0, 1\}$ be the binary label indicating whether
-peptide $e$ is active or not, if it were measured. 
-This is generally unknown a priori, but we suppose that a machine learning algorithm 
-provides a prediction $\hat{y}(e)$, based on previous measured peptides, i.e., training data. 
-The goal is to use machine learning algorithm and training data to find active peptides. To
-make the goal more general, suppose we are looking for active peptides with some
-favored property, and the measure of favorability can be determined by a fitness 
-function $f(e)$. Then the optimization problem of finding favored active peptides
-can be written as
+
+% To describe our optimal learning approach, and to contrast it more precisely with the previously described method of taking the peptides with the best predictions (which we call the \enquote{predict-then-optimize} approach for short), we introduce mathematical notation to formulate the peptide optimization problem. 
+
+We first introduce some mathematical notation that will allow precise discussion of the POOL methodology. Let $E$ be the set of peptides under consideration.
+In our application, the set $E$ will be the set of peptides of length less than 38 amino acids.
+For any peptide sequence $e \in E$, let $y(e) \in \{0, 1\}$ be a binary label indicating whether
+peptide $e$ is active.  We suppose that this label can be observed directly through experiment, but is otherwise unknown {\it a priori}.
+In our application, we consider several definitions of $y(e)$, depending on what kind of activity we are searching for:
+\begin{itemize}
+\item \pfcomment{Jialei, fill in whatever you think makes sense}.
+\item When searching for peptides with Sfp-specific activity, we let $y(e)$ be $1$ if the peptide is a substrate for both Sfp and AcpH, but is not a substrate for AcpS.  We call this an \enquote{Sfp-specific hit}.
+\item When searching for peptides with AcpS-specific activity, we let $y(e)$ be $1$ if the peptide is a substrate for both AcpS and AcpH, but is not a substrate for Sfp.  We call this an \enquote{AcpS-specific hit}.
+\end{itemize}
+
+We further suppose that we are looking for active peptides that additionally have some
+favored property, and the measure of favorability (for active peptides) can be
+determined by a fitness function $f(e)$, which we suppose can be observed directly for all peptides without requiring a physical experiment. In our application, the fitness is negative one times the length of the peptide.  The negative one is present because we will want fitness to be large, but we want the length to be small.
+
+Our goal is find a peptide $e\in E$ for which $y(e)=1$ and for which $f(e)$ is as large as possible.  We can write this as,
 \begin{equation}
   \underset{e \in E, y(e) = 1}{\arg\max} \, f(e).
   \label{eq:general problem}
 \end{equation}
+
+However, we cannot solve this problem directly because $y(e)$ is not observed.
+
+
 The \enquote{predict-then-optimize} approach uses approximation by assuming that the 
 predictions $\hat{y}(e)$ are correct, and then solves, or approximately solves, the 
 optimization problem 
@@ -101,6 +112,12 @@ This use of the probability of improvement builds on previous work in engineerin
 for global optimization of time-consuming computer codes [add cites], and also on
 value-of-information and optimal learning methods in that same application area 
 [add cites].
+
+\pfcomment{We will move this paragraph below.}
+This is generally unknown a priori, but we suppose that a machine learning algorithm 
+provides a prediction $\hat{y}(e)$, based on previous measured peptides, i.e., training data. 
+The goal is to use machine learning algorithm and training data to find active peptides. 
+
 
 In section \ref{sec:stat model}, we build a machine learning algorithm that predicts
 $y(e)$, i.e., whether a peptide $e$ is active or not. In section \ref{sec:approx algo},
