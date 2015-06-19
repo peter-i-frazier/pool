@@ -47,7 +47,7 @@ Identification and refinement of peptides for reversible chemoenzymatic labeling
 \newpage
 \part{Supplementary Figures}
 \part{Supplementary Methods}
-\section{POOL Methodology}
+\section{Problem Statement}
 
 
 % To describe our optimal learning approach, and to contrast it more precisely with the previously described method of taking the peptides with the best predictions (which we call the \enquote{predict-then-optimize} approach for short), we introduce mathematical notation to formulate the peptide optimization problem. 
@@ -67,22 +67,23 @@ We further suppose that we are looking for active peptides that additionally hav
 favored property, and the measure of favorability (for active peptides) can be
 determined by a fitness function $f(e)$, which we suppose can be observed directly for all peptides without requiring a physical experiment. In our application, the fitness is negative one times the length of the peptide.  The negative one is present because we will want fitness to be large, but we want the length to be small.
 
-Our goal is find a peptide $e\in E$ for which $y(e)=1$ and for which $f(e)$ is as large as possible.  We can write this as,
+Our goal is find a peptide $e\in E$ for which $y(e)=1$ and for which $f(e)$ is as large as possible.  We can write this problem as,
 \begin{equation}
   \underset{e \in E, y(e) = 1}{\arg\max} \, f(e).
   \label{eq:general problem}
 \end{equation}
 
-However, we cannot solve this problem directly because $y(e)$ is not observed.
+However, we cannot solve this problem directly because $y(e)$ has only been observed for those peptides on which we have performed an experiment, which is typically only a small fraction of the total number of peptides in $E$.  For example, in our application, \pfcomment{Jialei, can you fill in the size of $E$ in our application and calculate roughly what fraction of $E$ we have evaluated for?} 
 
+We will contrast POOL with the \enquote{predict-then-optimize} approach, which is used by \pfcomment{Jialei, can you add some cites}, and which we believe to be the predominant way in which machine learning is used in the search for molecules with desirable properties.  In this approach, we collect some training data, in the form of peptide/activity pairs $(e,y(e))$, and train a machine learning classifier to make predictions $\hat{y}(e)$ of $y(e)$.  The classifier might be a naive Bayes classifier like the one that we use in Section~\ref{sec:stat model}, or some other classifier, e.g., a support vector machine \pfcomment{cite}, a random forest \pfcomment{cite}, or a neural network\pfcomment{cite}.
 
-The \enquote{predict-then-optimize} approach uses approximation by assuming that the 
-predictions $\hat{y}(e)$ are correct, and then solves, or approximately solves, the 
-optimization problem 
+The predict-then-optimize approach assumes that the predictions $\hat{y}(e)$ are correct, and then solves, or approximately solves, the optimization problem 
 \begin{equation*}
   \underset{e \in E, \hat{y}(e) = 1}{\arg\max} \, f(e).
   \label{}
 \end{equation*}
+
+
 Although it is ignored by the \enquote{predict-then-optimize} approach, many prediction methods, 
 including all Bayesian prediction methods, provide a joint probability distribution over
 $y(e): e \in E$, which encodes prediction uncertainty. In our optimal learning 
