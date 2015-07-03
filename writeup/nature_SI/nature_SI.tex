@@ -48,10 +48,7 @@ Identification and refinement of peptides for reversible chemoenzymatic labeling
 \newpage
 \part{Supplementary Figures}
 \part{Supplementary Methods}
-\section{Problem Statement}
-
-
-% To describe our optimal learning approach, and to contrast it more precisely with the previously described method of taking the peptides with the best predictions (which we call the \enquote{predict-then-optimize} approach for short), we introduce mathematical notation to formulate the peptide optimization problem. 
+\section{POOL Methodology}
 
 We first introduce some mathematical notation that will allow precise discussion of the POOL methodology. Let $E$ be the set of peptides under consideration.
 In our application, the set $E$ will be the set of peptides of length less than 38 amino acids.
@@ -74,7 +71,7 @@ Our goal is find a peptide $e\in E$ for which $y(e)=1$ and for which $f(e)$ is a
 \end{equation}
 
 % <<<<<<< HEAD
-However, we cannot solve this problem directly because $y(e)$ has only been observed for those peptides on which we have performed an experiment, which is typically only a small fraction of the total number of peptides in $E$.  For example, in our application, \pfcomment{Jialei, can you fill in the size of $E$ in our application and calculate roughly what fraction of $E$ we have evaluated for?}.
+However, we cannot solve this problem directly because $y(e)$ has only been observed for those peptides on which we have performed an experiment, which is typically only a small fraction of the total number of peptides in $E$.  For example, in our application, $E$ contains more than $2 \times 10^{49}$ peptides, and we could only evaluate approximately $2500$ sequences, which is a tiny fraction of $E$.
 
 Typically, we would have a budget that would allow us to evaluate $y(e)$ for only $k$ peptides, where $k$ is much smaller than $|E|$.  
 In our application, $k$ is roughly $500$.
@@ -84,15 +81,18 @@ We might also have available to us $y(e)$ for some small number of previously ev
 
 The question that we consider is how to use a limited experimental budget that allows us to evaluate $y(e)$ for some number $k$ of peptides $e$ in $E$, so as to best support solving \eqref{eq:general problem}.
 
-\pfcomment{Table of contents here.}
+We discuss our approach in the following sections: \ref{sec:existing approaches} reviews existing approaches, and points out the their existing problem;\ref{sec:stat model} describes the machine learning model we built for predicting $y(e)$; \ref{sec:prob improvement} shows our approach for solving \eqref{eq:general problem}; \ref{sec:contrast with predict-then-optimize} compares our approach to existing approaches, and discusses the advantages of our approach; \ref{sec:greedy algorithm}
+provides an approximation algorithm for solving \eqref{eq:opt PI}, which is the core in our approach, and shows the approximation algorithm has performance guarantee in finding optimal value; \ref{sec:generality} discusses the generality of our proposed optimization method, which is compatible with a broad class of machine learning models while the performance guarantee still holds; \ref{sec:extension} discusses a possible extension to handle the search for peptides with multiple
+types of activities; \ref{sec:application} shows results of using our approach in a real application.
 
-\subsection{Existing Approaches}
+
+\subsection{Existing Approaches} \label{sec:existing approaches}
 
 We will contrast POOL with the existing way in which statistically-based predictions are used in the discovery of peptides, small molecules, and in other molecular discovery applications.
 We focus on situations in which activity $y(e)$ is binary. In existing approaches, one would first collects some training data, in the form of peptide/activity pairs $(e,y(e))$, and train a machine learning classifier to make predictions $\hat{y}(e)$ of $y(e)$.  The classifier might be a naive Bayes classifier like the one that we use in Section~\ref{sec:stat model}, or some other classifier, e.g., a support vector machine \pfcomment{cite}, a random forest \pfcomment{cite}, or a neural network\pfcomment{cite}.
 Depending on the classifier, the prediction may be binary, $\hat{y}(e) \in \{0,1\}$, or may be a real-valued score, $\hat{y}(e) \in [0,1]$ indicating a level of confidence, with values close to $0$ or $1$ indicating a high level of confidence, and values close to $1/2$ indicating a high level of uncertainty.  \pfcomment{Say something about the joint probability.}
 
-For applications in which our goal is \eqref{eq: general problem}, and 
+For applications in which our goal is \eqref{eq:general problem}, and 
 
 these predictions might be used in a variety of different ways.  The first would be to assume that the predictions are correct and then to sort those 
 
@@ -117,91 +117,29 @@ It then recommends
 While this approach works well when the predictions are highly accurate, we argue below in Section~\ref{sec:contrast with predict-then-optimize} that this approach is unnecessarily brittle to inaccuracies in predictions due to a lack of diversity that may appear in the set of peptides , and that peptide optimization with machine learning (POOL) provides more robust performance.
 
 
-
-% Although it is ignored by the \enquote{predict-then-optimize} approach, many prediction methods, including all Bayesian prediction methods, provide a joint probability distribution over $y(e): e \in E$, which encodes prediction uncertainty. In our optimal learning approach, we use this joint probability distribution to define an auxiliary function, called probability of improvement, which quantifies the probability that a set of peptides $S$, if tested, will reveal an active peptide whose fitness $f(e)$ improves on some benchmark value $b$, which is typically the best $f(e)$ of active peptides observed in the past. We define this probability of improvement, $\PI(S)$, to be
-% \begin{equation}
-  % \PI(S) = \Prob \left( \max_{e \in S, y(e)=1} f(e) > b \right).
-  % \label{}
-% \end{equation}
-% To ensure consistency, we define $\max$ over an empty set is $-\infty$. We find $S$ by solving
-% \begin{equation}
-  % \underset{S \subseteq E, |S| \leq M}{\arg\max} \PI(S),
-  % \label{eq:opt PI}
-% \end{equation}
-% where $M$ is the number of peptides that can be tested simultaneously in a single round of experiment. After we find the set $S$ and tested the peptides in it, we use the results along with previously tested peptides as training data, and find a new set $S$ for the next round of experiment. We repeat this process until we find enough favored active peptides or resource is exhausted. We demonstrate in a specific application of finding reversible chemoenzymatic labeling peptides that this approach performs better than existing approaches. This use of the probability of improvement builds on previous work in engineering for global optimization of time-consuming computer codes [add cites], and also on value-of-information and optimal learning methods in that same application area [add cites].
-
-% \pfcomment{We will move this paragraph below.}
-% This is generally unknown a priori, but we suppose that a machine learning algorithm provides a prediction $\hat{y}(e)$, based on previous measured peptides, i.e., training data. The goal is to use machine learning algorithm and training data to find active peptides. 
-
-
-In section \ref{sec:stat model}, we build a machine learning algorithm that predicts
-$y(e)$, i.e., whether a peptide $e$ is active or not. In section \ref{sec:approx algo},
-we propose an approximation algorithm to solve \eqref{eq:opt PI} efficiently with 
-performance guarantee. In section \ref{sec:application}, we demonstrate performace
-of POOL in an application of finding short peptides for reversible chemoenzymatic
-labeling, and discuss the implication of diversified pool of peptides generated 
-by POOL.
-
-% \subsection{Machine Learning Model} \label{sec:stat model}
-% =======
-
-% However, we cannot solve this problem directly because $y(e)$ is not observed. We will build a machine learning model that predicts $y(e)$, and develop an optimization method that solves \eqref{eq:general problem} approximately. We discuss our approach in the following sections: \ref{sec:stat model} describes the machine learning model we built for predicting $y(e)$; \ref{sec:prob improvement} shows our approach for solving \eqref{eq:general problem} is equivalent to solving a subproblem \eqref{eq:opt PI}; \ref{sec:contrast with predict-then-optimize} compares our approach versus a standard approach in Bioinformatics called \enquote{predict-then-optimize} method, and discusses the advantages of our approach; \ref{sec:greedy algorithm} provides an approximation algorithm for solving the subproblem \eqref{eq:opt PI}, and shows the approximation algorithm has performance guarantee in finding optimal value; \ref{sec:generality} discusses the generality of our proposed optimization method, which is compatible with a broad class of machine learning models while the performance guarantee still holds; \ref{sec:extension} discusses a possible extension to handle the search for peptides with multiple types of activities.
-
 \subsection{Bayesian Machine Learning Model} \label{sec:stat model}
 
-% >>>>>>> 2101d0c1b155e54f7775b86f370696b17c5daedc
-
-To predict whether a peptide is active or not, we develop a Naive Bayes classifier 
-under Bayesian framework, which combines Naive Bayes and a prior distribution over
-unknown parameters encoding prior knowledge. This model provides the joint probability
-distribution over $y(e): e \in E$, which is needed to calculate $\PI(S)$. Suppose we 
-can use a $J$-dimensional feature vector to represent a peptide, written as
-$\bm{x} = (x_1, \ldots, x_J)$, and the projection of $E$ to the feature space is
-$\mathcal{X}$, then the prediction problem is to calculate
-$\Prob (Y = y \mid \bm{X} = \bm{x})$, where $Y$ is random variable $\in \{0, 1\}$,
+To predict whether a peptide is active or not, we develop a Naive Bayes classifier under Bayesian framework, which combines Naive Bayes and a prior distribution over unknown parameters encoding prior knowledge. This model provides the joint probability distribution over $y(e): e \in E$, which is needed to calculate $\PI(S)$. Suppose we can use a $J$-dimensional feature vector to represent a peptide, written as $\bm{x} = (x_1, \ldots, x_J)$, and the projection of $E$ to the feature space is $\mathcal{X}$, then the prediction problem is to calculate $\Prob (Y = y \mid \bm{X} = \bm{x})$, where $Y$ is random variable $\in \{0, 1\}$,
 and $\bm{X} \in \mathcal{X}$ is random vector. Use Bayes' theorem, we have
 \begin{equation}
   \Prob(Y = y \mid \bm{X} = \bm{x}) = \frac{\Prob(\bm{X} = \bm{x} \mid Y = y) \Prob(Y = y)}{\sum_{y' \in \{0, 1\}} \Prob(\bm{X}= \bm{x} \mid Y = y') \Prob(Y = y')}.
   \label{eq:NB_1}
 \end{equation}
-The Naive Bayes classifier assumes that the features are conditionally independent 
-given $y$, then we can write \eqref{eq:NB_1} as 
+The Naive Bayes classifier assumes that the features are conditionally independent given $y$, then we can write \eqref{eq:NB_1} as 
 \begin{equation}
   \Prob(Y = y \mid \bm{X} = \bm{x}) = \frac{\prod_{j = 1}^J \Prob(X_j = x_j \mid Y = y) \Prob(Y = y)}{\sum_{y' \in \{0, 1\}} \prod_{j = 1}^J \Prob(X_j = x_j \mid Y = y') \Prob(Y = y')}.
   \label{eq:NB_2}
 \end{equation}
-If we know $\Prob(X_j = x_j \mid Y = y)$ and $\Prob(Y = y)$, we can use \eqref{eq:NB_2} 
-to calculate $\Prob(Y = y \mid \bm{X} = \bm{x})$ for any $\bm{x} \in \mathcal{X}$. Now the learning
-problem simply becomes estimating $\Prob(X_j = x_j \mid Y = y)$ and $\Prob(Y = y)$.
-We further assume $\Prob(X_j = x_j \mid Y = y)$ obeys categorical distribution with
-unknown parameters $\bm{\theta}^{y, j} = (\theta^{y, j}_1, \ldots, \theta^{y, j}_{K_j})$,
-that means $X_j$ has finite number of discrete values to choose from, and the probability
-of choosing each is determined by the parameters $\bm{\theta}^{y, j}$, written as
-$X_j \in \{1, \ldots, K_j\}$ and $\Prob(X_j = x_j \mid Y = y) = \theta^{y, j}_{x_j}$.
-Then \eqref{eq:NB_2} becomes
+If we know $\Prob(X_j = x_j \mid Y = y)$ and $\Prob(Y = y)$, we can use \eqref{eq:NB_2} to calculate $\Prob(Y = y \mid \bm{X} = \bm{x})$ for any $\bm{x} \in \mathcal{X}$. Now the learning problem simply becomes estimating $\Prob(X_j = x_j \mid Y = y)$ and $\Prob(Y = y)$. We further assume $\Prob(X_j = x_j \mid Y = y)$ obeys categorical distribution with unknown parameters $\bm{\theta}^{y, j} = (\theta^{y, j}_1, \ldots, \theta^{y, j}_{K_j})$, that means $X_j$ has finite number of discrete values to choose from, and the probability of choosing each is determined by the parameters $\bm{\theta}^{y, j}$, written as $X_j \in \{1, \ldots, K_j\}$ and $\Prob(X_j = x_j \mid Y = y) = \theta^{y, j}_{x_j}$. Then \eqref{eq:NB_2} becomes
 \begin{equation}
   \Prob (Y = y \mid \bm{X} = \bm{x}) = \frac{\Prob(Y = y) \prod_{j=1}^J \theta^{y, j}_{x_j}}
   {\Prob(Y = 1) \prod_{j=1}^J \theta^{1,j}_{x_j} + \Prob(Y = 0) \prod_{j=1}^J \theta^{0,j}_{x_j}}.
   \label{eq:NB_3}
 \end{equation}
-Since $\bm{\theta}^{y, j}$ are unknown, we use Bayesian inference to estimate them. We 
-put Dirichlet prior distribution over $\bm{\theta}^{y, j}$, that is,
-$\bm{\theta}^{y, j} \sim Dirichlet(\bm{\alpha}^{y, j})$, where $\bm{\alpha}^{y, j}$
-are parameters chosen initially to specify the prior distribution. We know the
-posterior distribution of $\bm{\theta}^{y, j}$ given training data $\{(\bm{x}^1, y^1), 
-\ldots, (\bm{x}^N, y^N)\}$ is also a Dirichlet distribution, with new parameters
-$\overset{\sim}{\alpha}^{y, j}_k = \alpha^{y, j} + \sum_{n=1}^N \mathbbm{1}_{\{y^n = y, x^n_j = k\}}$,
-for $k = \{1, \ldots, K_j\}$. Now we can estimate $\Prob(Y = y \mid \bm{X} = \bm{x})$
-using $\bm{\theta}^{y, j}$ drawn from their posterior distribution and \eqref{eq:NB_3},
-if $\Prob(Y = 1)$ and $\bm{\alpha}^{y, j}$ are known, which can be estimated using
-cross validation. Here concludes the machine learning model we proposed and we will
-discuss the performance of this model in our application in \ref{sec:application}.
+Since $\bm{\theta}^{y, j}$ are unknown, we use Bayesian inference to estimate them. We put Dirichlet prior distribution over $\bm{\theta}^{y, j}$, that is, $\bm{\theta}^{y, j} \sim Dirichlet(\bm{\alpha}^{y, j})$, where $\bm{\alpha}^{y, j}$ are parameters chosen initially to specify the prior distribution. We know the posterior distribution of $\bm{\theta}^{y, j}$ given training data $\{(\bm{x}^1, y^1), \ldots, (\bm{x}^N, y^N)\}$ is also a Dirichlet distribution, with new parameters $\overset{\sim}{\alpha}^{y, j}_k = \alpha^{y, j} + \sum_{n=1}^N \mathbbm{1}_{\{y^n = y, x^n_j = k\}}$, for $k = \{1, \ldots, K_j\}$. Now we can estimate $\Prob(Y = y \mid \bm{X} = \bm{x})$ using $\bm{\theta}^{y, j}$ drawn from their posterior distribution and \eqref{eq:NB_3}, if $\Prob(Y = 1)$ and $\bm{\alpha}^{y, j}$ are known, which can be estimated using cross validation. Here concludes the machine learning model we proposed and we will discuss the performance of this model in our application in \ref{sec:application}.
 
-\subsection{Probability of Improvement} \label{sec:prob improvement}
-Many prediction methods, including all Bayesian prediction methods, provide a joint probability distribution over
-$y(e): e \in E$, which encodes prediction uncertainty. 
-In our optimal learning approach, we use this joint probability distribution to define an auxiliary function, called probability of improvement, which quantifies the probability that a set of peptides $S$, if tested, will reveal an active peptide whose fitness $f(e)$ improves on some benchmark value $b$, which is typically the best $f(e)$ of active peptides observed in the past. 
-We define this probability of improvement, $\PI(S)$, to be
+\subsection{Probability of Improvement} \label{sec:prob improvement} 
+Many prediction methods, including all Bayesian prediction methods, provide a joint probability distribution over $y(e): e \in E$, which encodes prediction uncertainty. In our optimal learning approach, we use this joint probability distribution to define an auxiliary function, called probability of improvement, which quantifies the probability that a set of peptides $S$, if tested, will reveal an active peptide whose fitness $f(e)$ improves on some benchmark value $b$, which is typically the best $f(e)$ of active peptides observed in the past. We define this probability of improvement, $\PI(S)$, to be
 \begin{equation}
   \PI(S) = \Prob \left( \max_{e \in S, y(e)=1} f(e) > b \right).
   \label{}
@@ -211,25 +149,15 @@ To ensure consistency, we define $\max$ over an empty set is $-\infty$. We find 
   \underset{S \subseteq E, |S| \leq M}{\arg\max} \PI(S),
   \label{eq:opt PI}
 \end{equation}
-where $M$ is the number of peptides that can be tested simultaneously in a single round of experiment. 
-After we find the set $S$ and tested the peptides in it, we use the results along with previously
-tested peptides as training data, and find a new set $S$ for the next round of experiment. We repeat this
-process until we find enough favored active peptides or resource is exhausted. We demonstrate
-in an application of finding reversible chemoenzymatic labeling peptides
-that this approach performs better than existing approaches.
-This use of the probability of improvement builds on previous work in engineering 
-for global optimization of time-consuming computer codes [add cites], and also on
-value-of-information and optimal learning methods in that same application area 
-[add cites].
+where $M$ is the number of peptides that can be tested simultaneously in a single round of experiment. After we find the set $S$ and tested the peptides in it, we use the results along with previously tested peptides as training data, and find a new set $S$ for the next round of experiment. We repeat this process until we find enough favored active peptides or resource is exhausted. We demonstrate in an application of finding reversible chemoenzymatic labeling peptides that this approach performs better than existing approaches. This use of the probability of improvement builds on previous work in engineering for global optimization of time-consuming computer codes [add cites], and also on value-of-information and optimal learning methods in that same application area [add cites].
 
 \subsection{Contrast with predict-then-optimize method} \label{sec:contrast with predict-then-optimize}
-The \enquote{predict-then-optimize} approach uses approximation by assuming that the 
-predictions $\hat{y}(e)$ are correct, and then solves, or approximately solves, the 
-optimization problem 
-\begin{equation*}
-  \underset{e \in E, \hat{y}(e) = 1}{\arg\max} \, f(e).
-  \label{}
-\end{equation*}
+While the predict-then-optimize approach works well when the predictions by machine learning model are highly accurate, due to the nature of similar sequences have similar prediction value from machine learning model, the recommended sequences to test from this approach are generally very similar to each other, i.e., lack of diversity. When the predictions are not accurate, especially in the case of small training dataset, testing very similar sequences is risky, because if one sequence
+turns out to be not a hit, then the other sequences are not likely to be a hit either. However, maximizing probability of improvement tends to give you more diversified sequences, and there is a simple reasoning behind this: suppose there are three peptides, $A, B$ and $C$ and we only want to pick two of them for test; A and B are very similar to each other, and their predicted probability being a hit is $\Prob (A \text{ is a hit}) = \Prob (B \text{ is a hit}) = 0.9$, while $C$ is
+quite different from $A$ or $B$, and $C$ has a lower predicted probability being a hit,
+say $\Prob (C \text{ is a hit}) = 0.8$. Predict-then-optimize approach will pick $A$ anad $B$ because they both have higher predicted probability being a hit, however, you will see choosing $A$ and $B$ does not give you the highest probability of improvement through calculation. To simplify the demonstration, let's assume correlation between $A$ being a hit and $B$ being a hit is $1$, both $A$ being a hit and $B$ being a hit are independent from $C$ being a hit, and $f(A), f(B), f(C)$ are all greater than
+$b$, then $\PI (\{A, B\}) = \Prob (A \text{ is a hit}, B \text{ is a hit}) + \Prob (A \text{ is a hit}, B \text{ is not a hit}) + \Prob (A \text{ is not a hit}, B \text{ is a hit}) = 0.9 + 0 + 0 = 0.9$, and $\PI (\{A, C\}) = \Prob (A \text{ is a hit}, C \text{ is a hit}) + \Prob (A \text{ is a hit}, C \text{ is not a hit}) + \Prob (A \text{ is not a hit}, C \text{ is a hit}) = 0.9 \times 0.8 + 0.9 \times 0.2 + 0.1 \times 0.8 = 0.98$. Thus maximing probability will choose either $A$ and $C$ or $B$ and $C$, and this
+more diversified than the recommendations given by predict-then-optimize approach. Now suppose we performed test, and turns out $A$ is not a hit, then $B$ is not likely to be a hit either, while $C$ is different than $A$ and thus there is still good chance that $C$ is a hit. Therefore, maximizing probability of improvement has better chance to find hits even the predictions by machine learning model is not accurate enough.
 
 \subsection{Greedy Algorithm} \label{sec:greedy algorithm}
 Directly solving \eqref{eq:opt PI} is impractical, because computational cost for $\PI(S)$
@@ -293,8 +221,6 @@ Lastly, we want to show $\PI(S)$ is submodular. For $e \in E\backslash B$,
     &= \Prob(f^*(A \cup \{e\}) > b \mid f^*(A) > b) \Prob(f^*(A) > b) \\
     &\quad + \Prob(f^*(A \cup \{e\}) > b \mid f^*(A) \leq b)
     \Prob(f^*(A) \leq b) - \Prob(f^*(A) > b) \\
-    &=\Prob(f^*(A) > b) + \Prob(f^*(A \cup \{e\}) > b \mid f^*(A)\leq b)
-    \Prob(f^*(A)\leq b) -\Prob(f^*(A) > b) \\
     &= \Prob(f^*(A \cup \{e\}) > b \mid f^*(A)\leq b) \Prob(f^*(A)\leq b) \\
     &= \Prob(f(e) > b, y(e) = 1 \mid f^*(A) \leq b) \Prob(f^*(A) \leq b) \\
     &= \Prob(f(e) > b, y(e) = 1, f^*(A) \leq b)
@@ -326,7 +252,7 @@ holds for any machine learning model that can compute the objective in
 \begin{proposition} \label{prop:reduced form}
   Solving \eqref{eq:greedy} is equivalent to solving
   \begin{equation}
-    \underset{e \in E \backslash S, f(e) > b}{\mathrm{arg}\max} \, \Prob (y(e)=1 \mid y(e') = 0, \forall e \in S).
+    \underset{e \in E \backslash S, f(e) > b}{\mathrm{arg}\max} \, \Prob (y(e)=1 \mid y(e') = 0, \forall e' \in S).
     \label{eq:reduced form}
   \end{equation}
 \end{proposition}
@@ -348,14 +274,9 @@ holds for any machine learning model that can compute the objective in
 \end{proof}
 
 \subsubsection{Intuition Behind Reduced Form}
-From Proposition \ref{prop:reduced form}, we have seen that the greedy algorithm
-is equivalent to an algorithm that chooses each new peptide to test by supposing
-that all previously added peptides did not produce the desired result, and adding
-this supposition as additional \enquote{training data} to provide a new estimate
-of peptide activity. Through this lens, we see that the optimal learning approach
-explicitly provides diversity in its search for high-quality peptides.
+From Proposition \ref{prop:reduced form}, we have seen that the greedy algorithm is equivalent to an algorithm that chooses each new peptide to test by supposing that all previously added peptides did not produce the desired result, and adding this supposition as additional \enquote{training data} to provide a new estimate of peptide activity. Through this lens, we see that the optimal learning approach explicitly provides diversity in its search for high-quality peptides, which is in consistant with the conclusion in \ref{sec:contrast with predict-then-optimize}.
 
-\subsubsection{Solving Greedy Step with MINLP}
+\subsubsection{Solving Greedy Step with MINLP} \label{sec: MINLP approach}
 Under the Naive Bayes model proposed in section \ref{sec:stat model}, 
 we can formulate \eqref{eq:reduced form} as an instance of Mixed-Integer 
 Nonlinear Program (MINLP), and then we can use any off-the-shelf MINLP 
@@ -435,10 +356,25 @@ the algorithm in the following:
 \end{Algorithm}
 
 \subsubsection{Solving Greedy Step with MAP Estimation}
+In our application of finding reversible labeling peptides, the dimension of search space is so high that solving MINLP as in \ref{sec: MINLP approach} is computationally challenging. We propose another simpler approach, that is, Maximum a Posteriori estimation, to solve \eqref{eq:NB_3}. While this approach does not provide as high quality solution as MINLP does, the computation is very quick and easy. 
 
 \subsection{Generality of Approach} \label{sec:generality}
+While we proposed a Naive Bayes model for prediction in \ref{sec:stat model}, the optimal learning approach that we proposed is rather general and applies to any machine learning model as long as it allows calculation of the objective in \eqref{eq:reduced form}, for example, you can easily plug in common machine learning classifiers like logistic regression, SVM with probabilistic output, etc. The result of performance guarantee of the greedy algorithm in ref{sec:lower bound} and the
+reduced form of greedy algorithm in \ref{sec:reduced form} applies, too.
 
 \subsection{Extension to Handle Search for Specific Activity} \label{sec:extension}
+In our application of searching peptides with specific activity, we do not only obtain one label for each peptide that is tested, instead, we observe multiple labels and each is associated with reaction between the peptide and a specific enzyme, and we determine the final label from these observed labels. Mathematically, we can write it as, for peptide $e$, its label $y(e) = \prod_i y_i(e)$ and we observe $y_i(e)$. To utilize as much information as possible, instead of building Naive Bayes
+classifier predicting $y(e)$ directly, we build separate Naive Bayes classifiers predicting each $y_i(e)$, and rewrite \eqref{eq:reduced form} as
+\begin{equation*}
+  \underset{e \in E \backslash S, f(e) > b}{\mathrm{arg}\max} \, \Prob (y_i(e)=1, \forall i \mid \prod_i y_i(e') = 0, \forall e' \in S).
+  \label{}
+\end{equation*}
+The objective is hard to compute because the number of configurations of $y_i(e'), \forall e \in S$ that satisfy $\prod_i y_i(e') = 0$ grows exponentially with the size of $S$. We adopt a heuristic approach, which is to approximate the objective by
+\begin{equation}
+  \Prob (y_i(e)=1, \forall i \mid y_i(e'), \forall i, \forall e' \in S),
+  \label{}
+\end{equation}
+and we choose $y_i(e')$ as long as they satisfy $\prod_i y_i(e') = 0, \forall e' \in S$.
 
 \subsection{Application} \label{sec:application}
 First we show this application is an instance of the more general problem discussed
@@ -480,9 +416,6 @@ is typically used to benchmark performance of binary classifiers.
 \label{fig:ROC}
 \end{figure}
 
-
-\subsubsection{Solving Greedy Step}
-We prabably should describe how we actually generated peptides, since we did not solve MINLP.
 
 \subsubsection{Comparison of POOL v.s. other existing methods}
 Describe setup of simulation for the benchmark plot?
