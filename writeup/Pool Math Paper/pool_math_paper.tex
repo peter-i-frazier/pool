@@ -1,0 +1,141 @@
+\documentclass[paper=letter]{scrartcl}
+% Not used for KOMA Script
+%\documentclass[11pt]{article}
+%\usepackage{lmodern}				% nice font for PDF -- preferable over ae package
+%\usepackage{fullpage}
+
+
+\pagestyle{plain}				% fügt Kopfzeile mit Titel und Seite ein
+\usepackage[latin1]{inputenc}		% Windows Codepage fkt nicht
+\usepackage[T1]{fontenc} 
+% T1 Fonts, die nicht als Bitmap eigebettet werden, sondern skalierbar sein
+% sollen
+
+\title{Math Paper on POOL
+}
+
+\date{\today}
+
+\usepackage[cmex10]{amsmath}
+\usepackage{amssymb,amsthm,url}
+
+\usepackage{microtype}
+
+\usepackage{xcolor}					% colors
+\usepackage{hyperref}				% clickable links
+\definecolor{pololinkfarbe}{rgb}{0,0,0}
+\hypersetup{
+colorlinks,%
+citecolor=pololinkfarbe,%
+filecolor=pololinkfarbe,%
+linkcolor=pololinkfarbe,%
+urlcolor=pololinkfarbe}
+
+%tikz
+\usepackage{tikz} 					% vector graphics
+\usetikzlibrary{arrows}				% arrow tips, pp. 255 in tikz manual
+\usetikzlibrary{positioning}
+\definecolor{darkgreen}{rgb}{0.0,0.6,0.2}
+
+\usepackage{graphicx}
+%\usepackage[chapter]{algorithm} 				% fuer float-Umgebung und ListOfAlgorithms
+% the option ensures that algorithms are numbered chapter-wise
+\usepackage[noend]{algpseudocode} 	% Darstellung von Pseudocode
+% Laengen fuer die Darstellung der Algorithmen
+\newlength\algorithmvspacebegin
+\setlength\algorithmvspacebegin{1ex}
+\newlength\algorithmvspaceend
+\setlength\algorithmvspaceend{0.2ex}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\usepackage{complexity}
+%\usepackage{bbm}
+%\usepackage{capt-of}				% List Algorithms in listoffigures
+
+\newtheorem{theorem}{Theorem}
+\newtheorem{definition}{Definition}
+\newtheorem{corollary}{Corollary}
+\newtheorem{lemma}{Lemma}
+\newtheorem{remark}{Remark}
+\newtheorem{fact}{Fact}
+\newtheorem{proposition}{Proposition}
+%\newtheorem{question}{Question}
+\newtheorem{example}{Example}
+\newtheorem{conjecture}{Conjecture}
+\newtheorem{claim}{Claim}
+\newtheorem{observation}{Observation}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% My macros
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\usepackage{xspace}
+%\newcommand{\ID}[1]{\textsl{#1}\xspace}
+\renewcommand{\E}{\ensuremath{\mathbb{E}}}		% symbol for expected value
+%%----- Befehl \textfrac{z}{n} - für schräge Brüche in Textpassagen ------
+%\newcommand*{\textfrac}[2]{\ensuremath{\kern.1em
+%\raise.5ex\hbox{\the\scriptfont0 #1}\kern-.1em
+%/\kern-.15em\lower.25ex\hbox{\the\scriptfont0 #2}}}
+
+\newcommand\maxkcover{\textsc{Max~$k$-Cover}\xspace}
+
+\allowdisplaybreaks				% erlaubt das Umbrechen von Seiten innerhalb von Formeln
+\setlength{\parfillskip}{10pt plus 1fill}	% enforce non-full last lines of paragraphs
+
+%TODO Remove before submitting!
+\overfullrule=5pt				% zeige uebervolle Boxen an, S. 985
+\definecolor{pololinkfarbe}{rgb}{0,0,0.8}
+
+% Comments in margin
+\newcommand{\commentPF}[1]{\marginpar{\tiny\color{red} PF: ``#1''}}
+\newcommand{\commentJW}[1]{\marginpar{\tiny\color{green} JW: ``#1''}}
+\newcommand{\commentTF}[1]{\marginpar{\tiny\color{black} TF: ``#1''}}
+\newcommand{\commentMP}[1]{\marginpar{\tiny\color{blue} MP: ``#1''}}
+
+\begin{document}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% global styles for tikz
+\tikzset{VertexStyle/.style = {shape          = circle,
+                                 text           = black,
+                                 inner sep      = 2pt,
+                                 outer sep      = 0pt,
+                                 minimum size   = 12 pt}}
+\tikzset{ImplicationStyle/.style = {-latex, thick}}
+\tikzset{AlertImplicationStyle/.style = {-latex, very thick, color=#1},
+		AlertImplicationStyle/.default = red
+												}
+\tikzset{EquivalenceStyle/.style = {latex-latex, thick}}
+\tikzset{AlertEquivalenceStyle/.style = {latex-latex, very thick, color=#1},
+		AlertEquivalenceStyle/.default = red
+												}
+												
+												
+\maketitle
+
+\begin{abstract}
+This paper provides a mathematical treatment of POOL and discusses extensions.
+\end{abstract}
+
+
+\section{Introduction}
+Intro goes here
+
+Feel free to add further sections in arbitrary ordering.
+
+
+\input{optimality_of_greedy}
+
+
+
+%\newpage
+\bibliographystyle{abbrv}
+%%\bibliographystyle{alpha}			% Stil der Verweise
+\bibliography{peptides}				% Verweis auf .bib Datei
+
+
+\end{document}
+
+
+
+
+\end{document}
+
+
