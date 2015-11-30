@@ -10,7 +10,7 @@ Functions computing and visualizing distance between peptides
 # Penalties, must have length of 3 and that
 # pens[0] > pens[1] > pens[2] > 0
 # Modify to make plot perfect
-pens = [20., 2., 1.]
+pens = [10., 1.5, 1.]
 # DO NOT modify if you do not know what you are doing
 class_dict = {'A': 5,
               'R': 4,

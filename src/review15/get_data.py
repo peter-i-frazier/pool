@@ -29,7 +29,8 @@ X_ben = np.asarray(benchmark_seq_table)
 X_ben = np.vstack(np.split(X_ben, [2, 4], axis=1))
 X_orig = np.asarray(original_seq_table)
 X = np.vstack((X_orig, X_ben))
-#print X.shape
+print X.shape
+print original_nterm
 #print original_nterm[:5]
 #print X[:5, :]
 #print X
@@ -37,6 +38,6 @@ X = np.vstack((X_orig, X_ben))
 
 ### Need to use this number in visualization code
 print 'n_orig =', len(original_nterm)
-np.savetxt('data.csv', X, delimiter=',', fmt='%s')
+#np.savetxt('data.csv', X, delimiter=',', fmt='%s')
 
 
