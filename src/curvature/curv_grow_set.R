@@ -23,7 +23,8 @@ gamma.0 <- gamma_0_type1
 prior.prob <- prior_type1
 prior.alpha.1 <- SetPriorReducedAA(gamma.1, NUM_CLASS)
 prior.alpha.0 <- SetPriorReducedAA(gamma.0, NUM_CLASS)
-NUM.RECOM <- 71
+NUM.RECOM <- 500
+#NUM.RECOM <- 71
 NB.ITER <- 10000
 S <- GenRecomSetOld(train.X, train.Y, prior.alpha.1, prior.alpha.0,
                     prior.prob, NUM.RECOM, NB.ITER, minL, maxL, minR, maxR)
@@ -32,6 +33,7 @@ print("Done")
 # ====================================================================
 # Compute curvature
 print("Begin computing curvature")
+print(NUM.RECOM)
 grow.product <- 1
 curv.vec <- rep(-1, nrow(S))
 X <- train.X
