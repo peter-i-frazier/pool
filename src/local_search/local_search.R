@@ -24,7 +24,12 @@ gamma.0 <- gamma_0_type1
 prior.prob <- prior_type1
 prior.alpha.1 <- SetPriorReducedAA(gamma.1, NUM_CLASS)
 prior.alpha.0 <- SetPriorReducedAA(gamma.0, NUM_CLASS)
-NUM.RECOM <- 71
+# ------------------------------------------------
+# Trying a different value
+#NUM.RECOM <- 71
+#NUM.RECOM <- 20
+NUM.RECOM <- 500
+# ------------------------------------------------
 NB.ITER <- 1000
 S <- GenRecomSetOld(train.X, train.Y, prior.alpha.1, prior.alpha.0,
                     prior.prob, NUM.RECOM, NB.ITER, minL, maxL, minR, maxR)
@@ -32,7 +37,7 @@ S <- GenRecomSetOld(train.X, train.Y, prior.alpha.1, prior.alpha.0,
 
 # ====================================================================
 # Compute probability improvement
-PI.ITER <- 10000
+PI.ITER <- 1000
 Y <- c(train.Y, rep(0, nrow(S) - 1))
 prob.improv.S <- rep(-1, PI.ITER)
 rdm.pos.vec <- floor(runif(PI.ITER, 1, nrow(S))) 
