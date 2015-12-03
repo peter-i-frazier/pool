@@ -66,10 +66,66 @@ GenOnePeptideMAPNew <- function(length.left, length.right, alpha.1.label, alpha.
   return (feature)
 }
 
-GenRecomSetOld <- function(X, Y, alpha.1, alpha.0, p1, num.recom, num.mc.samples, 
+GenRecomSetMAPNew <- function(X.label, Y.label, X.not.label, Y.not.label, X.unlabel, Y.unlabel,
+                              alpha.1.label.prior, alpha.0.label.prior, p1.label,
+                              alpha.1.not.label.prior, alpha.0.not.label.prior, p1.not.label,
+                              alpha.1.unlabel.prior, alpha.0.unlabel.prior, p1.unlabel,
+                              num.mc.samples, num.recom, minL, maxL, minR, maxR)  {
+  # Generates a recommendation set using new MAP
+  # 
+  # Args:
+  #   X: Feature matrix of peptides.
+  #   Y: Label vectors of peptides.
+  #   alpha.1: List of vectors, where each vector is parameter for a Dirichlet prior
+  #            corresponding to one feature for x with y = 1.
+  #   alpha.0: List of vectors, where each vector is parameter for a Dirichlet prior
+  #            corresponding to one feature for x with y = 0.
+  #   p1: P(Y=1)
+  #   num.mc.samples: Number samples to draw.
+  #   num.recom: Number of recommendations to generate.
+  #   minL: Min length allowed for the left half of a peptide.
+  #   maxL: Max length allowed for the left half of a peptide.
+  #   minR: Min length allowed for the right half of a peptide.
+  #   maxR: Max length allowed for the right half of a peptide.
+  #
+  # Returns:
+  #   A matrix of recommendation set.
+  if (num.recom < 1 || num.recom %% 1 > 0)
+    stop("num.recom must be a positive integer")
+  num.unique.recom <- 0
+  recom.set <- c()
+  while (num.unique.recom < num.recom) { 
+    print(sprintf("iter %d", num.unique.recom))
+
+    params.label <- BayesianNaiveBayes(X.label, Y.label, alpha.1.label.prior, alpha.0.label.prior, p1.label)
+    params.not.label <- BayesianNaiveBayes(X.not.label, Y.not.label, alpha.1.not.label.prior, alpha.0.not.label.prior, p1.not.label)
+    params.unlabel <- BayesianNaiveBayes(X.unlabel, Y.unlabel, alpha.1.unlabel.prior, alpha.0.unlabel.prior, p1.unlabel)
+
+    length.left <- ceiling(runif(1, min = minL - 1, max = maxL))
+    length.right <- ceiling(runif(1, min = minR - 1, max = maxR))
+    new.rec.peptide <- GenOnePeptideMAPNew(length.left, length.right,
+                                           params.label$post.alpha.1, params.label$post.alpha.0,
+                                           params.not.label$post.alpha.1, params.not.label$post.alpha.0,
+                                           params.unlabel$post.alpha.1, params.unlabel$post.alpha.0,
+                                           num.mc.samples)
+    if (nrow(unique(rbind(recom.set, new.rec.peptide))) == num.unique.recom)  # already contained this peptide
+      next
+    num.unique.recom <- num.unique.recom + 1
+    X.label <- rbind(X.label, new.rec.peptide)
+    Y.label <- c(Y.label, 0)
+    X.not.label <- rbind(X.not.label, new.rec.peptide)
+    Y.not.label <- c(Y.not.label, 1)
+    X.unlabel <- rbind(X.unlabel, new.rec.peptide)
+    Y.unlabel <- c(Y.unlabel, 0)
+    recom.set <- rbind(recom.set, new.rec.peptide)
+  }
+  return (recom.set)
+}
+
+GenRecomSetOld <- function(X, Y, alpha.1, alpha.0, p1, num.recom, num.mc.samples,
                            minL, maxL, minR, maxR)  {
   # Generates a recommendation set
-  # 
+  #
   # Args:
   #   X: Feature matrix of peptides.
   #   Y: Label vectors of peptides.
@@ -91,7 +147,7 @@ GenRecomSetOld <- function(X, Y, alpha.1, alpha.0, p1, num.recom, num.mc.samples
     stop("num.recom must be a positive integer")
   num.unique.recom <- 0
   recom.set <- c()
-  while (num.unique.recom < num.recom) { 
+  while (num.unique.recom < num.recom) {
     print(sprintf("iter %d", num.unique.recom))
 
     alphas <- BayesianNaiveBayes(X, Y, alpha.1, alpha.0, p1)
@@ -108,6 +164,54 @@ GenRecomSetOld <- function(X, Y, alpha.1, alpha.0, p1, num.recom, num.mc.samples
     Y <- c(Y, 0)
     recom.set <- rbind(recom.set, new.rec.peptide)
   }
+  return (recom.set)
+}
+
+GenRecomSetMutate <- function(hit.X, max.mutate.no, min.mutate.no, num.recom){
+  # Returns:
+  #   A matrix of recommendation set.
+  if (min.mutate.no >= max.mutate.no)
+    stop ("min.mutate.no must be smaller than max.mutate.no")
+  recom.set <- c()
+  if (is.null(nrow(hit.X)))
+    hit.X <- t(hit.X)
+  num.data <- nrow(hit.X)
+  pick.idx <- sample(1:num.data, num.recom, replace=TRUE)
+  num.pos.to.mutate <- sample(min.mutate.no:max.mutate.no, num.recom, replace=TRUE)
+  for (n in 1:num.recom) {
+    peptide.to.mutate <- hit.X[pick.idx[n], ]
+    left.count <- sum(peptide.to.mutate[1:MAXL] > 0)
+    right.count <- sum(peptide.to.mutate[(MAXL+1):(MAXL+MAXR)] > 0)
+    positions <- sample(c(1:left.count, (MAXL+1):(MAXL+right.count)), num.pos.to.mutate[n], replace=FALSE)
+    for (pos in positions)
+      peptide.to.mutate[pos] <- sample(1:8, 1)
+    recom.set <- rbind(recom.set, peptide.to.mutate)
+  }
+  return (recom.set)
+}
+
+GenRecomSetPredictOptimize <- function(X.label, Y.label, X.not.label, Y.not.label, X.unlabel, Y.unlabel,
+                                      alpha.1.label.prior, alpha.0.label.prior, p1.label,
+                                      alpha.1.not.label.prior, alpha.0.not.label.prior, p1.not.label,
+                                      alpha.1.unlabel.prior, alpha.0.unlabel.prior, p1.unlabel,
+                                      num.mc.samples, num.recom, minL, maxL, minR, maxR)  {
+  # Returns:
+  #   A matrix of recommendation set.
+  if (num.recom < 1 || num.recom %% 1 > 0)
+    stop("num.recom must be a positive integer")
+
+  params.label <- BayesianNaiveBayes(X.label, Y.label, alpha.1.label.prior, alpha.0.label.prior, p1.label)
+  params.not.label <- BayesianNaiveBayes(X.not.label, Y.not.label, alpha.1.not.label.prior, alpha.0.not.label.prior, p1.not.label)
+  params.unlabel <- BayesianNaiveBayes(X.unlabel, Y.unlabel, alpha.1.unlabel.prior, alpha.0.unlabel.prior, p1.unlabel)
+
+  length.left <- ceiling(runif(1, min = minL - 1, max = maxL))
+  length.right <- ceiling(runif(1, min = minR - 1, max = maxR))
+  new.rec.peptide <- GenOnePeptideMAPNew(length.left, length.right,
+                                         params.label$post.alpha.1, params.label$post.alpha.0,
+                                         params.not.label$post.alpha.1, params.not.label$post.alpha.0,
+                                         params.unlabel$post.alpha.1, params.unlabel$post.alpha.0,
+                                         num.mc.samples)
+  recom.set <- t(matrix(rep(new.rec.peptide, num.recom), nrow = length(new.rec.peptide)))
   return (recom.set)
 }
 

@@ -33,10 +33,10 @@ BayesianNaiveBayes <- function(X, Y, alpha.1, alpha.0, p1) {
   X.1 <- X[Y == 1,]
   X.0 <- X[Y == 0,]
   if (length(alpha.1) != length(alpha.0))
-    print ("error: length(alpha) are not consistent!")
+    stop ("error: length(alpha) are not consistent!")
   for (j in 1:length(alpha.1)) {
     if (length(alpha.1[[j]]) != length(alpha.0[[j]]))
-      print ("error: length(alpha[[j]]) are not consistent!")
+      stop ("error: length(alpha[[j]]) are not consistent!")
     for (i in 1:length(alpha.1[[j]])) {
       alpha.1[[j]][i] <- alpha.1[[j]][i] + sum(X.1[, j] == i)
       alpha.0[[j]][i] <- alpha.0[[j]][i] + sum(X.0[, j] == i)
@@ -78,18 +78,18 @@ CalculateProb <- function(feature.matrix, thetas.1, thetas.0, p1) {
   #   mean: vector, mean of estimated P(y = 1 | x) for each x
   #   sd: vector, sd of estimated P(y = 1 | x) for each x
   if (ncol(feature.matrix) != length(thetas.1) || length(thetas.1) != length(thetas.0))
-    print ("error: inconsistent size!")
+    stop ("error: inconsistent size!")
   num.mc.samples <- nrow(thetas.1[[1]])
   num.peptides <- nrow(feature.matrix)
   p.x.1 <- matrix(1, nrow=num.mc.samples, ncol=num.peptides)
   p.x.0 <- matrix(1, nrow=num.mc.samples, ncol=num.peptides)
   for (j in 1:length(thetas.1)) {
     if (nrow(thetas.1[[j]]) != num.mc.samples || nrow(thetas.0[[j]]) != num.mc.samples)
-      print ("error: inconsistent size!")
+      stop ("error: inconsistent size!")
     for (n in 1:num.peptides) {
       if (feature.matrix[n, j] != -1) {
-        p.x.1[, n] <- p.x.1[, n] * thetas.1[[j]][, feature.matrix[n, j]]
-        p.x.0[, n] <- p.x.0[, n] * thetas.0[[j]][, feature.matrix[n, j]]
+        p.x.1[, n] <- p.x.1[, n] * thetas.1[[j]][, feature.matrix[n, j] ]
+        p.x.0[, n] <- p.x.0[, n] * thetas.0[[j]][, feature.matrix[n, j] ]
       }
     }
   }
@@ -98,3 +98,13 @@ CalculateProb <- function(feature.matrix, thetas.1, thetas.0, p1) {
   prob.sd <- sapply(1:num.peptides, function (n) sd(prob[, n]))
   return (list(mean=prob.mean, sd=prob.sd))
 }
+
+Predict <- function(train_X, train_Y, test_X, alpha.1, alpha.0, p1, num.mc) {
+  trained.params <- BayesianNaiveBayes(train_X, train_Y, alpha.1, alpha.0, p1)
+  thetas.1 <- SampleThetas(trained.params$post.alpha.1, num.mc)
+  thetas.0 <- SampleThetas(trained.params$post.alpha.0, num.mc)
+  prob.list <- CalculateProb(test_X, thetas.1, thetas.0, trained.params$p1)
+  return (prob.list$mean)
+}
+
+

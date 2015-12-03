@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/zsh
 mkdir ${5}/param_${3}
 cd ${5}/param_${3}
 

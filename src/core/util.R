@@ -19,3 +19,6 @@ QuerySql <- function(dbname, query) {
   dbDisconnect(con)
   return (data)
 }
+
+get_con <- function(dbname)
+  con <- dbConnect(MySQL(), user=USER, password=PASSWORD, host=HOST, dbname=dbname)

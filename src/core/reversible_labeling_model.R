@@ -69,3 +69,26 @@ SetPriorReducedAA <- function(coefficient, num.class) {
     alpha[[j]] <- coefficient * rep(sqrt(j - MAXL), num.class)
   return (alpha)
 }
+
+GenRandomSeqFromFeature <- function(feature, lookup.table) {
+  # Given feature of a peptide, generate the amino acid sequences, where Serine
+  # should not be in the sequence except for the anchor Serine.
+  # return a list with nterm and cterm of the generated peptide
+  nterm <- c()
+  for (i in 1:MAXL) {
+    if (feature[i] == 7) {
+      nterm <- c("T", nterm)
+    } else if (feature[i] > 0) {
+      nterm <- c(sample(lookup.table[lookup.table[, 'class'] == feature[i], 'AA'], 1), nterm)
+    }
+  }
+  cterm <- c()
+  for (i in 1:MAXR) {
+    if (feature[i + MAXL] == 7) {
+      cterm <- c(cterm, "T")
+    } else if (feature[i + MAXL] > 0) {
+      cterm <- c(cterm, sample(lookup.table[lookup.table[, 'class'] == feature[i + MAXL], 'AA'], 1))
+    }
+  }
+  return (list(nterm = paste0(nterm, collapse=''), cterm = paste0(cterm, collapse='')))
+}

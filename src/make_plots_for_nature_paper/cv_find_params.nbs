@@ -1,0 +1,4 @@
+#!/bin/zsh
+
+source /fs/home/jw865/.zshrc
+/usr/local/R/icse/bin/Rscript --slave ${1} ALPHA0=${2} ALPHA1=${3} P1=${4} TOPLOT=${5}
