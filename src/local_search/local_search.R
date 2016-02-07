@@ -5,9 +5,8 @@
 rm(list = ls())
 set.seed(1)
 
-root <- "~/repos/peptide-catalysis/src/"
+root <- "../"
 source(paste0(root, "core/dependency.R"))
-# source(paste0(root, "core/prob_improv_of_set.R"))
 ResolveDependency(root)
 
 dataset <- GetDataReducedAA("SELECT * FROM binary_labeling_activity")
@@ -29,10 +28,19 @@ prior.alpha.0 <- SetPriorReducedAA(gamma.0, NUM_CLASS)
 #NUM.RECOM <- 71
 #NUM.RECOM <- 20
 NUM.RECOM <- 500
-# ------------------------------------------------
+START_RANDOMLY <- TRUE
 NB.ITER <- 1000
-S <- GenRecomSetOld(train.X, train.Y, prior.alpha.1, prior.alpha.0,
-                    prior.prob, NUM.RECOM, NB.ITER, minL, maxL, minR, maxR)
+# ------------------------------------------------
+if (START_RANDOMLY) {
+  # Generate random starting set
+  S <- c()
+  for (i in seq(NUM.RECOM))
+    S <- rbind(S, GenOneRandomPeptide(minL, maxL, minR, maxR, MAXL, MAXR, 1:NUM_CLASS))
+} else {
+  # Generate POOL recommendation set
+  S <- GenRecomSetOld(train.X, train.Y, prior.alpha.1, prior.alpha.0,
+                      prior.prob, NUM.RECOM, NB.ITER, minL, maxL, minR, maxR)
+}
 
 
 # ====================================================================
@@ -40,7 +48,7 @@ S <- GenRecomSetOld(train.X, train.Y, prior.alpha.1, prior.alpha.0,
 PI.ITER <- 1000
 Y <- c(train.Y, rep(0, nrow(S) - 1))
 prob.improv.S <- rep(-1, PI.ITER)
-rdm.pos.vec <- floor(runif(PI.ITER, 1, nrow(S))) 
+rdm.pos.vec <- floor(runif(PI.ITER, 1, nrow(S)))
 print(sprintf("Total Iter = %d", PI.ITER))
 
 for (i in 1:PI.ITER) {
@@ -52,7 +60,7 @@ for (i in 1:PI.ITER) {
   alphas <- BayesianNaiveBayes(X, Y, prior.alpha.1, prior.alpha.0,
                                prior.prob)
   length.left <- ceiling(runif(1, min = minL - 1, max = maxL))
-	length.right <- ceiling(runif(1, min = minR - 1, max = maxR))
+  length.right <- ceiling(runif(1, min = minR - 1, max = maxR))
   best.peptide <- GenOnePeptideMAPOld(length.left, length.right,
                                       alphas$post.alpha.1,
                                       alphas$post.alpha.0, NB.ITER)
@@ -64,7 +72,7 @@ for (i in 1:PI.ITER) {
   while(nrow(unique(S)) < NUM.RECOM) {
     print("Found a duplicate peptide!")
     length.left <- ceiling(runif(1, min = minL - 1, max = maxL))
-	  length.right <- ceiling(runif(1, min = minR - 1, max = maxR))
+    length.right <- ceiling(runif(1, min = minR - 1, max = maxR))
     best.peptide <- GenOnePeptideMAPOld(length.left, length.right,
                                         alphas$post.alpha.1,
                                         alphas$post.alpha.0, NB.ITER)
@@ -77,7 +85,7 @@ for (i in 1:PI.ITER) {
 
   prob.improv.S[i] <- ComputeProbImprovOfSet(S, train.X, train.Y,
                                              prior.alpha.1,
-                                             prior.alpha.0, 
+                                             prior.alpha.0,
                                              prior.prob, NB.ITER)
 
   if (i > 1 && prob.improv.S[i] < prob.improv.S[i - 1]) {
@@ -89,4 +97,7 @@ for (i in 1:PI.ITER) {
   print(sprintf("PI(S) = %.3f", prob.improv.S[i]))
   print("==========")
 }
+result.table <- data.frame(PI = prob.improv.S)
+con <- get_con("sfp_AcpS")
+dbWriteTable(con, value = result.table, name = 'local_search_random_500', overwrite = TRUE, append = FALSE, row.names=FALSE)
 
