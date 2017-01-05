@@ -1,0 +1,259 @@
+\subsection{Greedy Algorithm} \label{sec:greedy algorithm}
+Directly solving \eqref{eq:opt PI} is computationally challenging, first because the cost of computing $\PI(S)$
+grows exponentially in $k$, and second because the number of sets $S$ satisfying $|S| \leq k$
+also grows exponentially in $k$. In this section we describe an easily computed approximate solution to
+\eqref{eq:opt PI}. The method we employ is a greedy algorithm, which starts with $S = \emptyset$, and then adds
+peptides one-by-one, each time choosing the one that will increase the probability of 
+improvement by the greatest amount, that is, solving 
+\begin{equation}
+  \underset{e \in E \backslash S}{\mathrm{arg}\max} \,\PI (S \cup \{e\}),
+  \label{eq:greedy}
+\end{equation}
+until $|S| = k$. This algorithm has much smaller computational challenge, for three reasons:
+first, the size of search space reduces from $|E|^k$ to $|E|$; second, as shown in Proposition 
+\ref{prop:reduced form}, solving \eqref{eq:greedy} does not require computation of $\PI$;
+third, the greedy algorithm has a theoretic performance guarantee that holds for any machine
+learning model that allows computation of probability-of-improvement, which is discussed in \ref{sec:lower bound}.
+
+We discuss the greedy algorithm in detail in the following parts. Section \ref{sec:lower bound} shows that the greedy
+algorithm has a performance lower bound and holds for any machine learning model as long as probability-of-improvement
+can be computed. Section \ref{sec:reduced form} shows that finding maximum of probability-of-improvement in \eqref{eq:greedy} is the same as 
+solving the problem in \eqref{eq:reduced form}, where the objective function is cheaper to compute than probability-of-improvement.
+This equivalent form in \eqref{eq:reduced form} can be understood in an intuitive way, and Section \ref{sec:intuition} discusses 
+this intuition and difference with \enquote{predict-then-optimize} in terms of diversity of the peptide recommendations. 
+\eqref{eq:reduced form} is nonetheless still hard to solve, we present two approaches for solving it. One of which
+is called POOL-MINLP because we formulated the optimization problem as a Mixed-Integer Nonlinear Program, discussed 
+in \ref{sec:MINLP approach}. This approach is exact but expensive to compute, and thus we only provide the idea while 
+did not implement this approach for our application. 
+The other approach is called POOL-MAP, shown in \ref{sec:MAP approach}, and in this approach we used Maximum a posteriori to 
+approximate the objective in \eqref{eq:reduced form}. This approach is an approximation but computes fast, and it is 
+the one we actually implemented in POOL and used for our application.
+
+\subsubsection{Performance Guarantee for the Greedy Algorithm} \label{sec:lower bound}
+The performance guarantee of the greedy algorithm is stated in the following theorem:
+\begin{theorem} \label{thm:greedy}
+  The greedy algorithm always produces a solution whose probability-of-improvement is at 
+  least $1-[(k-1)/k]^k \geq 1 - 1 / e$ times the optimal objective
+  value of \eqref{eq:opt PI}.
+\end{theorem}
+To prove the theorem, we use the following two lemmas:
+\begin{lemma} \citep{nemhauser1978analysis} \label{lemma:1}
+  If $F(S)$ is submodular, non-decreasing and $F(\emptyset)=0$, the greedy heuristic always 
+  produces a solution whose value is at least $1-[(k-1)/k]^k$ times the optimal value, where 
+  $|S| \leq k$. This bound can be achieved for each $k$ and has a limiting value of $1-1/e$, 
+  where $e$ is the base of the natural logarithm.
+\end{lemma}
+
+\begin{lemma} \label{lemma:2}
+  probability-of-improvement $\PI(S)$ is submodular, non-decreasing and $\PI(\emptyset)=0$.
+\end{lemma}
+\begin{proof}
+Let $f^*(S) = \max_{e \in S, y(e)=1} f(e)$. First we show $\PI(\emptyset) = 0$.
+\begin{equation*}
+  \PI(\emptyset) = \Prob(f^*(\emptyset) > b) = \Prob(-\infty > b)=0.
+\end{equation*}
+
+To show $\PI(S)$ is non-decreasing, let $A \subseteq B \subseteq E$ where $E$ is a finite set, then
+\begin{equation*}
+\begin{split}
+\PI(B) &= \Prob(f^*(B) > b) \\
+       &= \Prob(f^*(B) > b \mid f^*(A) \leq b) \Prob(f^*(A) \leq b) + \Prob(f^*(B) > b \mid f^*(A) > b) \Prob(f^*(A) > b) \\
+       &= \Prob(f^*(B) > b \mid f^*(A) \leq b) \Prob(f^*(A) \leq b) + \Prob(f^*(A) > b) \\
+       &\geq \Prob(f^*(A) > b) \\
+       &= \PI(A).
+\end{split}
+\end{equation*}
+
+Lastly, we want to show $\PI(S)$ is submodular. For $e \in E\backslash B$,
+\begin{equation*}
+  \begin{split}
+    &\PI(A \cup \{e\}) - \PI(A) \\
+    &= \Prob(f^*(A \cup \{e\}) > b) - \Prob(f^*(A) > b) \\
+    &= \Prob(f^*(A \cup \{e\}) > b \mid f^*(A) > b) \Prob(f^*(A) > b) \\
+    &\quad + \Prob(f^*(A \cup \{e\}) > b \mid f^*(A) \leq b)
+    \Prob(f^*(A) \leq b) - \Prob(f^*(A) > b) \\
+    &= \Prob(f^*(A \cup \{e\}) > b \mid f^*(A)\leq b) \Prob(f^*(A)\leq b) \\
+    &= \Prob(f(e) > b, y(e) = 1 \mid f^*(A) \leq b) \Prob(f^*(A) \leq b) \\
+    &= \Prob(f(e) > b, y(e) = 1, f^*(A) \leq b).
+  \end{split}
+\end{equation*}
+Using similar argument,
+\begin{equation*}
+\begin{split}
+&\PI(B \cup \{e\}) - \PI(B) \\
+&= \Prob(f(e) > b, y(e)=1,f^*(B)\leq b) \\
+&= \Prob(f(e) > b, y(e)=1,f^*(A)\leq b, f^*(B\backslash A) \leq b ).
+\end{split}
+\end{equation*}
+Therefore, $\PI(A \cup \{e\}) - \PI(A) \geq \PI(B \cup \{e\}) - \PI(B)$, thus $\PI(S)$ is submodular. \qedhere
+\end{proof}
+
+Lemma~\ref{lemma:1} is a result from the analysis of greedy heuristics in combinatorial optimization by 
+Nemhauser, which provides lower bound on the greedy algorithm given that the objective function 
+satisfies certain conditions. Lemma~\ref{lemma:2} shows that $\PI(S)$ satisfies the condition stated in 
+Lemma~\ref{lemma:1}, therefore, Theorem~\ref{thm:greedy} holds. 
+
+The proof only assumes that probability-of-improvement can be computed, while does not depend on
+a particular machine learning model. Therefore, the result in theorem~\ref{thm:greedy} applies to
+any machine learning model as long as it allows computation of probability-of-improvement.
+
+\subsubsection{Simplified Form of the Greedy Algorithm} \label{sec:reduced form}
+\eqref{eq:greedy} is hard to solve, at least in a naive way, where we simply enumerate all peptides $e \in E \backslash S$ 
+and evaluate $\PI (S \cup \{e\})$ for each of them, and then select the peptide for which this is the largest. The naive way
+to solve \eqref{eq:greedy} is hard for two reasons: first, there are a lot of peptides; second, to compute $\PI (S \cup \{e\})$, 
+we need to enumerate all scenarios of activity for peptides in $S \cup \{e\}$ and compute probability of occurrence for each scenario, 
+and since the number of scenarios grow exponentially in the size of $S$, cost of computing $\PI (S \cup \{e\})$ grows exponentially
+as well. Below we are going to transform \eqref{eq:greedy} so that it has an easy-to-compute objective.
+\begin{proposition} \label{prop:reduced form}
+  The solution to \eqref{eq:greedy} is equal to the solution to
+  \begin{equation}
+    \underset{e \in E \backslash S, f(e) > b}{\mathrm{arg}\max} \, \Prob (y(e)=1 \mid y(e') = 0, \forall e' \in S).
+    \label{eq:reduced form}
+  \end{equation}
+\end{proposition}
+\begin{proof}
+  \begin{equation*}
+    \begin{split}
+      &\PI(S \cup \{e\}) = \Prob(f^*(S\cup \{e\}) > b)\\
+      &= \Prob(f^*(S) > b) + \Prob(f^*(S)\leq b) \Prob(f(e) > b, y(e) = 1 \mid f^*(S)\leq b),
+    \end{split}
+  \end{equation*}
+  so \eqref{eq:greedy} becomes
+  \begin{equation} \label{eq:PI1} 
+    \underset{e \in E \backslash S}{\arg\max} \, \PI(S \cup \{e\}) = \underset{e \in E \backslash S}{\arg\max} \, \Prob(f(e) > b, y(e)=1 \mid f^*(S)\leq b).
+  \end{equation}
+  when $f(e) \leq b$, $\Prob(f(e) > b, y(e) = 1 \mid f^*(S)\leq b) = 0$, thus our algorithm will always propose $e$ such that $f(e) > b$. Therefore, {address comment} it is reasonable to assume that $f(x) > b$ for $\forall x \in S$, and $f^*(S)\leq b$ is equivalent to $y(e') = 0$ for $\forall e' \in S$. Now we can write \eqref{eq:PI1} as 
+  \begin{equation*}
+    \underset{e \in E \backslash S, f(e) > b}{\max} \, \Prob (y(e) = 1 \mid y(e') = 0, \forall e' \in S). 
+  \end{equation*}
+\end{proof}
+
+\jwcomment{State this more clearly, same as the comment above}The result holds for any machine learning model that can compute the objective in \eqref{eq:reduced form}.
+
+\subsubsection{Diversity of the Peptides Searched by the Greedy Algorithm} \label{sec:intuition}
+From Proposition \ref{prop:reduced form}, we have seen that the greedy algorithm is equivalent to an algorithm that chooses each new peptide to test by supposing that all previously added peptides did not produce the desired result, and adding this supposition as additional \enquote{training data} to provide a new estimate of peptide activity. Through this lens, we see that the optimal learning approach explicitly provides diversity in its search for high-quality peptides, which is in consistent with the conclusion in \ref{sec:contrast with predict-then-optimize}. \jwcomment{Peter's comment suggests to add discussion of a figure or example}
+
+
+\subsubsection{POOL-MINLP: Solving Greedy Step with MINLP} \label{sec:MINLP approach}
+Solving \eqref{eq:reduced form} by evaluating the objective for all peptides and pick the best is still infeasible
+for most of the applications because of the large number of peptides to search over. For example, in our application,
+there are more than $2 \times 10^{49}$ peptides, and even one function evaluation takes $\sim 10^{-3}$ seconds, it still
+requires more than $2 \times 10^{46}$ seconds to complete all evaluations. 
+
+In this section, we propose to formulate \eqref{eq:reduced form} as a instance of Mixed-Integer Nonlinear Program (MINLP), 
+and then we can use a MINLP solver to solve \eqref{eq:reduced form}. This approach takes advantage of the optimization
+method and solves \eqref{eq:reduced form} more efficiently than by brute-force enumeration. However, in our application,
+due to the large search space of peptides, this approach still takes hours to solve \eqref{eq:reduced form} and find one
+peptide to test, and therefore finding 500 peptides takes too long for our application. To solve this problem, we proposed another
+approach in the next section, which is approximate but computes fast, and for the actual implementation of POOL, we employed
+that approximation approach and applied to our application.
+
+Let $\theta^{y', j}_{x_j} = \Prob \left( x_j \mid y(e) = y' \right)$, and substitute it into \eqref{eq:NB_2}:
+\begin{equation}
+\begin{split}
+  \Prob \left(y(e \right) = 1 \mid \bm{x}) &= \E \left[ \frac{\prod_{j=1}^J \theta^{1, j}_{x_j} \Prob\left( y(e)=1 \right)}{\prod_{j=1}^J \theta^{1, j}_{x_j} \Prob\left( y(e)=1 \right) + \prod_{j=1}^J \theta^{0, j}_{x_j} \Prob\left( y(e)=0 \right)} \right], \\
+  &= \E \left[ \frac{\prod_{j = 1}^J \eta^j_{x_j}}{\prod_{j=1}^J \eta^j_{x_j} + \frac{\Prob \left(y(e) = 0 \right)}{\Prob \left( y(e) = 1 \right)}} \right],
+  \label{eq:MINLP_2}
+\end{split}
+\end{equation}
+where $\eta^j_{x_j} = \frac{\theta^{1,j}_{x_j}}{\theta^{0,j}_{x_j}}$ for $\forall j \in \{1,\ldots,J\}$, and since $\theta^{y'}_{x_j}$s are unknown and treated as random, we took expectation over them.
+
+To compute \eqref{eq:MINLP_2}, we use sample average approximation \citep{kleywegt2002sample}, in which we sample 
+$R$ i.i.d samples from the posterior distributions of $\bm{\theta}^{1, j}$ and $\bm{\theta}^{0, j}$ 
+(they are Dirichlet distributions, and Dirichlet samples can be obtained by sampling from Gamma distributions and normalizing). 
+Then we approximate \eqref{eq:MINLP_2} by $\frac{1}{R} \sum_{r = 1}^R \frac{\prod_{j=1}^J \eta^{j, r}_{x_j}}{\prod_{j=1}^J \eta^{j, r}_{x_j} + \frac{\Prob \left(y(e) = 0 \right)}{\Prob \left( y(e) = 1 \right)}}$.
+
+Now we can apply the approximate expression to \eqref{eq:reduced form}, by sampling from posterior distribution of 
+$\bm{\theta}^{1, j}$ and $\bm{\theta}^{0, j}$ given all training data and $\{y(e') = 0, \forall e' \in S\}$. We write 
+\eqref{eq:reduced form} as a Mixed-Integer Nonlinear Program,
+\begin{equation}
+  \begin{split}
+    \max \quad & \sum_{r = 1}^R \frac{\prod_{j=1}^J \sum_{k=1}^{K_j} z^j_k \eta^{j, r}_k}
+    {\prod_{j=1}^J \sum_{k=1}^{K_j} z^j_k \eta^{j, r}_k + \frac{\Prob \left(y(e) = 0 \right)}{\Prob \left( y(e) = 1 \right)}}, \\
+    \text{s.t} \quad &z^j_k \in \{0,1\}, \\
+    &\sum_{k=1}^{K_j} z^j_k = 1, \,\, \forall j \in \{1, \ldots, J\},
+  \end{split}
+  \label{eq:MINLP_4}
+\end{equation}
+where $z^j_k$ is indicative variables that equal to 1 if $x_j = k$ and 0 otherwise. The solution to this problem is $\bm{z}^*$, 
+and we can translate it to the feature representation of peptide $\bm{x}^*$ by letting $x^{*j} = \sum_k k \cdot z^{*j}_k$.
+
+There is an additional constraint in \eqref{eq:reduced form}, $f(e) > b$, that we did not include in \eqref{eq:MINLP_4}. This
+constraint depends on the definition of $f(e)$, and if $f(e) > b$ can be represented by a set of linear inequalities
+of $\bm{x}$, we can simply add those constraints to our MINLP in \eqref{eq:MINLP_4}. In our application, $f(e)$ is negative the length
+of a peptide, thus the additional constraint to \eqref{eq:MINLP_4} is simply to restrict length of peptide to less than $-b$. 
+We summarize the algorithm below, and the output $S$ from the algorithm is the set of peptides to test. When $R$ is large, the
+sample average approximation in the objective in \eqref{eq:MINLP_4} is close to the objective in \eqref{eq:reduced form}, and
+therefore solution from this algorithm will solve \eqref{eq:reduced form} accurately.
+\begin{Algorithm}(Greedy Optimization for POOL-MINLP) \label{algo1}
+\begin{algorithmic}[1]
+  \REQUIRE Inputs $k, J, R, K_j, j = 1, \ldots, J$, training dataset $\mathcal{D} = 
+  \{(\bm{x}^1, y^1), \ldots, (\bm{x}^N, y^N)\}$ and parameters for the prior 
+  distributions $\bm{\alpha}^{y, j}$.
+  \STATE $S \leftarrow \emptyset $
+  \STATE Calculate posterior distribution of $\bm{\theta}^{1, j} \sim 
+  \text{Dirichlet} (\bm{\theta}^{1, j} \mid \{\bm{x}: \bm{x} \in \mathcal{D}, 
+  y(\bm{x}) = 1\})$ for $j = 1, \ldots, J$.
+  \FOR{$m=1$ to $k$} 
+    \STATE Calculate posterior distribution of $\bm{\theta}^{0, j} \sim 
+    \text{Dirichlet} (\bm{\theta}^{0, j} \mid \{\bm{x}: \bm{x} \in \mathcal{D}, 
+    y(\bm{x}) = 1\} \cup S)$ for $j = 1, \ldots, J$.
+    \FOR{$r=1$ to $R$}
+      \FOR{$j=1$ to $J$}
+          \STATE Sample $\bm{\theta}^{1, j}$ from $\text{Dirichlet} (\bm{\theta}^{1, j} 
+          \mid \{\bm{x}: \bm{x} \in \mathcal{D}, y(\bm{x}) = 1\})$ and $\bm{\theta}^{0, j}$
+          from $\text{Dirichlet} (\bm{\theta}^{0, j} \mid \{\bm{x}: \bm{x} \in \mathcal{D}, 
+          y(\bm{x}) = 1\} \cup S)$.
+          \STATE Calculate $\bm{\eta}^{j, r}_i = \frac{\theta^{1, j}_i}{\theta^{0, j}_i}, \forall i \in K_j$.
+      \ENDFOR
+    \ENDFOR
+    \STATE Solve the MINLP in \eqref{eq:MINLP_4} to find $\bm{z}$ and the corresponding peptide $e$.
+    \STATE $S \leftarrow (S, e)$.
+  \ENDFOR
+\end{algorithmic}
+\end{Algorithm}
+
+\subsubsection{POOL-MAP: Solving Greedy Step with MAP Estimation} \label{sec:MAP approach}
+In our application of finding reversible labeling peptides, the length of the peptides is long enough that solving the MINLP 
+in \ref{sec:MINLP approach} is computationally challenging. We propose a simpler approach using Maximum a Posteriori (MAP) estimation
+\citep{trove.nla.gov.au/work/9892361}. 
+While this approach does not solve \eqref{eq:reduced form} as accurately as the MINLP approach, its computation is quick and easy. 
+
+We first obtain the posterior distributions of $\bm{\theta}^{1, j}$ and $\bm{\theta}^{0, j}$ for $\forall j \in \{1, \ldots, J\}$, 
+then approximate the expectation in \eqref{eq:MINLP_2} using posterior mode $\hat{\theta}^{1,j}_i$ and $\hat{\theta}^{0,j}_i$, written
+as 
+\begin{equation*}
+  \Prob \left(y(e \right) = 1 \mid \bm{x}) \approx \frac{\prod_{j=1}^J \hat{\theta}^{1, j}_{x_j} \Prob\left( y(e)=1 \right)}{\prod_{j=1}^J \hat{\theta}^{1, j}_{x_j} \Prob\left( y(e)=1 \right) + \prod_{j=1}^J \hat{\theta}^{0, j}_{x_j} \Prob\left( y(e)=0 \right)}.
+\end{equation*}
+This is commonly known as Maximum a posteriori estimation. Now we can write
+\eqref{eq:reduced form} as 
+\begin{equation}
+  \max_{\bm{x}} \frac{\prod_{j=1}^J \hat{\eta}^j_{x_j}}{\prod_{j=1}^J \hat{\eta}^j_{x_j} + \frac{\Prob \left(y(e) = 0 \right)}{\Prob \left( y(e) = 1 \right)}},
+  \label{eq:MINLP_5}
+\end{equation}
+where $\hat{\eta}^j_{x_j} = \frac{\hat{\theta}^{1,j}_{x_j}}{\hat{\theta}^{0,j}_{x_j}}$. Since $\hat{\eta}^j_i \geq 0$, the objective 
+in \eqref{eq:MINLP_5} is monotone increasing with $\hat{\eta}^j_{x_j}, \forall j$, therefore we can solve \eqref{eq:MINLP_5} by
+maximizing $\prod_{j=1}^J \hat{\eta}^j_{x_j}$ over $\bm{x}$. Since $\hat{\eta}^j_{x_j}$ are independent across $j$ by Naive Bayes
+assumption, we can decompose the objective across $j$ and maximize $\hat{\eta}^j_{x_j}$ by setting 
+$x_j = \underset{i}{\arg\max} \, \hat{\eta}^j_i, \forall j$. The property of decomposition across $j$ in this formulation makes the
+optimization problem a lot easier and requires much less computation effort than POOL-MINLP in \ref{sec:MINLP approach}. In our
+application we implemented this approach for POOL. We summarize the algorithm below:
+\begin{Algorithm}(Greedy Optimization for POOL-MAP) \label{algo2}
+\begin{algorithmic}[1]
+  \REQUIRE Inputs $k, J, K_j, j = 1, \ldots, J$, dataset $\mathcal{D} = 
+  \{(\bm{x}^1, y^1), \ldots, (\bm{x}^N, y^N)\}$ and parameters for the prior 
+  distributions $\bm{\alpha}^{y, j}$.
+  \STATE $S \leftarrow \emptyset $
+  \STATE Calculate posterior distribution of $\bm{\theta}^{1, j} \sim 
+  \text{Dirichlet} (\bm{\theta}^{1, j} \mid \{\bm{x}: \bm{x} \in \mathcal{D}, 
+  y(\bm{x}) = 1\})$.
+  \FOR{$m=1$ to $k$} 
+    \STATE Calculate posterior distribution of $\bm{\theta}^{0, j} \sim 
+    \text{Dirichlet} (\bm{\theta}^{0, j} \mid \{\bm{x}: \bm{x} \in \mathcal{D}, 
+    y(\bm{x}) = 1\} \cup S)$.
+    \STATE Calculate posterior mode $\hat{\theta}^{1, j}_i$ and $\hat{\theta}^{0, j}_i$ for $\forall i \in K_j, j = 1, \ldots, J$, and $\hat{\eta}^j_i = \frac{\hat{\theta}^{1, j}_i}{\hat{\theta}^{0, j}_i}$.
+    \STATE Construct $\bm{x}$ by setting $x_j = \underset{i}{\arg\max} \, \hat{\eta}^j_i, \forall j$, and find the corresponding peptide $e$.
+    \STATE $S \leftarrow (S, e)$.
+  \ENDFOR
+\end{algorithmic}
+\end{Algorithm}

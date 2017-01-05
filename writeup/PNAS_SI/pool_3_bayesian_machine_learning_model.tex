@@ -1,0 +1,28 @@
+\subsection{Bayesian Machine Learning Model} \label{sec:stat model}
+
+In the prediction step of POOL, we need a machine learning model that provides prediction of a joint probability distribution over peptide activity, and we propose to build a Naive Bayes classifier under a Bayesian framework. 
+
+Naive Bayes classifiers \citep{lewis1994sequential, mccallum1998comparison} are popular and extensively studied in text classification problems because of their fast computation and simple implementation.
+Peptides are sequences of amino acids, which have big influence on peptide activity, and this is very similar to text classification, where words within text influence on which class the text belongs to, therefore, a Naive Bayes classifier is suitable for peptide activity prediction. 
+In addition, we usually do not afford to have a training dataset with thousands of data points in peptide activity, the independence assumption across features in Naive Bayes allows it to achieve good prediction performance even when the data size is small, which is desirable in the problems that we are dealing with.
+
+We formulate the Naive Bayes classifier using a Bayesian approach , where we put a prior distribution, which encodes our prior belief and usually comes from domain experts' opinion, on the unknown model parameters of Naive Bayes, and calculate the posterior distribution based on data. Here we explain the approach in detail:
+
+We use a $J$-dimensional feature vector to represent a peptide, written as $\bm{x} = (x_1, \ldots, x_J)$, and the feature space is $\mathcal{X}$.
+In our application, each feature corresponds to a position in the peptide, and the feature variable is an indicative value of which amino acid is presented in that position.
+Then we can predict $y(e)$ by calculating $\Prob (y(e) = 1 \mid \bm{x})$. Using Bayes' theorem, we have
+\begin{equation}
+  \Prob\left( y(e) = 1 \mid \bm{x} \right) = \frac{\Prob \left( \bm{x} \mid y(e) = 1 \right) \Prob \left(y(e) = 1 \right)}{\sum_{y' \in \{0, 1\}} \Prob \left(\bm{x} \mid y(e) = y' \right) \Prob \left( y(e) = y' \right)}.
+  \label{eq:NB_1}
+\end{equation}
+Since Naive Bayes assumes the features are conditionally independent given $y'$, we can write \eqref{eq:NB_1} as 
+\begin{equation}
+  \Prob \left( y(e) = 1 \mid \bm{x} \right) = \frac{\prod_{j = 1}^J \Prob \left( x_j \mid y(e) = 1 \right) \Prob \left( y(e) = 1 \right)}{\sum_{y' \in \{0, 1\}} \prod_{j = 1}^J \Prob \left( x_j \mid y(e) = y' \right) \Prob \left( y(e) = y' \right)}.
+  \label{eq:NB_2}
+\end{equation}
+
+If we know $\Prob \left( x_j \mid y(e) = y' \right)$ and $\Prob \left( y(e) = y' \right)$ for $y' \in \{0, 1\}$, we can use \eqref{eq:NB_2} to compute $\Prob \left( y(e) = 1 \mid \bm{x} \right)$. Our next task is to estimate both of them from data.
+
+Assume $x_j$ can only take finite number of values, and without loss of generality, let $x_j \in \{1, \ldots, K_j\}$, where $K_j$ is determined by specific application. In our application, $K_j$ is number of amino acids or groups of amino acids you can choose from for position $j$ in the peptide. We further assume $\Prob \left(x_j \mid y(e) = y' \right)$ obeys categorical distribution parameterized by $\bm{\theta}^{y', j} = (\theta^{y', j}_1, \ldots, \theta^{y', j}_{K_j})$, and put a Dirichlet prior over $\bm{\theta}^{y', j}$, that is, $\bm{\theta}^{y', j} \sim \textrm{Dirichlet}(\bm{\alpha}^{y, j})$, where $\bm{\alpha}^{y, j}$ are parameters chosen to specify the prior distribution. We know the posterior distribution of $\bm{\theta}^{y', j}$ given training data $\{(\bm{x}^1, y^1), \ldots, (\bm{x}^N, y^N)\}$ is also a Dirichlet distribution, with updated parameters $\overset{\sim}{\alpha}^{y', j}_k = \alpha^{y', j} + \sum_{n=1}^N \mathbbm{1}_{\{y^n = y', x^n_j = k\}}$, for $k = \{1, \ldots, K_j\}$. 
+
+We can estimate $\Prob \left( y(e)=1 \right)$ and $\bm{\alpha}^{y', j}$ by cross validation. Using the posterior distribution over $\bm{\theta}^{y', j}$ and the estimated $\Prob \left( y(e)=1 \right)$, we can apply \eqref{eq:NB_2} to compute joint distribution over $\left( y(e): e \in E \right)$. Here concludes the machine learning model we proposed and we will discuss the performance of this model in our application in \ref{sec:application}.

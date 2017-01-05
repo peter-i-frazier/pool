@@ -3,7 +3,7 @@
 # Generate data for benchmark plot
 
 rm(list = ls())
-root <- "/fs/home/jw865/remote_deployment/ucsd_reversible_labeling/"
+root <- "/fs/home/jw865/remote_deployment/ucsd_reversible_labeling/src/"
 source(paste0(root, "core/dependency.R"))
 ResolveDependency(root)
 
@@ -18,6 +18,7 @@ type_name <- 'type1'
 num_recom <- 100
 
 train_dataset <- GetDataReducedAA("SELECT * FROM binary_labeling_activity WHERE TS <= 2")
+#train_dataset <- GetDataReducedAA("SELECT * FROM binary_labeling_activity WHERE TS = 3")
 
 # pool generate_recommendation
 prior.df <- data.frame(sfp = c(10, 0.1, 1e-4), AcpS = c(10, 1, 1e-4), PfAcpH = c(10, 10, 0.5))
@@ -47,6 +48,12 @@ pool.recoms <- GenRecomSetMAPNew(train_dataset$feature[label_idx, ], train_datas
 # end pool
 
 mutate.recoms <- GenRecomSetMutate(train_dataset$feature[train_dataset$data[, type_name] == 1, ], 4, 1, num_recom)
+#mutate.recoms <- GenRecomSetMutate(train_dataset$feature[(train_dataset$data[, label_name] == 1) & (train_dataset$data[, notlabel_name] == 0), ], 4, 1, num_recom)
+print(sprintf("label_name: %s, notlabel_name: %s, type_name: %s", label_name, notlabel_name, type_name))
+print(sprintf("number of hits: %d", sum(train_dataset$data[, type_name] == 1)))
+print(sprintf("number of label data: %d", sum(label_idx)))
+print(sprintf("number of not label data: %d", sum(notlabel_idx)))
+print(sprintf("number of trianing data: %d", length(notlabel_idx)))
 
 predict.optimize.recoms <- GenRecomSetPredictOptimize(train_dataset$feature[label_idx, ], train_dataset$data[label_idx, label_name],
                                                       train_dataset$feature[notlabel_idx, ], train_dataset$data[notlabel_idx, notlabel_name],
@@ -65,7 +72,7 @@ GetQuality <- function(label.X, label.Y, not.label.X, not.label.Y, unlabel.X, un
   label.prob <- Predict(label.X, label.Y, test.X, label.alpha.1.prior, label.alpha.0.prior, label.p1, num.mc)
   not.label.prob <- Predict(not.label.X, not.label.Y, test.X, not.label.alpha.1.prior, not.label.alpha.0.prior, not.label.p1, num.mc)
   unlabel.prob <- Predict(unlabel.X, unlabel.Y, test.X, unlabel.alpha.1.prior, unlabel.alpha.0.prior, unlabel.p1, num.mc)
-  prob <- label.prob * (1 - not.label.prob) * unlabel.prob
+  prob <- label.prob * (1 - not.label.prob)
 
   num_rec <- length(prob)
   quality <- rep(0, num_rec)
@@ -130,7 +137,7 @@ for (i in 1:num_recom) {
 }
 seq.table <- data.frame(pool_nterm = pool.nterm, pool_cterm = pool.cterm, mutation_nterm = mutate.nterm, mutation_cterm = mutate.cterm,
 naive_nterm = predict.optimize.nterm, naive_cterm = predict.optimize.cterm, stringsAsFactors=FALSE)
-dbWriteTable(con, value = seq.table, name = 'benchmark_seq', overwrite = TRUE, append = FALSE, row.names=FALSE)
+dbWriteTable(con, value = seq.table, name = paste0('benchmark_seq_', type_name), overwrite = TRUE, append = FALSE, row.names=FALSE)
 
 original.seq.table <- train_dataset$data[,c('nterm', 'cterm')]
 colnames(original.seq.table) <- c('original_nterm', 'original_cterm')

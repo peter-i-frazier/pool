@@ -1,0 +1,76 @@
+\documentclass[11pt]{article}
+%\usepackage[T1]{fontenc}
+%\usepackage[latin9]{inputenc}
+\usepackage[margin=1in]{geometry}
+\usepackage{csquotes}
+\usepackage{xcolor}
+
+% To compile in Times New Roman, use the following two lines.
+% You'll need to compile with xelatex or lualatex.
+% If you don't have these compilers, you can outcomment these two lines,
+% but it won't be in Times New Roman.
+% \usepackage{fontspec}
+% \setmainfont{Times New Roman}
+
+\usepackage{sectsty} % to get the section headings to be smaller
+\usepackage{natbib}
+\usepackage{bbm}
+\usepackage{bm}
+\usepackage{amsmath,amssymb,amsthm,mathtools}
+\usepackage{caption}
+\usepackage{subcaption}
+\usepackage{algorithmic}
+%\usepackage{authblk} % if you are using texlive on macports, install texlive-latex-extra to get this
+
+% Uses the sectsty package to make section headings smaller.
+\sectionfont{\fontsize{12}{15}\selectfont}
+\subsectionfont{\fontsize{12}{15}\selectfont}
+
+\newcommand{\Prob}{\mathbb{P}}
+\newcommand{\E}{\mathbb{E}}
+\newcommand{\EI}{\mathrm{EI}}
+\newcommand{\Dir}{\mathrm{Dirichlet}}
+\newcommand{\PI}{\text{PI}}
+\newcommand{\mb}{\mathbf}
+\theoremstyle{remark}
+\newtheorem{Algorithm}{Algorithm}
+\newtheorem{theorem}{Theorem}
+\newtheorem{lemma}{Lemma}
+\newtheorem{proposition}{Proposition}
+\newtheorem*{remark*}{Remark}
+
+\newcommand{\pfcomment}[1]{{\color{blue} PF: #1}}
+\newcommand{\jwcomment}[1]{{\color{red} JW: #1}}
+
+\begin{document}
+
+\title{Supporting Information for \enquote{
+ Optimal Learning for Discovering and Optimizing Enzymatic Peptide Substrates 
+}}
+
+\maketitle
+\tableofcontents
+\newpage
+\part*{SI Text}
+  \input{si_text}
+  %\input{pool_2_existing_approaches}
+  %\input{pool_3_bayesian_machine_learning_model}
+  %\input{pool_4_probability_of_improvement}
+  %\input{pool_5_contrast_with_predict_then_optimize_approach}
+  %\input{pool_6_greedy_algorithm}
+  %\input{pool_7_generality}
+  %\input{pool_8_extension}
+  %\input{pool_9_application}
+
+\section{General materials and methods}
+\section{Lead peptides with fluorophores}
+\section{Sequence alignment of lead peptides}
+\part{Supplementary Figures}
+\part{Supplementary Tables}
+  \input{tables}
+
+\bibliography{SI}
+\bibliographystyle{abbrv}
+%%%%%%%%%%%%%%%%%
+\end{document}
+%%%%%%%%%%%%%%%%%

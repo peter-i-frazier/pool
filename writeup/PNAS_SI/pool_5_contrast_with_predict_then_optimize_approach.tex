@@ -1,0 +1,35 @@
+\subsection{Contrast with predict-then-optimize approach} \label{sec:contrast with predict-then-optimize}
+While the predict-then-optimize approach works well when the predictions by machine learning model are highly accurate, the recommended sequences to test from this approach are generally very similar to each other due to the nature of similar sequences having similar prediction value from machine learning model, and testing very similar sequences is risky if the predictions are not accurate, because if one sequence turns out to not be a hit, then the other similar sequences are not likely to be a hit either. However, maximizing probability-of-improvement tends to give you more diversified sequences, and let me show a simple example to illustrate this:
+
+Suppose there are three peptides, $A, B$ and $C$; A and B are very similar to each other, 
+and their predicted probability being a hit are both $0.9$, written as $\Prob (A \text{ is a hit}) = \Prob (B \text{ is a hit}) = 0.9$, 
+while $C$ is different from $A$ or $B$, and $C$ has a lower predicted probability being a hit, say $\Prob (C \text{ is a hit}) = 0.8$.
+We now want to find a hit from these three peptides, and due to budget limit, we could only test two peptides.
+
+Predict-then-optimize approach will propose to test $A$ and $B$, because they have higher predicted probabilities being a hit. 
+However, choosing $A$ and $B$ does not necessarily obtain the highest probability-of-improvement. To demonstration this point, 
+we first assume the correlation between $A$ being a hit and $B$ being a hit is $1$, $A$ being a hit and $B$ being a hit 
+are both independent from $C$ being a hit, and $f(A), f(B), f(C)$ are all greater than $b$. We compute probability-of-improvement
+of choosing $A$ and $B$, that is
+\begin{equation*}
+\begin{split}
+\PI (\{A, B\}) &= \Prob (A \text{ is a hit}, B \text{ is a hit}) + \Prob (A \text{ is a hit}, B \text{ is not a hit}) + \Prob (A \text{ is not a hit}, B \text{ is a hit}), \\
+&= 0.9 + 0 + 0, \\
+&= 0.9.
+\end{split}
+\end{equation*}
+However, probability-of-improvement of choosing $A$ and $C$ is
+\begin{equation*}
+\begin{split}
+\PI (\{A, C\}) &= \Prob (A \text{ is a hit}, C \text{ is a hit}) + \Prob (A \text{ is a hit}, C \text{ is not a hit}) + \Prob (A \text{ is not a hit}, C \text{ is a hit}), \\
+&= 0.9 \times 0.8 + 0.9 \times 0.2 + 0.1 \times 0.8, \\
+&= 0.98.
+\end{split}
+\end{equation*}
+Similarly, $\PI(\{B, C\})=0.98$. Therefore, POOL, which recommends peptides that maximize probability-of-improvement, will choose either 
+$\{A, C\}$ or $\{B, C\}$. Now suppose $A$ (or $B$) turns out not to be a hit after
+testing, $B$ (or $A$) is unlikely to be a hit either because $A$ and $B$ are very similar to each other. On the other hand, since $C$ is 
+different than $A$ and $B$, there might be a chance that $C$ is a hit even if $A$ or $B$ is not a hit. 
+Therefore, choosing diversified and good peptides to test, like choosing $\{A, C\}$ or $\{B, C\}$ in this example, 
+is a better strategy than choosing peptides with high predicted value regardless of diversity, like choosing $\{A, B\}$. This diversity
+is the key to finding hits when the machine learning model prediction is not accurate.
