@@ -1,4 +1,4 @@
-This repository contains code and data for the paper, "Discovering de novo peptide substrates for enzymes using machine learning," by Lorillee Tallorin, JiaLei Wang, Woojoo E. Kim, Swagat Sahu, Nicolas M. Kosa, Matthew Thompsona, Michael K. Gilson, Peter I. Frazier, Nathan C. Gianneschia, and Michael D. Burkart.  
+This repository contains code and data for the paper, "Discovering de novo peptide substrates for enzymes using machine learning," by Lorillee Tallorin, JiaLei Wang, Woojoo E. Kim, Swagat Sahu, Nicolas M. Kosa, Pu Yang, Matthew Thompsona, Michael K. Gilson, Peter I. Frazier, Nathan C. Gianneschia, and Michael D. Burkart.  
 
 The paper proposes an optimal learning approach for optimizing peptides, called Peptide Optimization with Optimal Learning or POOL.  POOL's goal is to produce sets of peptides to test ("recommendations") to find short peptides that have a desired chemical activity together with each of a collection of enzymes.  We call these peptides "short hits".  POOL proceeds iteratively, consuming a dataset of the results from past experiments and producing a recommendation of which set of peptides to produce next.
 
