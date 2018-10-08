@@ -1,6 +1,0 @@
-\section{Local Search Algorithm}
-We use the local search algorithm to improve the quality of our recommendation set after finishing the main POOL algorithm.
-
-In each iteration of the local search, we randomly choose a peptide in the recommendation set and hold it out from the set. Then we generate a peptide from the posteriors of our Naive Bayes model and insert it into the recommendation set. If the modified recommendation set has higher probability of improvement (PI) than the one before modifications, we proceed to the next iteration; otherwise we delete the peptide generated in the current iteration from the recommendation set and insert the held-out peptide back into the set.
-
-The algorithm is shown to be effective; it can boost PI of our recommendation set to 98\% from below 70\% in less than an hour. %TODO need to verify the exact PI and time
