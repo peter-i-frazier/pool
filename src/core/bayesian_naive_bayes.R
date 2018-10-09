@@ -31,7 +31,13 @@ BayesianNaiveBayes <- function(X, Y, alpha.1, alpha.0, p1) {
   # Returns:
   #   list that contains post.alpha.1 (list), post.alpha.0 (list), p1 (double)
   X.1 <- X[Y == 1,]
+  if (is.null(nrow(X.1))) {
+    X.1 <- matrix(X.1, nrow=1, ncol=length(X.1))
+  }
   X.0 <- X[Y == 0,]
+  if (is.null(nrow(X.0))) {
+    X.0 <- matrix(X.0, nrow=1, ncol=length(X.0))
+  }
   if (length(alpha.1) != length(alpha.0))
     stop ("error: length(alpha) are not consistent!")
   for (j in 1:length(alpha.1)) {

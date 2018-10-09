@@ -4,7 +4,7 @@
 
 ResolveDependency <- function(root) {
   source(paste0(root, "core/constants.R"))
-  source(paste0(root, "core/util.R"))
+#  source(paste0(root, "core/util.R"))
   source(paste0(root, "core/bayesian_naive_bayes.R"))
   source(paste0(root, "core/cross_validation.R"))
   source(paste0(root, "core/reversible_labeling_model.R"))

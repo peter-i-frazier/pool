@@ -3,25 +3,20 @@
 # This file contains all functions related to modeling reversible labeling project,
 # including retrieving data, and setting up training model.
 
-GetDataReducedAA <- function(query) {
-  # Retrieve data from db, and parse information, including feature extraction.
+GetDataReducedAA <- function(table, lookup) {
+  # parse table, including feature extraction.
   # 
   # Args:
-  #   query: SQL query of retrieving data
+  #   table: data table
   #
   # Returns:
   #   list containing feature table and data retrieved from query
-  data <- QuerySql("sfp_AcpS", query)
   data <- data[data[, 'nterm'] != "", ] # filter out rows that do not have nterm & cterm
-  for (r in 1:nrow(data)) {
-    if (paste0(data[r, 'nterm'], "S", data[r, 'cterm']) != data[r, 'sequence'])
-      print ("error: inconsistent sequence! reversible_labeling_model.R L18")
-  }
-  feature <- GetFeatureFromSeqsReducedAA(data[, 'nterm'], data[, 'cterm'])
+  feature <- GetFeatureFromSeqsReducedAA(as.character(data[, 'nterm']), as.character(data[, 'cterm']), lookup)
   return (list(feature=feature, data=data))
 }
 
-GetFeatureFromSeqsReducedAA <- function(nterms, cterms) {
+GetFeatureFromSeqsReducedAA <- function(nterms, cterms, lookup_table) {
   # Extract feature vectors from sequences, where each sequence contains one nterm
   # and cterm. The vector is of length (MAXL + MAXR), with (1 : MAXL)th entries 
   # extracted from nterm and (MAXL+1 : MAXL+MAXR)th entries extracted from cterm.
@@ -32,10 +27,10 @@ GetFeatureFromSeqsReducedAA <- function(nterms, cterms) {
   #   nterms: vector of strings, where each element corresponds to N-terminus of a
   #           sequence.
   #   cterms: vector of strings, corresponds to C-terminus
+  #   lookup_table: lookup between AA and class
   #
   # Returns:
   #   Matrix, with each row corresponding to feature vector of one sequence.
-  lookup.table <- QuerySql("sfp_AcpS", "SELECT * FROM reduced_AA")
   if (length(nterms) != length(cterms))
     print ("error: length of nterms and cterms are not equal!")
   feature.table <- matrix(-1, nrow=length(nterms), ncol=38)
@@ -45,9 +40,9 @@ GetFeatureFromSeqsReducedAA <- function(nterms, cterms) {
     len.nterm <- length(nterms.list[[n]])
     len.cterm <- length(cterms.list[[n]])
     for (j in 1:min(MAXL, len.nterm))
-      feature.table[n, j] <- lookup.table[lookup.table[, 'AA'] == nterms.list[[n]][len.nterm - j + 1], 'class']
+      feature.table[n, j] <- lookup_table[lookup_table[, 'AA'] == nterms.list[[n]][len.nterm - j + 1], 'class']
     for (j in 1:min(MAXR, len.cterm))
-      feature.table[n, j+MAXL] <- lookup.table[lookup.table[, 'AA'] == cterms.list[[n]][j], 'class']
+      feature.table[n, j+MAXL] <- lookup_table[lookup_table[, 'AA'] == cterms.list[[n]][j], 'class']
   }
   return (feature.table)
 }

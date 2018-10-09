@@ -51,13 +51,17 @@ GenOnePeptideMAPNew <- function(length.left, length.right, alpha.1.label, alpha.
   feature <- rep(-1, MAXL + MAXR)
   thetas.1.label <- SampleThetas(alpha.1.label, num.mc.samples)
   thetas.0.label <- SampleThetas(alpha.0.label, num.mc.samples)
-  thetas.1.not.label <- SampleThetas(alpha.1.not.label, num.mc.samples)
-  thetas.0.not.label <- SampleThetas(alpha.0.not.label, num.mc.samples)
+  if (length(alpha.1.not.label) > 0) {
+      thetas.1.not.label <- SampleThetas(alpha.1.not.label, num.mc.samples)
+      thetas.0.not.label <- SampleThetas(alpha.0.not.label, num.mc.samples)
+  }
   thetas.1.unlabel <- SampleThetas(alpha.1.unlabel, num.mc.samples)
   thetas.0.unlabel <- SampleThetas(alpha.0.unlabel, num.mc.samples)
   for (j in c(1:length.left, MAXL + 1:length.right)) {
-    ratio <- thetas.1.label[[j]] / thetas.0.label[[j]] * thetas.0.not.label[[j]] / 
-             thetas.1.not.label[[j]] * thetas.1.unlabel[[j]] / thetas.0.unlabel[[j]]
+    ratio <- thetas.1.label[[j]] / thetas.0.label[[j]] * thetas.1.unlabel[[j]] / thetas.0.unlabel[[j]]
+    if (length(alpha.1.not.label) > 0) {
+      ratio <- ratio * thetas.0.not.label[[j]] / thetas.1.not.label[[j]]
+    }
     index.max <- sapply(1:num.mc.samples, function (i) which.max(ratio[i, ]))
     # find mode of index.max and set feature[j] to it
     count.of.index.max <- sapply(1:ncol(ratio), function (i) sum(index.max == i))
@@ -94,30 +98,44 @@ GenRecomSetMAPNew <- function(X.label, Y.label, X.not.label, Y.not.label, X.unla
     stop("num.recom must be a positive integer")
   num.unique.recom <- 0
   recom.set <- c()
-  while (num.unique.recom < num.recom) { 
-#    print(sprintf("iter %d", num.unique.recom))
+  while (num.unique.recom < num.recom) {
+      if (num.unique.recom %% 50 == 0) {
+          print(sprintf("generated %d peptides", num.unique.recom))
+      }
 
     params.label <- BayesianNaiveBayes(X.label, Y.label, alpha.1.label.prior, alpha.0.label.prior, p1.label)
-    params.not.label <- BayesianNaiveBayes(X.not.label, Y.not.label, alpha.1.not.label.prior, alpha.0.not.label.prior, p1.not.label)
     params.unlabel <- BayesianNaiveBayes(X.unlabel, Y.unlabel, alpha.1.unlabel.prior, alpha.0.unlabel.prior, p1.unlabel)
+    if (length(alpha.1.not.label.prior) > 0) {
+      params.not.label <- BayesianNaiveBayes(X.not.label, Y.not.label, alpha.1.not.label.prior, alpha.0.not.label.prior, p1.not.label)
+    }
 
     length.left <- ceiling(runif(1, min = minL - 1, max = maxL))
     length.right <- ceiling(runif(1, min = minR - 1, max = maxR))
-    new.rec.peptide <- GenOnePeptideMAPNew(length.left, length.right,
-                                           params.label$post.alpha.1, params.label$post.alpha.0,
-                                           params.not.label$post.alpha.1, params.not.label$post.alpha.0,
-                                           params.unlabel$post.alpha.1, params.unlabel$post.alpha.0,
-                                           num.mc.samples)
+    if (length(alpha.1.not.label.prior) > 0) {
+      new.rec.peptide <- GenOnePeptideMAPNew(length.left, length.right,
+                                               params.label$post.alpha.1, params.label$post.alpha.0,
+                                               params.not.label$post.alpha.1, params.not.label$post.alpha.0,
+                                               params.unlabel$post.alpha.1, params.unlabel$post.alpha.0,
+                                               num.mc.samples)
+    } else {
+      new.rec.peptide <- GenOnePeptideMAPNew(length.left, length.right,
+                                             params.label$post.alpha.1, params.label$post.alpha.0,
+                                             c(), c(), params.unlabel$post.alpha.1, params.unlabel$post.alpha.0,
+                                             num.mc.samples)
+
+    }
     if (nrow(unique(rbind(recom.set, new.rec.peptide))) == num.unique.recom)  # already contained this peptide
       next
     num.unique.recom <- num.unique.recom + 1
     X.label <- rbind(X.label, new.rec.peptide)
     Y.label <- c(Y.label, 0)
-    X.not.label <- rbind(X.not.label, new.rec.peptide)
-    Y.not.label <- c(Y.not.label, 1)
     X.unlabel <- rbind(X.unlabel, new.rec.peptide)
     Y.unlabel <- c(Y.unlabel, 0)
     recom.set <- rbind(recom.set, new.rec.peptide)
+    if (length(alpha.1.not.label.prior) > 0) {
+      X.not.label <- rbind(X.not.label, new.rec.peptide)
+      Y.not.label <- c(Y.not.label, 1)
+    }
   }
   return (recom.set)
 }
