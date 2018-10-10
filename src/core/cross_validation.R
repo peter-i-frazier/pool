@@ -31,6 +31,9 @@ leave_n_out_cv <- function(dataset_X, dataset_Y, alpha.1, alpha.0, p1, mc_itr, n
       } else {
         break
       }
+      if (is.null(nrow(test_X))) {
+        test_X <- matrix(test_X, nrow=1, ncol=length(test_X))
+      }
       prob <- c(prob, Predict(train_X, train_Y, test_X, alpha.1, alpha.0, p1, mc_itr))
     }
     return (list(prob=prob, Y=dataset_Y))

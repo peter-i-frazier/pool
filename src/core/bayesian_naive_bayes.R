@@ -83,8 +83,9 @@ CalculateProb <- function(feature.matrix, thetas.1, thetas.0, p1) {
   # Returns a list:
   #   mean: vector, mean of estimated P(y = 1 | x) for each x
   #   sd: vector, sd of estimated P(y = 1 | x) for each x
-  if (ncol(feature.matrix) != length(thetas.1) || length(thetas.1) != length(thetas.0))
+  if (ncol(feature.matrix) != length(thetas.1) || length(thetas.1) != length(thetas.0)) {
     stop ("error: inconsistent size!")
+  }
   num.mc.samples <- nrow(thetas.1[[1]])
   num.peptides <- nrow(feature.matrix)
   p.x.1 <- matrix(1, nrow=num.mc.samples, ncol=num.peptides)
