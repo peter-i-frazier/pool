@@ -18,7 +18,7 @@ ComputeProbImprovOfSet <- function(S, X, Y, alpha.1, alpha.0, p1, num.samples) {
   # 
   # Returns:
   #   Probability improvement of the set S.
-  print("Computing PI(S)")
+  list_sum = c()
   sum <- 0  # cumulates probabilities to get prob improv
   grow.product <- 1
 
@@ -35,12 +35,12 @@ ComputeProbImprovOfSet <- function(S, X, Y, alpha.1, alpha.0, p1, num.samples) {
     prob.list <- CalculateProb(t(test.x), thetas.1, thetas.0, p1)
     prob.positive <- prob.list$mean
 
-    sum <- sum + grow.product * prob.positive
+    sum <- sum + (1-sum) * prob.positive
     X <- rbind(X, test.x)
     Y <- c(Y, 0)
-    grow.product <- grow.product * (1 - prob.positive)
 
     # print(sprintf("Updating values costs %f", proc.time() - ptm.1))
+    list_sum <- c(list_sum, sum)
   }
-  return(sum)
+  return(list_sum)
 }

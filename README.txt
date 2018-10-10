@@ -7,8 +7,8 @@ This repository is organized as follows:
 generate_all_peptides.sh
 Generate all 5 rounds of the peptides using POOL as described in the paper. Note that due to stochasticity of the algorithm, the generated peptides will be different from time to time.
 
-plot_roc.sh
-Plot ROC for sfp specific hit and acps specific hit for Figure 2 in paper.
+generate_figures.sh
+Reproduce figures in the paper.
 
 data/
 Contains data produced by experiments done in the process of writing this paper, in both raw and processed form.  It also contains data taken from the literature used to initalize POOL in the first round
@@ -22,3 +22,4 @@ Contains the software implementation of the POOL algorithm in src/core and an ea
 Requirements to run the code
 - R
 - MCMCpack (an R package)
+- Python 3
