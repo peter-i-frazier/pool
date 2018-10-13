@@ -5,10 +5,16 @@ The paper proposes an optimal learning approach for optimizing peptides, called 
 This repository is organized as follows:
 
 generate_all_peptides.sh
-Generate all 5 rounds of the peptides using POOL as described in the paper. Note that due to stochasticity of the algorithm, the generated peptides will be different from time to time.
+Generate all 5 rounds of the peptides using POOL as described in the paper. Note that due to stochasticity of the algorithm, the generated peptides will be different from time to time.  This script uses the following additional script:
+gen_recommendation.R
 
 generate_figures.sh
-Reproduce figures in the paper.
+Reproduce figures in the paper.  This script uses the following additional scripts:
+  gen_roc_data.R
+  gen_benchmark.R
+  gen_simulation_coord.py
+  make_figures.py
+
 
 data/
 Contains data produced by experiments done in the process of writing this paper, in both raw and processed form.  It also contains data taken from the literature used to initalize POOL in the first round
