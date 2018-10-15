@@ -16,7 +16,7 @@ plt.figure()
 plt.plot(acps_roc_data['x'], acps_roc_data['y'])
 plt.xlabel('False Positive Rate')
 plt.ylabel('True Positive Rate')
-plt.title('Sfp')
+plt.title('AcpS')
 plt.savefig('acps_specific_roc.pdf')
 
 
