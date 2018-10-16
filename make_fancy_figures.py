@@ -120,6 +120,29 @@ mrk_sz=4
 
 
 
+# Fig 2C and 2D, ROC curves
+sfp_roc_data = pd.read_csv('figures/sfp_specific_roc_data.csv')
+plt.figure()
+plt.plot(sfp_roc_data['x'], sfp_roc_data['y'])
+plt.plot([0,1], [0,1], 'k--')
+plt.legend(['Sfp','50:50 probability'])
+plt.xlabel('False Positive Rate')
+plt.ylabel('True Positive Rate')
+plt.title('Sfp Specific')
+plt.savefig('figures/fig2c.eps')
+plt.close()
+
+
+acps_roc_data = pd.read_csv('figures/acps_specific_roc_data.csv')
+plt.figure()
+plt.plot(acps_roc_data['x'], acps_roc_data['y'])
+plt.plot([0,1], [0,1], 'k--')
+plt.legend(['AcpS','50:50 probability'])
+plt.xlabel('False Positive Rate')
+plt.ylabel('True Positive Rate')
+plt.title('AcpS Specific')
+plt.savefig('figures/fig2d.eps')
+plt.close()
 
 #
 # Fig 3A and 3B, benchmark comparisons
@@ -141,7 +164,7 @@ plt.plot(benchmark_sfp['predict_optimize'][subset_to_plot]*100,'d',color=predict
 plt.xlabel('# of peptides recommended')
 plt.ylabel('Probability of selectivity (%)')
 plt.text(0,6,'Sfp',fontsize=14)
-plt.ylim(0,10)
+plt.ylim(0,100)
 plt.legend(['POOL','Mutation','Predict-then-Optimize'],frameon=False,loc='upper center',ncol=3)
 plt.savefig('figures/fig3a.eps')
 plt.close()
@@ -242,19 +265,19 @@ plt.legend(['POOL','Mutation'])
 plt.xlabel('log10(distance to closest point in original data)')
 plt.ylabel('normed frequency')
 plt.text(5.5,0.6, 'Sfp',fontsize=14)
-plt.savefig('figures/figS3A.eps',transparent=True)
+plt.savefig('figures/figS3A.pdf',transparent=True)
 plt.close()
 
 #
 # FIG S3B (AcpS, Histogram of distance to closest point in training data, used to be called Fig 3F)
 #
 
-bins = np.arange(max_val,step=1)
+bins = np.arange(max_val,step=step)
 plt.hist(pool_acps['closest_data_dist'].apply(np.log10),bins,density=True,alpha=0.5,color=pool_col,histtype='bar', ec='black')
 plt.hist(mutation_acps['closest_data_dist'].apply(np.log10),bins,density=True,alpha=0.5,color=mutation_col,histtype='bar', ec='black')
 plt.legend(['POOL','Mutation'])
 plt.xlabel('log10(distance to closest point in original data)')
 plt.ylabel('normed frequency')
 plt.text(5.5,0.6, 'AcpS',fontsize=14)
-plt.savefig('figures/figS3B.eps',transparent=True)
+plt.savefig('figures/figS3B.pdf',transparent=True)
 plt.close()

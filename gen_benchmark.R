@@ -1,6 +1,7 @@
 # Author: Jialei Wang
 # Generate data for benchmark plot
 
+set.seed(0)
 root <- "src/"
 source(paste0(root, "core/dependency.R"))
 ResolveDependency(root)
@@ -25,7 +26,7 @@ AA_lookup[,'AA'] = as.character(AA_lookup[,'AA'])
 train_dataset <- GetDataReducedAA(data, AA_lookup)
 
 # pool generate_recommendation
-prior.df <- data.frame(sfp = c(10, 0.1, 1e-4), AcpS = c(10, 1, 1e-4), sfp_specific = c(10, 1, 1e-4), acps_specific = c(10, 1, 1e-4))
+prior.df <- data.frame(sfp = c(10, 0.1, 1e-4), AcpS = c(10, 1, 1e-4), sfp_specific = c(10, 1, 1e-3), acps_specific = c(10, 1, 1e-5))
 label.alpha.0 <- SetPriorReducedAA(prior.df[1, label_name], NUM_CLASS)
 label.alpha.1 <- SetPriorReducedAA(prior.df[2, label_name], NUM_CLASS)
 label.p1 <- prior.df[3, label_name]
@@ -71,7 +72,7 @@ mutate.quality <- ComputeProbImprovOfSet(mutate.recoms, true_dataset$feature[tru
 predict.optimize.quality <- ComputeProbImprovOfSet(predict.optimize.recoms, true_dataset$feature[true_specific_idx,], true_dataset$data[true_specific_idx, specific_name], specific_alpha_1, specific_alpha_0, specific_p1, 1000)
 
 quality.result <- data.frame(pool = pool.quality, mutate = mutate.quality, predict_optimize = predict.optimize.quality)
-write.csv(quality.result, paste0(specific_name, '_simulation_quality.csv'), row.names=FALSE)
+write.csv(quality.result, paste0('figures/', specific_name, '_simulation_quality.csv'), row.names=FALSE)
 # con <- get_con("sfp_AcpS")
 # dbWriteTable(con, value = quality.result, name = paste0("benchmark_", type_name), overwrite = TRUE, append = FALSE, row.names=FALSE)
 #
@@ -94,7 +95,7 @@ for (i in 1:num_recom) {
 }
 seq.table <- data.frame(pool_nterm = pool.nterm, pool_cterm = pool.cterm, mutation_nterm = mutate.nterm, mutation_cterm = mutate.cterm,
 naive_nterm = predict.optimize.nterm, naive_cterm = predict.optimize.cterm, stringsAsFactors=FALSE)
-write.csv(seq.table, paste0(specific_name, '_simulation_seq.csv'), row.names=FALSE)
+write.csv(seq.table, paste0('figures/', specific_name, '_simulation_seq.csv'), row.names=FALSE)
 # dbWriteTable(con, value = seq.table, name = paste0('benchmark_seq_', type_name), overwrite = TRUE, append = FALSE, row.names=FALSE)
 #
 # original.seq.table <- cbind(train_dataset$data[,c('nterm', 'cterm')], 1*((train_dataset$data[, label_name] == 1) & (train_dataset$data[, notlabel_name] == 0)))

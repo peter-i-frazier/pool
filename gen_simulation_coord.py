@@ -9,7 +9,7 @@ import pickle
 """
 Functions computing and visualizing distance between peptides
 """
-
+np.random.seed(0)
 ################### Global variables ##########################
 # DO NOT modify if you do not know what you are doing
 class_dict = {'A': 5,
@@ -141,7 +141,7 @@ if __name__ == '__main__':
     penalties = [10., 1.5, 1.]
     enzyme = sys.argv[1]
     total_X = [[], []]
-    seq_table = pandas.read_csv('{0}_specific_simulation_seq.csv'.format(enzyme))
+    seq_table = pandas.read_csv('figures/{0}_specific_simulation_seq.csv'.format(enzyme))
     total_X[0].extend(seq_table['pool_nterm'].values)
     total_X[0].extend(seq_table['mutation_nterm'].values)
     total_X[0].extend(seq_table['naive_nterm'].values)
@@ -158,4 +158,4 @@ if __name__ == '__main__':
     total_X = np.array(total_X).T
     rel_pos = compute_rel_pos(total_X, penalties)
     table = pandas.DataFrame(rel_pos, columns=['x', 'y'])
-    table.to_csv('{0}_specific_simulation_coord.csv'.format(enzyme), index=False)
+    table.to_csv('figures/{0}_specific_simulation_coord.csv'.format(enzyme), index=False)

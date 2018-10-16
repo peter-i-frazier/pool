@@ -7,4 +7,4 @@ Rscript gen_benchmark.R 100 AcpS sfp acps_specific
 python gen_simulation_coord.py sfp
 python gen_simulation_coord.py acps
 
-python make_figures.py
+python make_fancy_figures.py
