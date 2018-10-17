@@ -42,7 +42,7 @@ specific_p1 <- prior.df[3, specific_name]
 label_idx <- train_dataset$data[, label_name] != -1
 notlabel_idx <- train_dataset$data[, notlabel_name] != -1
 
-pool.recoms <- GenRecomSetMAPNewOrthogonal(train_dataset$feature[label_idx, ], train_dataset$data[label_idx, label_name],
+pool.recoms <- GenRecomSetNewOrthogonal(train_dataset$feature[label_idx, ], train_dataset$data[label_idx, label_name],
 train_dataset$feature[notlabel_idx, ], train_dataset$data[notlabel_idx, notlabel_name],
 label.alpha.1, label.alpha.0, label.p1,
 notlabel.alpha.1, notlabel.alpha.0, notlabel.p1,

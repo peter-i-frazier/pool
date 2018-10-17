@@ -2,10 +2,11 @@
 # Created: 05.29.2015
 # Functions for generating recommended peptides using various methods
 
-GenOnePeptideMAPOld <- function(length.left, length.right, alpha.1, alpha.0, num.mc.samples) {
-  # Construct feature vector for one peptide sequence using Maximize A Posteriori,
-  # the way to construct it is that we use estimated posterior distribution over 
-  # thetas, and for each position, we pick the AA with highest theta.1 / theta.0
+GenOnePeptideOld <- function(length.left, length.right, alpha.1, alpha.0, num.mc.samples) {
+  # Construct feature vector for one peptide sequence.
+  # the way to construct it is that we sample theta from its posterior distribution
+  # then, for each position, we pick the AA with highest theta.1 / theta.0
+  # We do this many times and then we find the mode of the chosen AA at each position
   #
   # Args:
   #   length.left: int, length of the sequence to be constructed to the left of Serine.
@@ -29,10 +30,10 @@ GenOnePeptideMAPOld <- function(length.left, length.right, alpha.1, alpha.0, num
   return (feature)
 }
 
-GenOnePeptideMAPNew <- function(length.left, length.right, alpha.1.label, alpha.0.label,
+GenOnePeptideNew <- function(length.left, length.right, alpha.1.label, alpha.0.label,
                                 alpha.1.not.label, alpha.0.not.label, alpha.1.unlabel, 
                                 alpha.0.unlabel, num.mc.samples) {
-  # The only difference from GenOnePeptideMAPOld is that, we train three classifiers,
+  # The only difference from GenOnePeptideOld is that, we train three classifiers,
   # each predicting one step in the experiment: label, not label and unlabel.
   #
   # Args:
@@ -70,12 +71,12 @@ GenOnePeptideMAPNew <- function(length.left, length.right, alpha.1.label, alpha.
   return (feature)
 }
 
-GenRecomSetMAPNew <- function(X.label, Y.label, X.not.label, Y.not.label, X.unlabel, Y.unlabel,
+GenRecomSetNew <- function(X.label, Y.label, X.not.label, Y.not.label, X.unlabel, Y.unlabel,
                               alpha.1.label.prior, alpha.0.label.prior, p1.label,
                               alpha.1.not.label.prior, alpha.0.not.label.prior, p1.not.label,
                               alpha.1.unlabel.prior, alpha.0.unlabel.prior, p1.unlabel,
                               num.mc.samples, num.recom, minL, maxL, minR, maxR)  {
-  # Generates a recommendation set using new MAP
+  # Generates a recommendation set, for looking for orthogonal peptides that are AcpH active
   # 
   # Args:
   #   X: Feature matrix of peptides.
@@ -112,13 +113,13 @@ GenRecomSetMAPNew <- function(X.label, Y.label, X.not.label, Y.not.label, X.unla
     length.left <- ceiling(runif(1, min = minL - 1, max = maxL))
     length.right <- ceiling(runif(1, min = minR - 1, max = maxR))
     if (length(alpha.1.not.label.prior) > 0) {
-      new.rec.peptide <- GenOnePeptideMAPNew(length.left, length.right,
+      new.rec.peptide <- GenOnePeptideNew(length.left, length.right,
                                                params.label$post.alpha.1, params.label$post.alpha.0,
                                                params.not.label$post.alpha.1, params.not.label$post.alpha.0,
                                                params.unlabel$post.alpha.1, params.unlabel$post.alpha.0,
                                                num.mc.samples)
     } else {
-      new.rec.peptide <- GenOnePeptideMAPNew(length.left, length.right,
+      new.rec.peptide <- GenOnePeptideNew(length.left, length.right,
                                              params.label$post.alpha.1, params.label$post.alpha.0,
                                              c(), c(), params.unlabel$post.alpha.1, params.unlabel$post.alpha.0,
                                              num.mc.samples)
@@ -171,7 +172,7 @@ GenRecomSetOld <- function(X, Y, alpha.1, alpha.0, p1, num.recom, num.mc.samples
     alphas <- BayesianNaiveBayes(X, Y, alpha.1, alpha.0, p1)
     length.left <- ceiling(runif(1, min = minL - 1, max = maxL))
     length.right <- ceiling(runif(1, min = minR - 1, max = maxR))
-    new.rec.peptide <- GenOnePeptideMAPOld(length.left, length.right,
+    new.rec.peptide <- GenOnePeptideOld(length.left, length.right,
                                            alphas$post.alpha.1,
                                            alphas$post.alpha.0, num.mc.samples)
     if (nrow(unique(rbind(recom.set, new.rec.peptide))) ==
@@ -224,7 +225,7 @@ GenRecomSetPredictOptimize <- function(X.label, Y.label, X.not.label, Y.not.labe
 
   length.left <- ceiling(runif(1, min = minL - 1, max = maxL))
   length.right <- ceiling(runif(1, min = minR - 1, max = maxR))
-  new.rec.peptide <- GenOnePeptideMAPNew(length.left, length.right,
+  new.rec.peptide <- GenOnePeptideNew(length.left, length.right,
                                          params.label$post.alpha.1, params.label$post.alpha.0,
                                          params.not.label$post.alpha.1, params.not.label$post.alpha.0,
                                          params.unlabel$post.alpha.1, params.unlabel$post.alpha.0,
@@ -259,7 +260,7 @@ GenOneRandomPeptide <- function(minL, maxL, minR, maxR, feature.length.left,
 
 ##########################################################################################
 ## Below are code for new experiments for orthogonal labeling only, no ACPH
-GenOnePeptideMAPNewOrthogonal <- function(length.left, length.right, alpha.1.label, alpha.0.label,
+GenOnePeptideNewOrthogonal <- function(length.left, length.right, alpha.1.label, alpha.0.label,
 alpha.1.not.label, alpha.0.not.label, num.mc.samples) {
   feature <- rep(-1, MAXL + MAXR)
   thetas.1.label <- SampleThetas(alpha.1.label, num.mc.samples)
@@ -277,11 +278,11 @@ alpha.1.not.label, alpha.0.not.label, num.mc.samples) {
   return (feature)
 }
 
-GenRecomSetMAPNewOrthogonal <- function(X.label, Y.label, X.not.label, Y.not.label,
+GenRecomSetNewOrthogonal <- function(X.label, Y.label, X.not.label, Y.not.label,
 alpha.1.label.prior, alpha.0.label.prior, p1.label,
 alpha.1.not.label.prior, alpha.0.not.label.prior, p1.not.label,
 num.mc.samples, num.recom, minL, maxL, minR, maxR)  {
-  # Generates a recommendation set using new MAP
+  # Generates a recommendation set for looking for orthogonal peptides (that are not necessarily AcpH active)
   #
   # Args:
   #   X: Feature matrix of peptides.
@@ -312,7 +313,7 @@ num.mc.samples, num.recom, minL, maxL, minR, maxR)  {
 
     length.left <- ceiling(runif(1, min = minL - 1, max = maxL))
     length.right <- ceiling(runif(1, min = minR - 1, max = maxR))
-    new.rec.peptide <- GenOnePeptideMAPNewOrthogonal(length.left, length.right,
+    new.rec.peptide <- GenOnePeptideNewOrthogonal(length.left, length.right,
     params.label$post.alpha.1, params.label$post.alpha.0,
     params.not.label$post.alpha.1, params.not.label$post.alpha.0,
     num.mc.samples)
@@ -342,7 +343,7 @@ num.mc.samples, num.recom, minL, maxL, minR, maxR)  {
 
   length.left <- ceiling(runif(1, min = minL - 1, max = maxL))
   length.right <- ceiling(runif(1, min = minR - 1, max = maxR))
-  new.rec.peptide <- GenOnePeptideMAPNewOrthogonal(length.left, length.right,
+  new.rec.peptide <- GenOnePeptideNewOrthogonal(length.left, length.right,
   params.label$post.alpha.1, params.label$post.alpha.0,
   params.not.label$post.alpha.1, params.not.label$post.alpha.0,
   num.mc.samples)

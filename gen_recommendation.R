@@ -46,7 +46,7 @@ unlabel.alpha.1 <- SetPriorReducedAA(prior.df[2, unlabel_name], NUM_CLASS)
 unlabel.p1 <- prior.df[3, unlabel_name]
 unlabel_idx <- train_dataset$data[, unlabel_name] != -1
 
-pool.recoms <- GenRecomSetMAPNew(train_dataset$feature[label_idx, ], train_dataset$data[label_idx, label_name],
+pool.recoms <- GenRecomSetNew(train_dataset$feature[label_idx, ], train_dataset$data[label_idx, label_name],
 train_dataset$feature[notlabel_idx, ], train_dataset$data[notlabel_idx, notlabel_name],
 train_dataset$feature[unlabel_idx, ], train_dataset$data[unlabel_idx, unlabel_name],
 label.alpha.1, label.alpha.0, label.p1,
