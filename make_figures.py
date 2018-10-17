@@ -65,19 +65,6 @@ benchmark_acps = pd.read_csv('figures/acps_specific_simulation_quality.csv')
 
 
 
-# The following code is useful for producing diagnostic plots
-# plt.plot(predict_sfp['x'],predict_sfp['y'],'y.')
-# plt.plot(mutation_sfp['x'],mutation_sfp['y'],'b.')
-# plt.plot(pool_sfp['x'],pool_sfp['y'],'g.')
-# plt.plot(data_sfp['x'],data_sfp['y'],'.',color='0.75')
-# plt.legend(['predict','mutate','pool','data'])
-
-# plt.plot(predict_acps['x'],predict_acps['y'],'y.')
-# plt.plot(mutation_acps['x'],mutation_acps['y'],'b.')
-# plt.plot(pool_acps['x'],pool_acps['y'],'g.')
-# plt.plot(data_acps['x'],data_acps['y'],'.',color='0.75')
-# plt.legend(['predict','mutate','pool','data'])
-
 #
 # Produce distance statistics
 #
@@ -163,8 +150,9 @@ plt.plot(benchmark_sfp['predict_optimize'][subset_to_plot]*100,'d',color=predict
 
 plt.xlabel('# of peptides recommended')
 plt.ylabel('Probability of selectivity (%)')
-plt.text(0,6,'Sfp',fontsize=14)
-plt.ylim(0,100)
+#plt.text(0,6,'Sfp',fontsize=14)
+plt.title('Sfp')
+plt.ylim(0,60)
 plt.legend(['POOL','Mutation','Predict-then-Optimize'],frameon=False,loc='upper center',ncol=3)
 plt.savefig('figures/fig3a.eps')
 plt.close()
@@ -184,8 +172,9 @@ plt.plot(benchmark_acps['predict_optimize'][subset_to_plot]*100,'d',color=predic
 
 plt.xlabel('# of peptides recommended')
 plt.ylabel('Probability of selectivity (%)')
-plt.text(0,15,'AcpS',fontsize=14)
-plt.ylim(0,20)
+#plt.text(0,15,'AcpS',fontsize=14)
+plt.title('AcpS')
+plt.ylim(0,2.5)
 plt.legend(['POOL','Mutation','Predict-then-Optimize'],frameon=False,loc='upper center',ncol=3)
 plt.savefig('figures/fig3b.eps')
 plt.close()
@@ -213,11 +202,12 @@ plt.plot(pool_sfp['x'],pool_sfp['y'],pool_mrk,color=pool_col,markersize=mrk_sz,m
 
 plt.legend(['POOL','Mutation','Training Data','Predict-then-Optimize'],frameon=False,markerfirst=False)
 
-plt.xlim(-55,35)
-plt.ylim(-25,40)
+#plt.xlim(-60,35)
+#plt.ylim(-35,40)
 plt.xlabel('x coordinate')
 plt.ylabel('y coordinate')
-plt.text(-50,15,'Sfp',fontsize=14)
+#plt.text(-50,15,'Sfp',fontsize=14)
+plt.title('Sfp')
 plt.savefig('figures/fig3c.eps',transparent=True)
 plt.close()
 
@@ -242,11 +232,12 @@ plt.plot(mutation_acps['x'],mutation_acps['y'],mutation_mrk,color=mutation_col,m
 plt.plot(pool_acps['x'],pool_acps['y'],pool_mrk,color=pool_col,markersize=mrk_sz,markeredgecolor='k')
 
 plt.legend(['POOL','Mutation','Training Data','Predict-then-Optimize'],frameon=False,markerfirst=False)
-plt.xlim(-55,35)
-plt.ylim(-30,40)
+#plt.xlim(-60,35)
+#plt.ylim(-40,40)
 plt.xlabel('x coordinate')
 plt.ylabel('y coordinate')
-plt.text(-40,15,'AcpS',fontsize=14)
+#plt.text(-40,15,'AcpS',fontsize=14)
+plt.title('AcpS')
 plt.savefig('figures/fig3d.eps',transparent=True)
 plt.close()
 
@@ -255,16 +246,18 @@ plt.close()
 # FIG S3A (Sfp, Histogram of distance to closest point in training data, used to be called Fig 3E)
 #
 
-max_val = 1.5 # Largest value to include in the histogram
-step = 0.1
+min_val = 0.1
+max_val = 36 # Largest value to include in the histogram
+nbins = 10
+bins = np.logspace(np.log10(min_val),np.log10(max_val),nbins)
 
-bins = np.arange(max_val,step=step)
-plt.hist(pool_sfp['closest_data_dist'].apply(np.log10),bins,density=True,alpha=0.5,color=pool_col,histtype='bar', ec='black')
+plt.hist(pool_sfp['closest_data_dist'],bins,density=True,alpha=0.5,color=pool_col,histtype='bar', ec='black')
 plt.hist(mutation_sfp['closest_data_dist'].apply(np.log10),bins,density=True,alpha=0.5,color=mutation_col,histtype='bar', ec='black')
+plt.gca().set_xscale("log")
 plt.legend(['POOL','Mutation'])
-plt.xlabel('log10(distance to closest point in original data)')
+plt.xlabel('distance to closest point in original data (log scale)')
 plt.ylabel('normed frequency')
-plt.text(5.5,0.6, 'Sfp',fontsize=14)
+plt.title('Sfp')
 plt.savefig('figures/figS3A.pdf',transparent=True)
 plt.close()
 
@@ -272,12 +265,13 @@ plt.close()
 # FIG S3B (AcpS, Histogram of distance to closest point in training data, used to be called Fig 3F)
 #
 
-bins = np.arange(max_val,step=step)
-plt.hist(pool_acps['closest_data_dist'].apply(np.log10),bins,density=True,alpha=0.5,color=pool_col,histtype='bar', ec='black')
-plt.hist(mutation_acps['closest_data_dist'].apply(np.log10),bins,density=True,alpha=0.5,color=mutation_col,histtype='bar', ec='black')
+plt.hist(pool_acps['closest_data_dist'], bins, density=True,alpha=0.5,color=pool_col,histtype='bar', ec='black')
+plt.hist(mutation_acps['closest_data_dist'],bins, density=True,alpha=0.5,color=mutation_col,histtype='bar', ec='black')
+plt.gca().set_xscale("log")
 plt.legend(['POOL','Mutation'])
-plt.xlabel('log10(distance to closest point in original data)')
+plt.xlabel('distance to closest point in original data (log scale)')
 plt.ylabel('normed frequency')
-plt.text(5.5,0.6, 'AcpS',fontsize=14)
+plt.title('AcpS')
 plt.savefig('figures/figS3B.pdf',transparent=True)
 plt.close()
+
