@@ -41,7 +41,5 @@ CrossValidation <- function(enzyme, num_leave_out, alpha.0.prior.coef, alpha.1.p
 
 print("making roc data for sfp specific")
 CrossValidation('sfp_specific', 1, 10, 1, 1e-3, 'figures/sfp_specific_roc_data.csv')
-CrossValidation('sfp', 1, 10, 1, 1e-3, 'figures/sfp_roc_data.csv')
 print("making roc data for acps specific")
 CrossValidation('acps_specific', 1, 10, 1, 1e-5, 'figures/acps_specific_roc_data.csv')
-CrossValidation('AcpS', 1, 10, 1, 1e-5, 'figures/acps_roc_data.csv')
