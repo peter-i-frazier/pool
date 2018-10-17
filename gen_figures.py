@@ -246,17 +246,14 @@ plt.close()
 # FIG S3A (Sfp, Histogram of distance to closest point in training data, used to be called Fig 3E)
 #
 
-min_val = 0.1
-max_val = 36 # Largest value to include in the histogram
-nbins = 10
-bins = np.logspace(np.log10(min_val),np.log10(max_val),nbins)
+max_val = 40 # Largest value to include in the histogram
+bins = np.arange(0,max_val,step=1)
 
-plt.hist(pool_sfp['closest_data_dist'],bins,density=True,alpha=0.5,color=pool_col,histtype='bar', ec='black')
-plt.hist(mutation_sfp['closest_data_dist'].apply(np.log10),bins,density=True,alpha=0.5,color=mutation_col,histtype='bar', ec='black')
-plt.gca().set_xscale("log")
+plt.hist(pool_sfp['closest_data_dist'],bins,density=None,alpha=0.5,color=pool_col,histtype='bar', ec='black')
+plt.hist(mutation_sfp['closest_data_dist'],bins,density=None,alpha=0.5,color=mutation_col,histtype='bar', ec='black')
 plt.legend(['POOL','Mutation'])
-plt.xlabel('distance to closest point in original data (log scale)')
-plt.ylabel('normed frequency')
+plt.xlabel('distance to closest point in original data')
+plt.ylabel('frequency')
 plt.title('Sfp')
 plt.savefig('figures/figS3A.pdf',transparent=True)
 plt.close()
@@ -265,12 +262,11 @@ plt.close()
 # FIG S3B (AcpS, Histogram of distance to closest point in training data, used to be called Fig 3F)
 #
 
-plt.hist(pool_acps['closest_data_dist'], bins, density=True,alpha=0.5,color=pool_col,histtype='bar', ec='black')
-plt.hist(mutation_acps['closest_data_dist'],bins, density=True,alpha=0.5,color=mutation_col,histtype='bar', ec='black')
-plt.gca().set_xscale("log")
+plt.hist(pool_acps['closest_data_dist'], bins, density=None,alpha=0.5,color=pool_col,histtype='bar', ec='black')
+plt.hist(mutation_acps['closest_data_dist'],bins, density=None,alpha=0.5,color=mutation_col,histtype='bar', ec='black')
 plt.legend(['POOL','Mutation'])
-plt.xlabel('distance to closest point in original data (log scale)')
-plt.ylabel('normed frequency')
+plt.xlabel('distance to closest point in original data')
+plt.ylabel('frequency')
 plt.title('AcpS')
 plt.savefig('figures/figS3B.pdf',transparent=True)
 plt.close()
