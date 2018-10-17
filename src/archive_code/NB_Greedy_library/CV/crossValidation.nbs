@@ -1,8 +1,0 @@
-#!/bin/sh
-mkdir ${2}/temp/cv/cv_${1}
-cd ${2}/temp/cv/cv_${1}
-
-root_path=\'${2}\'
-outname=\'${4}\'
-data_file=\'${3}\'
-/usr/local/R/icse/bin/Rscript --slave ${2}/src/NB_Greedy_library/CV/crossValidation.R n=${1} rootpath=$root_path datafile=$data_file outcome_name=$outname Gamma_0=${5} Gamma_1=${6} prior=${7}>log

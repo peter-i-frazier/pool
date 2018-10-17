@@ -1,9 +1,0 @@
-#!/bin/zsh
-mkdir ${5}/param_${3}
-cd ${5}/param_${3}
-
-ROOTPATH=\'${1}\'
-DATAFILE=\'${2}\'
-OUTNAME=\'${4}\'
-/usr/local/R/icse/bin/Rscript --slave ${1}/src/NB_Greedy_library/find_param/find_param.R root_path=${ROOTPATH} datafile=${DATAFILE} para_idx=${3} outcome_name=${OUTNAME} num_fold=${6}>log
-

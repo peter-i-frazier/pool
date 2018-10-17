@@ -20,10 +20,10 @@ data/
 Contains data produced by experiments done in the process of writing this paper, in both raw and processed form.  It also contains data taken from the literature used to initalize POOL in the first round
 
 recommendation/
-Contains recommendations produced by the POOL algorithm during the course of the optimizatin process.
+Contains recommendations produced by the POOL algorithm during the course of the optimization process.
 
 src/
-Contains the software implementation of the POOL algorithm in src/core and an earlier implementation in src/archive_code. Also contains custom software written to normalize images of membranes created during experiments (src/normalization). Also contains code for making plots, both in the paper (src/make_plots_for_paper) and in presentations (src/make_plots_for_presentation).
+Contains the software implementation of the POOL algorithm in src/core. Also contains custom software written to normalize images of membranes created during experiments (src/normalization).
 
 Requirements to run the code
 - R

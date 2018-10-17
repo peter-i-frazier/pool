@@ -1,9 +1,0 @@
-#!/bin/sh
-mkdir ${1}/temp/loocv_find_param/${3}/param_${2}
-cd ${1}/temp/loocv_find_param/${3}/param_${2}
-
-ROOTPATH=\'${1}\'
-# DATAFILE=\'${2}\'
-OUTNAME=\'${3}\'
-/usr/local/R/icse/bin/Rscript --slave ${1}/src/NB_Greedy_library/loocv_find_param/loocv_find_param.R root_path=${ROOTPATH} para_idx=${2} outcome_name=${OUTNAME}>log
-
