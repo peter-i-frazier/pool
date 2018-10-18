@@ -185,25 +185,26 @@ plt.close()
 # FIG 3C (2-dimensional embedding of training data and recommended points for Sfp)
 #
 
-plt.plot(pool_sfp['x'],pool_sfp['y'],pool_mrk,color=pool_col,markersize=mrk_sz)
-plt.plot(mutation_sfp['x'],mutation_sfp['y'],mutation_mrk,color=mutation_col,markersize=mrk_sz)
-plt.plot(data_sfp['x'],data_sfp['y'],data_mrk,color='0.75',markersize=mrk_sz)
-plt.plot(predict_sfp['x'],predict_sfp['y'],predict_mrk,color=predict_col,markersize=mrk_sz)
+mew=0.0
+plt.plot(pool_sfp['x'],pool_sfp['y'],pool_mrk,color=pool_col,markersize=mrk_sz,markeredgewidth=mew)
+plt.plot(mutation_sfp['x'],mutation_sfp['y'],mutation_mrk,color=mutation_col,markersize=mrk_sz,markeredgewidth=mew)
+plt.plot(data_sfp['x'],data_sfp['y'],data_mrk,color='0.75',markersize=mrk_sz,markeredgewidth=mew)
+plt.plot(predict_sfp['x'],predict_sfp['y'],predict_mrk,color=predict_col,markersize=mrk_sz,markeredgewidth=mew)
 
 plot_lines(pool_sfp,data_sfp,pool_col)
 plot_lines(mutation_sfp,data_sfp,mutation_col)
 
 # Overplot with training data first so that everything goes on top of the lines,
 # and pool and mutation last so they are the top-most layer
-plt.plot(data_sfp['x'],data_sfp['y'],data_mrk,color='0.75',markersize=mrk_sz,markeredgecolor='k')
-plt.plot(predict_sfp['x'],predict_sfp['y'],predict_mrk,color=predict_col,markersize=mrk_sz,markeredgecolor='k')
-plt.plot(mutation_sfp['x'],mutation_sfp['y'],mutation_mrk,color=mutation_col,markersize=mrk_sz,markeredgecolor='k')
-plt.plot(pool_sfp['x'],pool_sfp['y'],pool_mrk,color=pool_col,markersize=mrk_sz,markeredgecolor='k')
+plt.plot(data_sfp['x'],data_sfp['y'],data_mrk,color='0.75',markersize=mrk_sz,markeredgecolor='k',mew=mew)
+plt.plot(predict_sfp['x'],predict_sfp['y'],predict_mrk,color=predict_col,markersize=mrk_sz,markeredgecolor='k',mew=mew)
+plt.plot(mutation_sfp['x'],mutation_sfp['y'],mutation_mrk,color=mutation_col,markersize=mrk_sz,markeredgecolor='k',mew=mew)
+plt.plot(pool_sfp['x'],pool_sfp['y'],pool_mrk,color=pool_col,markersize=mrk_sz,markeredgecolor='k',mew=mew)
 
 plt.legend(['POOL','Mutation','Training Data','Predict-then-Optimize'],frameon=False,markerfirst=False)
 
-#plt.xlim(-60,35)
-#plt.ylim(-35,40)
+plt.xlim(-55,40)
+plt.ylim(-35,40)
 plt.xlabel('x coordinate')
 plt.ylabel('y coordinate')
 #plt.text(-50,15,'Sfp',fontsize=14)
@@ -216,24 +217,24 @@ plt.close()
 # FIG 3D (2-dimensional embedding of training data and recommended points for AcpS)
 #
 
-plt.plot(pool_acps['x'],pool_acps['y'],pool_mrk,color=pool_col,markersize=mrk_sz)
-plt.plot(mutation_acps['x'],mutation_acps['y'],mutation_mrk,color=mutation_col,markersize=mrk_sz)
-plt.plot(data_acps['x'],data_acps['y'],data_mrk,color='0.75',markersize=mrk_sz)
-plt.plot(predict_acps['x'],predict_acps['y'],predict_mrk,color=predict_col,markersize=mrk_sz)
+plt.plot(pool_acps['x'],pool_acps['y'],pool_mrk,color=pool_col,markersize=mrk_sz,markeredgewidth=mew)
+plt.plot(mutation_acps['x'],mutation_acps['y'],mutation_mrk,color=mutation_col,markersize=mrk_sz,markeredgewidth=mew)
+plt.plot(data_acps['x'],data_acps['y'],data_mrk,color='0.75',markersize=mrk_sz,markeredgewidth=mew)
+plt.plot(predict_acps['x'],predict_acps['y'],predict_mrk,color=predict_col,markersize=mrk_sz,markeredgewidth=mew)
 
 plot_lines(pool_acps,data_acps,pool_col)
 plot_lines(mutation_acps,data_acps,mutation_col)
 
 # Overplot with training data first so that everything goes on top of the lines,
 # and pool and mutation last so they are the top-most layer
-plt.plot(data_acps['x'],data_acps['y'],data_mrk,color='0.75',markersize=mrk_sz,markeredgecolor='k')
-plt.plot(predict_acps['x'],predict_acps['y'],predict_mrk,color=predict_col,markersize=mrk_sz,markeredgecolor='k')
-plt.plot(mutation_acps['x'],mutation_acps['y'],mutation_mrk,color=mutation_col,markersize=mrk_sz,markeredgecolor='k')
-plt.plot(pool_acps['x'],pool_acps['y'],pool_mrk,color=pool_col,markersize=mrk_sz,markeredgecolor='k')
+plt.plot(data_acps['x'],data_acps['y'],data_mrk,color='0.75',markersize=mrk_sz,markeredgecolor='k',markeredgewidth=mew)
+plt.plot(predict_acps['x'],predict_acps['y'],predict_mrk,color=predict_col,markersize=mrk_sz,markeredgecolor='k',markeredgewidth=mew)
+plt.plot(mutation_acps['x'],mutation_acps['y'],mutation_mrk,color=mutation_col,markersize=mrk_sz,markeredgecolor='k',markeredgewidth=mew)
+plt.plot(pool_acps['x'],pool_acps['y'],pool_mrk,color=pool_col,markersize=mrk_sz,markeredgecolor='k',markeredgewidth=mew)
 
 plt.legend(['POOL','Mutation','Training Data','Predict-then-Optimize'],frameon=False,markerfirst=False)
-#plt.xlim(-60,35)
-#plt.ylim(-40,40)
+plt.xlim(-55,40)
+plt.ylim(-35,40)
 plt.xlabel('x coordinate')
 plt.ylabel('y coordinate')
 #plt.text(-40,15,'AcpS',fontsize=14)
